@@ -1,0 +1,13 @@
+application:
+  host: 127.0.0.1
+  port: 8081
+
+cors:
+  allow_origins:
+    - any
+  headers:
+    - accept
+    - authorization
+    - origin
+  methods:
+    - all

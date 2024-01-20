@@ -17,7 +17,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::try_init()?;
 
     // Start Web server
-    server::start().await?;
+    server::start(None).await?;
 
     Ok(())
 }
