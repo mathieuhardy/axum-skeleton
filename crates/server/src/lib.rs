@@ -1,6 +1,7 @@
 mod config;
 mod cors;
 mod error;
+mod state;
 
 use axum::response::Html;
 use axum::routing::get;
@@ -11,6 +12,7 @@ use axum::Router;
 
 use crate::config::Config;
 use crate::error::Error;
+use crate::state::State;
 
 pub async fn start() -> Result<(), Error> {
     let config = Config::new()?;
@@ -40,14 +42,21 @@ pub async fn start() -> Result<(), Error> {
         .await
         .map_err(Error::Socket)?;
 
-    // Start server
+    // Prepare application
     let cors = cors::create(&config);
 
     log::info!("🔒 CORS configured");
     log::trace!("{:#?}", cors);
 
-    let app = Router::new().route("/", get(handler)).layer(cors);
+    let state = State::new();
+    log::info!("📦 State configured");
 
+    let app = Router::new()
+        .route("/", get(handler))
+        .with_state(state)
+        .layer(cors);
+
+    // Start server
     log::info!(
         "🚀 Listening on {}",
         listener.local_addr().map_err(Error::Socket)?
