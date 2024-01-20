@@ -11,3 +11,5 @@ skeleton can be used as starter kit.
 - [⚙️ Backend configuration](docs/configuration.md)
 - [📄 Logging system](docs/logging.md)
 - [💯 Testing](docs/testing.md)
+
+- [💻 Development](docs/development.md)
