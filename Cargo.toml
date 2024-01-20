@@ -8,7 +8,6 @@ readme = "README.md"
 homepage = "TODO"
 repository = "TODO"
 license-file = "LICENSE.txt"
-#build = "build.rs"
 
 [workspace]
 members = [

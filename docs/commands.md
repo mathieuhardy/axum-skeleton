@@ -13,7 +13,7 @@ cargo build --release
 cargo test --workspace
 
 # Run the application
-caro run
+cargo run
 ```
 
 ## Advanced commands
