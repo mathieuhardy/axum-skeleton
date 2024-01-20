@@ -1,43 +1,58 @@
+mod config;
+mod cors;
 mod error;
-mod settings;
 
 use axum::response::Html;
 use axum::routing::get;
-
 use axum::Router;
-use sqlx::postgres::PgPoolOptions;
+//use sqlx::postgres::PgPoolOptions;
 
-use database::models::users::User;
+//use database::models::users::User;
 
+use crate::config::Config;
 use crate::error::Error;
-use crate::settings::Settings;
 
 pub async fn start() -> Result<(), Error> {
-    let _settings = Settings::new()?;
+    let config = Config::new()?;
 
-    // build our application with a route
-    let app = Router::new().route("/", get(handler));
+    log::info!("📄 Configuration loaded");
+    log::trace!("{:#?}", config);
 
-    let db_url = std::env::var("DATABASE_URL").expect("Failed to get DATABASE_URL.");
+    //let db_url = std::env::var("DATABASE_URL").expect("Failed to get DATABASE_URL.");
 
-    let dbpool = PgPoolOptions::new()
-        .max_connections(8)
-        .connect(&db_url)
-        .await?;
+    //let dbpool = PgPoolOptions::new()
+    //.max_connections(8)
+    //.connect(&db_url)
+    //.await?;
 
-    let user = sqlx::query_as::<_, User>(r#"select * from users u where u.email = $1"#)
-        .bind("mhardy2008@gmail.com")
-        .fetch_one(&dbpool)
+    //let user = sqlx::query_as::<_, User>(r#"select * from users u where u.email = $1"#)
+    //.bind("mhardy2008@gmail.com")
+    //.fetch_one(&dbpool)
+    //.await
+    //.unwrap();
+
+    //log::debug!("{:#?}", user);
+
+    // Start TCP listener
+    let address = format!("{}:{}", config.application.host, config.application.port);
+
+    let listener = tokio::net::TcpListener::bind(&address)
         .await
-        .unwrap();
+        .map_err(Error::Socket)?;
 
-    log::debug!("{:#?}", user);
+    // Start server
+    let cors = cors::create(&config);
 
-    // run it
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
-        .await
-        .unwrap();
-    log::info!("🚀 Listening on {}", listener.local_addr().unwrap());
+    log::info!("🔒 CORS configured");
+    log::trace!("{:#?}", cors);
+
+    let app = Router::new().route("/", get(handler)).layer(cors);
+
+    log::info!(
+        "🚀 Listening on {}",
+        listener.local_addr().map_err(Error::Socket)?
+    );
+
     axum::serve(listener, app).await.unwrap();
 
     Ok(())

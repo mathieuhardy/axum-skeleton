@@ -1,0 +1,13 @@
+application:
+  port: 8080
+
+cors:
+  methods:
+    - delete
+    - get
+    - post
+    - put
+  headers:
+    - accept
+    - authorization
+    - origin
