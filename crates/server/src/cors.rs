@@ -1,3 +1,5 @@
+//! This file contains all structures and functions related to CORS.
+
 use axum::http::header::{HeaderName, HeaderValue};
 use axum::http::Method;
 use std::str::FromStr;
@@ -5,6 +7,14 @@ use tower_http::cors::CorsLayer;
 
 use crate::config::Config;
 
+/// Builds a CORS layer for Axum server using values defined in the
+/// configuration.
+///
+/// # Arguments
+/// * `config`- Reference to the configuration.
+///
+/// # Returns
+/// An Axum CORS layer.
 pub fn build(config: &Config) -> CorsLayer {
     let methods: Vec<_> = config
         .cors
