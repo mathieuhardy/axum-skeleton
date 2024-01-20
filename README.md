@@ -19,3 +19,5 @@ skeleton can be used as starter kit.
 - tower_http::trace::TraceLayer
 - script to check upgradable dependencies
 - [tracing](https://docs.rs/tracing/latest/tracing/)
+- generate report for test coverage
+- generate report for doc coverage

@@ -1,0 +1,80 @@
+[env]
+
+# Common
+TARGET_DIR = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target"
+
+NC = '\033[0m'
+BY = '\033[1;33m'
+BV = '\033[1;35m'
+
+# Documentation specifics
+DOCS_OUTPUT_DIR = "${TARGET_DIR}/docs"
+DOCS_COV_RESULTS = "${DOCS_OUTPUT_DIR}/coverage.txt"
+DOCS_COV_HTML = "${DOCS_OUTPUT_DIR}/coverage.html"
+
+# ------------------------------------------------------------------------------
+# Show help by default
+# ------------------------------------------------------------------------------
+
+[tasks.default]
+workspace = false
+clear = true
+script = '''
+echo "${BY}Available commands:${NC}\n"
+echo "  ${BV}cov-docs${NC}        Generate documentation coverage results"
+echo "  ${BV}cov-docs-show${NC}   Show the HTML results of the documentation coverage"
+'''
+
+# ------------------------------------------------------------------------------
+# Documentation coverage targets
+# ------------------------------------------------------------------------------
+
+# Task used to setup the environment
+[tasks.cov-docs-setup]
+workspace = false
+private = true
+script.main = '''
+mkdir -p ${DOCS_OUTPUT_DIR}
+'''
+script.post = '''
+echo "🟢 ${B_WHITE}Create output directory: ${DOCS_OUTPUT_DIR}${NC}"
+'''
+
+# Task used to generate documentation coverage results
+[tasks.cov-docs-build]
+workspace = false
+private = true
+env.RUSTDOCFLAGS = "-Zunstable-options --show-coverage"
+script.main = '''
+cargo doc -j 1 --no-deps --workspace 1>${DOCS_COV_RESULTS} 2>&1
+'''
+script.post = '''
+echo "🟢 ${B_WHITE}Results generated: ${DOCS_COV_RESULTS}${NC}"
+'''
+
+# Task used to convert the coverage results to HTML
+[tasks.cov-docs-html]
+workspace = false
+private = true
+script.main = '''
+scripts/sanity/coverage/doc-coverage-2-html.py ${DOCS_COV_RESULTS} ${DOCS_COV_HTML}
+'''
+script.post = '''
+echo "🟢 ${B_WHITE}Results converted to HTML: ${DOCS_COV_HTML}${NC}"
+'''
+
+# Task used to show the documentation coverage report generated
+[tasks.cov-docs-show]
+workspace = false
+script = '''
+open ${DOCS_COV_HTML}
+'''
+
+# Task used to generate all documentation and the HTML coverage report
+[tasks.cov-docs]
+workspace = false
+run_task = { name = [
+    "cov-docs-setup",
+    "cov-docs-build",
+    "cov-docs-html"
+] }
