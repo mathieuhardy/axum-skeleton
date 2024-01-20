@@ -13,7 +13,6 @@ skeleton can be used as starter kit.
 
 # TODO
 
-- routes
 - features
 - reddis
 - tower_http::trace::TraceLayer

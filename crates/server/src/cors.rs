@@ -5,7 +5,7 @@ use tower_http::cors::CorsLayer;
 
 use crate::config::Config;
 
-pub fn create(config: &Config) -> CorsLayer {
+pub fn build(config: &Config) -> CorsLayer {
     let methods: Vec<_> = config
         .cors
         .methods
