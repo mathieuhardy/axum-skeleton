@@ -1,12 +1,21 @@
+mod error;
+mod settings;
+
 use axum::response::Html;
 use axum::routing::get;
+
 use axum::Router;
 use sqlx::postgres::PgPoolOptions;
-use std::error::Error;
+//use std::error::Error;
 
 use database::models::users::User;
 
-pub async fn start() -> Result<(), Box<dyn Error>> {
+use crate::error::Error;
+use crate::settings::Settings;
+
+pub async fn start() -> Result<(), Error> {
+    let _settings = Settings::new()?;
+
     // build our application with a route
     let app = Router::new().route("/", get(handler));
 
