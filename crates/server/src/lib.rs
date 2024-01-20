@@ -14,36 +14,18 @@ pub use axum;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Router;
+use sqlx::postgres::PgPoolOptions;
 use tokio::net::TcpListener;
 use tokio::signal;
-//use sqlx::postgres::PgPoolOptions;
-
-//use database::models::users::User;
 
 use crate::config::Config;
-use crate::error::Error;
-use crate::state::State;
+use crate::prelude::*;
 
 /// Starts the server application.
 ///
 /// # Returns
 /// An empty Result.
-pub async fn start(config: Option<crate::config::Config>) -> Result<(), Error> {
-    //let db_url = std::env::var("DATABASE_URL").expect("Failed to get DATABASE_URL.");
-
-    //let dbpool = PgPoolOptions::new()
-    //.max_connections(8)
-    //.connect(&db_url)
-    //.await?;
-
-    //let user = sqlx::query_as::<_, User>(r#"select * from users u where u.email = $1"#)
-    //.bind("mhardy2008@gmail.com")
-    //.fetch_one(&dbpool)
-    //.await
-    //.unwrap();
-
-    //log::debug!("{:#?}", user);
-
+pub async fn start(config: Option<crate::config::Config>) -> Res<()> {
     let config = match config {
         Some(config) => config,
         None => Config::new()?,
@@ -53,7 +35,7 @@ pub async fn start(config: Option<crate::config::Config>) -> Result<(), Error> {
     log::trace!("{:#?}", config);
 
     // Prepare application
-    let app = app(&config).await;
+    let app = app(&config).await?;
 
     // Create TCP listener
     let address = format!("{}:{}", config.application.host, config.application.port);
@@ -81,20 +63,36 @@ pub async fn start(config: Option<crate::config::Config>) -> Result<(), Error> {
 ///
 /// # Returns
 /// An Axum router instance.
-pub async fn app(config: &Config) -> Router {
+pub async fn app(config: &Config) -> Res<Router> {
+    // Create CORS
     let cors = cors::build(config);
 
     log::info!("🔒 CORS configured");
     log::trace!("{:#?}", cors);
 
-    let state = State::new();
+    // Create Postgresql pool connection
+    // TODO: enable dedicated database
+    //#[cfg(not(test))]
+    let db_url = std::env::var("DATABASE_URL").map_err(Error::Env)?;
+
+    //#[cfg(test)]
+    //let db_url = std::env::var("DATABASE_URL_TEST").map_err(Error::Env)?;
+
+    let pool = PgPoolOptions::new()
+        .max_connections(8)
+        .connect(&db_url)
+        .await?;
+
+    log::info!("💾 Database connection Initialized");
+
+    let state = AppState::new(pool.clone());
     log::info!("📦 State configured");
 
-    Router::new()
+    Ok(Router::new()
         .fallback(handler_404)
         .nest("/", routes::build().await)
         .with_state(state)
-        .layer(cors)
+        .layer(cors))
 }
 
 /// Default handler for NotFound errors.
