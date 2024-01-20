@@ -22,11 +22,33 @@ workspace = false
 clear = true
 script = '''
 echo "${BY}Available commands:${NC}\n"
+echo "  ${BV}clippy${NC}              Run cargo clippy"
+echo ""
 echo "  ${BV}cov-docs${NC}            Generate documentation coverage results"
 echo "  ${BV}cov-docs-show${NC}       Show the HTML results of the documentation coverage"
 echo ""
 echo "  ${BV}crates-duplicates${NC}   Show the list of duplicated crates"
+echo "  ${BV}crates-upgradables${NC}  Show the list of upgradable crates"
 '''
+
+# ------------------------------------------------------------------------------
+# Show duplicated crates
+# ------------------------------------------------------------------------------
+
+[tasks.clippy]
+workspace = false
+command = "cargo"
+args = [
+  "clippy",
+  "--workspace",
+  "--all-targets",
+  "--all-features",
+  "--color", "always",
+  "--keep-going",
+  "-Z", "unstable-options",
+  "--locked",
+  "--offline"
+]
 
 # ------------------------------------------------------------------------------
 # Show duplicated crates
@@ -37,6 +59,15 @@ workspace = false
 script = '''
 ${ROOT}/scripts/sanity/crates/duplicates.py --text
 '''
+
+# ------------------------------------------------------------------------------
+# Show upgradable crates
+# ------------------------------------------------------------------------------
+
+[tasks.crates-upgradables]
+workspace = false
+command = "cargo"
+args = ["outdated"]
 
 # ------------------------------------------------------------------------------
 # Documentation coverage targets
