@@ -4,9 +4,9 @@
 
 use axum::response::Html;
 use axum::routing::{get, post};
-use axum::Router;
+use axum::{Json, Router};
 
-use database::models::users::UserRequest;
+use database::models::users::*;
 
 use crate::prelude::*;
 use crate::state::State;
@@ -28,6 +28,12 @@ async fn me() -> Html<&'static str> {
 }
 
 /// Handler used to create a new user.
-async fn post_user(FormOrJson(user): FormOrJson<UserRequest>) {
-    dbg!(user);
+async fn post_user(FormOrJson(user): FormOrJson<UserRequest>) -> Json<User> {
+    dbg!(&user);
+
+    Json(User {
+        name: user.name.clone(),
+        email: user.email.clone(),
+        ..User::default()
+    })
 }

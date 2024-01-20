@@ -17,6 +17,7 @@ tower-http = { version = "0.5.1", features = ["cors"] }
 database = { path = "../database" }
 
 [dev-dependencies]
+serial_test = "3.0.0"
 test-utils = { path = "../test-utils" }
 
 [features]
