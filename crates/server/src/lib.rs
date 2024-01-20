@@ -6,6 +6,7 @@ mod state;
 use axum::response::Html;
 use axum::routing::get;
 use axum::Router;
+use tokio::signal;
 //use sqlx::postgres::PgPoolOptions;
 
 //use database::models::users::User;
@@ -62,9 +63,40 @@ pub async fn start() -> Result<(), Error> {
         listener.local_addr().map_err(Error::Socket)?
     );
 
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await
+        .unwrap();
 
     Ok(())
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("Failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("Failed to install Terminate handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => { bye() },
+        _ = terminate => { bye() },
+    }
+}
+
+fn bye() {
+    log::info!("👋 Bye bye");
 }
 
 async fn handler() -> Html<&'static str> {
