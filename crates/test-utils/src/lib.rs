@@ -94,7 +94,7 @@ impl TestClient {
 /// # Returns:
 /// Result of TestClient.
 pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
-    let config = Config::from_env(&Environment::Testing)?;
+    let config: Config = Environment::Testing.try_into()?;
 
     let listener = TcpListener::bind(format!(
         "{}:{}",

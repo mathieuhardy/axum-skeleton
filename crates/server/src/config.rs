@@ -2,6 +2,7 @@
 //! configuration. The configuration structure may be passed along all routes.
 
 use serde::Deserialize;
+use std::convert::TryFrom;
 use std::fmt;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -102,25 +103,10 @@ impl fmt::Display for Environment {
     }
 }
 
-impl Config {
-    /// Creates a new configuration from environment variables and YAML
-    /// configuration files.
-    ///
-    /// # Returns
-    /// A result that contains an instance of Config.
-    pub fn new() -> Result<Self, Error> {
-        let environment: Environment = std::env::var("ENVIRONMENT")
-            .unwrap_or(DEFAULT_ENVIRONMENT.into())
-            .try_into()?;
+impl TryFrom<Environment> for Config {
+    type Error = Error;
 
-        Self::from_env(&environment)
-    }
-
-    /// Creates a new configuration from a given environment.
-    ///
-    /// # Returns
-    /// A result that contains an instance of Config.
-    pub fn from_env(environment: &Environment) -> Result<Self, Error> {
+    fn try_from(environment: Environment) -> Result<Self, Self::Error> {
         let config_dir = match std::env::var("CARGO_MANIFEST_DIR") {
             Ok(dir) => PathBuf::from_str(&dir).map_err(Error::Unexpected),
             Err(_) => std::env::current_dir().map_err(Error::Filesystem),
@@ -151,5 +137,20 @@ impl Config {
             .build()?;
 
         config.try_deserialize::<Self>().map_err(Into::into)
+    }
+}
+
+impl Config {
+    /// Creates a new configuration from environment variables and YAML
+    /// configuration files.
+    ///
+    /// # Returns
+    /// A result that contains an instance of Config.
+    pub fn new() -> Result<Self, Error> {
+        let environment: Environment = std::env::var("ENVIRONMENT")
+            .unwrap_or(DEFAULT_ENVIRONMENT.into())
+            .try_into()?;
+
+        environment.try_into()
     }
 }
