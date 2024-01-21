@@ -9,7 +9,17 @@
 - Job queue
 - Docs migration sqlx
 - URL overload ?
+- Derive macros
+
+## Devops
+
 - Docker
+- CircleCI DLC
+
+## Tests
+
+- Dedicated database for tests
+- Script to initialize database for tests
 
 ## Sanity
 
