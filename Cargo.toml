@@ -5,8 +5,8 @@ edition = "2021"
 authors = ["Mathieu Hardy <mhardy2008@gmail.com>"]
 description = "An Axum skeleton to start backend web application"
 readme = "README.md"
-homepage = "TODO"
-repository = "TODO"
+homepage = "https://github.com/mathieuhardy/axum-skeleton"
+repository = "https://github.com/mathieuhardy/axum-skeleton"
 license-file = "LICENSE.txt"
 
 [workspace]
