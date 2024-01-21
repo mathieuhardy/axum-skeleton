@@ -27,9 +27,7 @@ async fn get_me(State(state): State<AppState>) -> Res<Json<User>> {
         &state.db,
     )
     .await?
-    .first()
-    .cloned()
-    .ok_or(Error::Database(DatabaseError::NotFound))?;
+    .try_into()?;
 
     Ok(Json(user))
 }

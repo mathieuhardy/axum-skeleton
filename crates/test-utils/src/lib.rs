@@ -22,6 +22,13 @@ pub struct TestClient {
 }
 
 impl TestClient {
+    /// Builds an URL from base address and relative URL provided.
+    ///
+    /// # Arguments:
+    /// * `url` - Relative URL of the destination.
+    ///
+    /// # Returns:
+    /// The string of the full URL.
     fn build_url<T: ToString + Display>(&self, url: T) -> String {
         format!("http://{}{url}", self.address)
     }
@@ -32,7 +39,7 @@ impl TestClient {
     /// * `url` - Relative URL of the destination.
     ///
     /// # Returns:
-    /// A request builder htat can be enriched before sending.
+    /// A request builder that can be enriched before sending.
     pub fn delete<T: ToString + Display>(&self, url: T) -> RequestBuilder {
         self.client.delete(self.build_url(url))
     }
@@ -43,7 +50,7 @@ impl TestClient {
     /// * `url` - Relative URL of the destination.
     ///
     /// # Returns:
-    /// A request builder htat can be enriched before sending.
+    /// A request builder that can be enriched before sending.
     pub fn get<T: ToString + Display>(&self, url: T) -> RequestBuilder {
         self.client.get(self.build_url(url))
     }
@@ -54,7 +61,7 @@ impl TestClient {
     /// * `url` - Relative URL of the destination.
     ///
     /// # Returns:
-    /// A request builder htat can be enriched before sending.
+    /// A request builder that can be enriched before sending.
     pub fn head<T: ToString + Display>(&self, url: T) -> RequestBuilder {
         self.client.head(self.build_url(url))
     }
@@ -65,7 +72,7 @@ impl TestClient {
     /// * `url` - Relative URL of the destination.
     ///
     /// # Returns:
-    /// A request builder htat can be enriched before sending.
+    /// A request builder that can be enriched before sending.
     pub fn patch<T: ToString + Display>(&self, url: T) -> RequestBuilder {
         self.client.patch(self.build_url(url))
     }
@@ -76,7 +83,7 @@ impl TestClient {
     /// * `url` - Relative URL of the destination.
     ///
     /// # Returns:
-    /// A request builder htat can be enriched before sending.
+    /// A request builder that can be enriched before sending.
     pub fn post<T: ToString + Display>(&self, url: T) -> RequestBuilder {
         self.client.post(self.build_url(url))
     }
@@ -87,7 +94,7 @@ impl TestClient {
     /// * `url` - Relative URL of the destination.
     ///
     /// # Returns:
-    /// A request builder htat can be enriched before sending.
+    /// A request builder that can be enriched before sending.
     pub fn put<T: ToString + Display>(&self, url: T) -> RequestBuilder {
         self.client.put(self.build_url(url))
     }
