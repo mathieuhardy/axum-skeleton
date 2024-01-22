@@ -9,7 +9,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let mut output = "//! This file contains all SQL requests as variables.\n".to_string();
 
-    for entry in WalkDir::new("scripts/sql").into_iter() {
+    for entry in WalkDir::new("scripts").into_iter() {
         // Get SQL files only
         let fs_entry = entry?.clone();
         let extension = fs_entry.path().extension().unwrap_or_default();
@@ -32,7 +32,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             .to_uppercase()
             .replace("/", "_")
             .replace("-", "_")
-            .replace("SCRIPTS_", "")
+            .replace("SCRIPTS_", "SQL_")
             .replace(".SQL", "");
 
         // Append to output string

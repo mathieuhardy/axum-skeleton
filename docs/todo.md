@@ -1,7 +1,5 @@
 # TODO
 
-- Remove sql/ path for scripts
-- Remove <root>/scripts/sql
 - Guards/fairing
 - OpenApi
 - Reddis
