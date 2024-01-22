@@ -1,5 +1,7 @@
 # TODO
 
+- Remove sql/ path for scripts
+- Remove <root>/scripts/sql
 - Guards/fairing
 - OpenApi
 - Reddis
@@ -11,9 +13,15 @@
 - URL overload ?
 - Derive macros
 
+## Docs
+
+- Setup environement
+- docker usage
+- sqlx usage
+- SQL scripts auto-process
+
 ## Devops
 
-- Docker
 - CircleCI DLC
 
 ## Tests
@@ -33,6 +41,7 @@ cargo clippy --workspace --all-targets --all-features --color always --keep-goin
 ## Links
 
 - [Axum Postgres Skeleton](https://github.com/koskeller/axum-postgres-skeleton)
+- [Axum Postgres Skeleton (2)](https://github.com/Sirneij/cryptoflow)
 
 - [Axum testing](https://github.com/tokio-rs/axum/tree/main/examples/testing)
 - [Axum validator](https://github.com/tokio-rs/axum/tree/main/examples/validator)
