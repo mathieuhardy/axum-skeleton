@@ -13,13 +13,6 @@
 - URL overload ?
 - Derive macros
 
-## Docs
-
-- Setup environement
-- docker usage
-- sqlx usage
-- SQL scripts auto-process
-
 ## Devops
 
 - CircleCI DLC
