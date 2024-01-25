@@ -28,7 +28,6 @@
 ## Sanity
 
 - cargo build --timings (+clean before)
-- add cargo-audit
 - add cargo-machete to get the list of unused crates
 - generate report for test coverage
 - add test plan in markdown files
