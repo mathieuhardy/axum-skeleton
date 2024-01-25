@@ -9,7 +9,6 @@
 - Job queue
 - Docs migration sqlx
 - URL overload ?
-- Derive macros
 
 ## Devops
 
@@ -17,7 +16,9 @@
 
 ## Tests
 
-- Dedicated database for tests
+- unit tests for derive macros
+- Setup teardown
+- Dedicated database URL for tests
 - Script to initialize database for tests
 
 ## Sanity
@@ -27,6 +28,7 @@
 - add cargo-audit
 - add cargo-machete to get the list of unused crates
 - generate report for test coverage
+- add test plan in markdown files
 - dashboard with endpoints (/sanity/coverage/...)
 
 ```shell
