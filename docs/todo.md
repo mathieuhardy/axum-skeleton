@@ -22,6 +22,10 @@
 
 ## Sanity
 
+- cargo-bloat
+- cargo build --timings (+clean before)
+- add cargo-audit
+- add cargo-machete to get the list of unused crates
 - generate report for test coverage
 - dashboard with endpoints (/sanity/coverage/...)
 
@@ -30,6 +34,8 @@ cargo clippy --workspace --all-targets --all-features --color always --keep-goin
 ```
 
 ## Links
+
+- [Crates](https://gist.github.com/vi/6620975b737a1caecf607e88cf6b7fea)
 
 - [Axum Postgres Skeleton](https://github.com/koskeller/axum-postgres-skeleton)
 - [Axum Postgres Skeleton (2)](https://github.com/Sirneij/cryptoflow)
