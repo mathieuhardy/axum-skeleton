@@ -14,6 +14,9 @@ use std::string::ToString;
 use std::sync::{Arc, Mutex};
 use tokio::net::TcpListener;
 
+#[cfg(feature = "derives")]
+pub use test_utils_derives::*;
+
 use server::config::{Config, Environment};
 use server::{app, axum};
 
