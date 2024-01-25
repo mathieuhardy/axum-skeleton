@@ -19,7 +19,7 @@ pub fn impl_try_from_vec(input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         impl std::convert::TryFrom<Vec<#name>> for #name {
-            type Error = crate::error::Error;
+            type Error = Error;
 
             fn try_from(values: Vec<#name>) -> Result<Self, Self::Error> {
                 values.first().ok_or(Error::NotFound).cloned()
