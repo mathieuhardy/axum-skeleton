@@ -433,7 +433,7 @@ name = "database"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "derives",
+ "database-derives",
  "log",
  "serde",
  "serde_with",
@@ -441,6 +441,14 @@ dependencies = [
  "thiserror",
  "uuid",
  "walkdir",
+]
+
+[[package]]
+name = "database-derives"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn 2.0.48",
 ]
 
 [[package]]
@@ -462,14 +470,6 @@ checksum = "b42b6fa04a440b495c8b04d0e71b707c585f83cb9cb28cf8cd0d976c315e31b4"
 dependencies = [
  "powerfmt",
  "serde",
-]
-
-[[package]]
-name = "derives"
-version = "0.1.0"
-dependencies = [
- "quote",
- "syn 2.0.48",
 ]
 
 [[package]]
