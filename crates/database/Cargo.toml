@@ -11,7 +11,7 @@ walkdir = "2.4.0"
 chrono = { version = "0.4.31", default-features = false, features = ["serde"] }
 log = { version = "0.4.20", default-features = false }
 serde = { version = "1.0.195", default-features = false, features = ["derive"] }
-serde_with = { version = "3.5.0", default-features = false }
+serde_with = { version = "3.5.0", default-features = false, features = ["macros"] }
 sqlx = { version = "0.7.3", default-features = false, features = ["chrono", "uuid", "runtime-tokio"] }
 thiserror = { version = "1.0.56", default-features = false }
 uuid = { version = "1.6.1", default-features = false, features = ["serde", "v4"] }
