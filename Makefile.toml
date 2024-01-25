@@ -22,6 +22,8 @@ workspace = false
 clear = true
 script = '''
 echo "${BY}Available commands:${NC}\n"
+echo "  ${BV}build-timings${NC}       Show build timings"
+echo ""
 echo "  ${BV}clippy${NC}              Run cargo clippy"
 echo ""
 echo "  ${BV}cov-docs${NC}            Generate documentation coverage results"
@@ -35,7 +37,16 @@ echo "  ${BV}crates-upgradables${NC}  Show the list of upgradable crates"
 '''
 
 # ------------------------------------------------------------------------------
-# Show duplicated crates
+# Generate a report with build timings
+# ------------------------------------------------------------------------------
+
+[tasks.build-timings]
+workspace = false
+command = "cargo"
+args = ["build", "--timings"]
+
+# ------------------------------------------------------------------------------
+# Run clippy analysis
 # ------------------------------------------------------------------------------
 
 [tasks.clippy]

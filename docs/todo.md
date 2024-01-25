@@ -27,7 +27,6 @@
 
 ## Sanity
 
-- cargo build --timings (+clean before)
 - generate report for test coverage
 - add test plan in markdown files
 - dashboard with endpoints (/sanity/coverage/...)
@@ -43,6 +42,7 @@ cargo clippy --workspace --all-targets --all-features --color always --keep-goin
 - [Axum Postgres Skeleton](https://github.com/koskeller/axum-postgres-skeleton)
 - [Axum Postgres Skeleton (2)](https://github.com/Sirneij/cryptoflow)
 
+- [Axum static](https://github.com/tokio-rs/axum/tree/main/examples/static-file-server)
 - [Axum testing](https://github.com/tokio-rs/axum/tree/main/examples/testing)
 - [Axum validator](https://github.com/tokio-rs/axum/tree/main/examples/validator)
 - [Axum SQLX Postgres](https://github.com/tokio-rs/axum/tree/main/examples/sqlx-postgres)
