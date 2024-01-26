@@ -43,10 +43,3 @@ create table users (
 );
 
 select create_updated_at_trigger('users');
-
--- For testing purpose
-
-insert into users (name, email)
-values
-    ('John Doe', 'john@doe.com'),
-    ('Jane Doe', 'jane@doe.com');

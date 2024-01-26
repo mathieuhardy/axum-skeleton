@@ -5,6 +5,8 @@
 
 pub use reqwest::{Client, RequestBuilder, StatusCode};
 
+use sqlx::migrate::MigrateDatabase;
+use sqlx::postgres::{PgPool, PgPoolOptions};
 use std::error::Error;
 use std::fmt::{Debug, Display};
 use std::future::Future;
@@ -19,6 +21,7 @@ pub use test_utils_derives::*;
 
 use server::config::{Config, Environment};
 use server::{app, axum};
+use utils::filesystem::root_relative_path;
 
 /// Structure used by the tests to make requests to the test server.
 #[derive(Debug)]
@@ -28,6 +31,9 @@ pub struct TestClient {
 
     /// Base address prefixed to every URL passed.
     pub address: SocketAddr,
+
+    /// Database connection if needed for tests.
+    pub db: PgPool,
 }
 
 impl TestClient {
@@ -118,6 +124,7 @@ pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
 
     let config: Config = Environment::Testing.try_into()?;
 
+    // Configure server
     let listener = TcpListener::bind(format!(
         "{}:{}",
         config.application.host, config.application.port
@@ -132,10 +139,45 @@ pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
         axum::serve(listener, app).await.unwrap();
     });
 
+    // Configure connection to the database
+    let db = initialize_database().await?;
+
     Ok(TestClient {
         client: reqwest::Client::new(),
         address,
+        db,
     })
+}
+
+async fn initialize_database() -> Result<PgPool, Box<dyn Error>> {
+    let db_url = std::env::var("DATABASE_URL_TEST")?;
+
+    if sqlx::Postgres::database_exists(&db_url).await? {
+        sqlx::Postgres::drop_database(&db_url).await?;
+    }
+
+    if !sqlx::Postgres::database_exists(&db_url).await? {
+        sqlx::Postgres::create_database(&db_url).await?;
+    }
+
+    // Migrations
+    let migrations_dir = root_relative_path("migrations")?;
+
+    let db = PgPoolOptions::new().connect(&db_url).await?;
+
+    sqlx::migrate::Migrator::new(migrations_dir)
+        .await?
+        .run(&db)
+        .await?;
+
+    // Run custom test script to populate
+    let test_script = root_relative_path("data/tests/populate.sql")?;
+
+    let sql = std::fs::read_to_string(test_script)?;
+
+    sqlx::query(&sql).execute(&db).await?;
+
+    Ok(db)
 }
 
 /// Runs a test calling a setup function before the test and a teardown function

@@ -28,3 +28,22 @@ pub fn relative_path(path: &str) -> Res<PathBuf> {
 
     Ok(path)
 }
+
+/// Returns a path relative to the root directory.
+///
+/// # Arguments:
+/// * `path` - Path to add to the root directory.
+///
+/// # Returns:
+/// The relative path or an error.
+pub fn root_relative_path(path: &str) -> Res<PathBuf> {
+    let base_path = project_root::get_project_root().map_err(Error::Filesystem)?;
+    let path = base_path.join(path);
+    let exists = path.try_exists().map_err(Error::Filesystem)?;
+
+    if !exists {
+        return Err(Error::PathNotFound(path));
+    }
+
+    Ok(path)
+}

@@ -6,10 +6,12 @@ edition = "2021"
 [dependencies]
 dotenv = { version = "0.15.0", default-features = false }
 reqwest = { version = "0.11.23", default-features = false, features = ["json"] }
+sqlx = { version = "0.7.3", default-features = false, features = ["macros", "migrate", "postgres", "runtime-tokio", "tls-native-tls", "uuid"] }
 tokio = { version = "1.35.1", default-features = false, features = ["full"] }
 
-test-utils-derives = { path = "derives", default-features = false, optional = true }
 server = { path = "../server", default-features = false }
+test-utils-derives = { path = "derives", default-features = false, optional = true }
+utils = { path = "../utils", default-features = false, features = ["fs"] }
 
 [features]
 derives = ["dep:test-utils-derives"]
