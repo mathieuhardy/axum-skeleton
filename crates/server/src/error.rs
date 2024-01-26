@@ -31,11 +31,15 @@ pub enum Error {
 
     /// Generic filesystem error.
     #[error("{0}")]
-    Filesystem(#[source] std::io::Error),
+    Filesystem(#[source] utils::error::Error),
 
     /// Invalid environment configuration provided.
     #[error("Invalid environment: {0}")]
     InvalidEnvironment(String),
+
+    /// Generic sanity error.
+    #[error("{0}")]
+    Sanity(#[source] sanity::error::Error),
 
     /// Generic socket error.
     #[error("{0}")]

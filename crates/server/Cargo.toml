@@ -14,6 +14,8 @@ tokio = { version = "1.35.1", default-features = false, features = ["full"] }
 tower-http = { version = "0.5.1", default-features = false, features = ["cors"] }
 
 database = { path = "../database", default-features = false }
+sanity = { path = "../sanity", default-features = false, optional = true }
+utils = { path = "../utils", default-features = false, features = ["fs"] }
 
 [dev-dependencies]
 serial_test = { version = "3.0.0", default-features = false }
@@ -22,3 +24,4 @@ urlencoding = { version = "2.1.3", default-features = false }
 
 [features]
 k8s = []
+sanity = ["dep:sanity"]

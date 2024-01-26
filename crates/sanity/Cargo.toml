@@ -1,0 +1,11 @@
+[package]
+name = "sanity"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { version = "0.7.4", default-features = false, features = [] }
+thiserror = { version = "1.0.56", default-features = false }
+tower-http = { version = "0.5.1", default-features = false, features = ["fs"] }
+
+utils = { path = "../utils", default-features = false, features = ["fs"] }
