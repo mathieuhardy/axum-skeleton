@@ -7,17 +7,15 @@
 - [tracing](https://docs.rs/tracing/latest/tracing/)
 - GraphQL
 - Job queue
-- Docs migration sqlx
-- URL overload ?
 
-# Docs
+## Docs
 
 - Documentation of macros, derives
 - Sanity dashboard
 
 ## Devops
 
-- CircleCI DLC
+- GitHub actions
 - Kubernetes, terraform, helm
 
 ## Tests
@@ -36,7 +34,7 @@ cargo clippy --workspace --all-targets --all-features --color always --keep-goin
 
 ## Links
 
-- [Crates](https://gist.github.com/vi/6620975b737a1caecf607e88cf6b7fea)
+### Axum
 
 - [Axum Postgres Skeleton](https://github.com/koskeller/axum-postgres-skeleton)
 - [Axum Postgres Skeleton (2)](https://github.com/Sirneij/cryptoflow)
@@ -45,3 +43,28 @@ cargo clippy --workspace --all-targets --all-features --color always --keep-goin
 - [Axum validator](https://github.com/tokio-rs/axum/tree/main/examples/validator)
 - [Axum SQLX Postgres](https://github.com/tokio-rs/axum/tree/main/examples/sqlx-postgres)
 - [Axum Prometheus Metrics](https://github.com/tokio-rs/axum/tree/main/examples/prometheus-metrics)
+
+### Various
+
+- [Crates](https://gist.github.com/vi/6620975b737a1caecf607e88cf6b7fea)
+- [Job queue](https://cetra3.github.io/blog/implementing-a-jobq-sql)
+
+### Versioning
+
+- [Best pratice](https://www.reddit.com/r/rust/comments/xnnnzq/whats_the_best_practice_for_shipping_multiple)
+- [Versio](https://crates.io/crates/versio)
+- [Cargo-edit](https://crates.io/crates/cargo-edit)
+- [Cargo-workspaces](https://crates.io/crates/cargo-workspaces)
+
+### Conventional commit
+
+- [Documentation](https://www.conventionalcommits.org/en/v1.0.0)
+- [Regex](https://gist.github.com/marcojahn/482410b728c31b221b70ea6d2c433f0c)
+
+### Git hooks
+
+- [Hooks(1)](https://www.viget.com/articles/two-ways-to-share-git-hooks-with-your-team)
+- [Hooks(2)](https://pumpingco.de/blog/the-ultimate-guide-to-git-hooks)
+- [Hooks(3)](https://stackoverflow.com/questions/3462955/putting-git-hooks-into-a-repository)
+- [Hooks(4)](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
+- [Hooks(5)](https://www.atlassian.com/git/tutorials/git-hooks)
