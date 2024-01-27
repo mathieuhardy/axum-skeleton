@@ -1,45 +1,45 @@
 -- Create needed extensions
 
-create extension if not exists "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create functions
 
-create function set_updated_at()
-returns trigger
-as
+CREATE FUNCTION set_updated_at()
+RETURNS TRIGGER
+AS
 $$
-begin
-    if (
-        new is distinct from old and
-        new.updated_at is not distinct from old.updated_at
-    ) then
+BEGIN
+    IF (
+        new IS DISTINCT FROM old AND
+        new.updated_at IS not DISTINCT FROM old.updated_at
+    ) THEN
         new.updated_at := current_timestamp;
-    end if;
+    END IF;
 
-    return new;
-end;
-$$ language plpgsql;
+    RETURN new;
+END;
+$$ LANGUAGE plpgsql;
 
-create function create_updated_at_trigger(table_name regclass)
-returns void
-as
+CREATE FUNCTION create_updated_at_trigger(table_name regclass)
+RETURNS VOID
+AS
 $$
-begin
-    execute format('create trigger set_updated_at before update on %s
+BEGIN
+    EXECUTE format('create trigger set_updated_at before update on %s
                     for each row execute procedure set_updated_at()', table_name);
-end;
-$$ language plpgsql;
+END;
+$$ LANGUAGE plpgsql;
 
 -- Create tables
 
-create table users (
-    id         uuid primary key default uuid_generate_v4(),
-    name       varchar not null,
-    email      varchar not null,
-    created_at timestamp with time zone not null default now(),
-    updated_at timestamp with time zone not null default now(),
+CREATE TABLE users (
+    id         UUID primary KEY DEFAULT uuid_generate_v4(),
+    name       VARCHAR not null,
+    email      VARCHAR not null,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
 
-    unique(email)
+    UNIQUE(email)
 );
 
-select create_updated_at_trigger('users');
+SELECT create_updated_at_trigger('users');
