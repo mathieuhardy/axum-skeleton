@@ -11,7 +11,6 @@ def main():
     metadata = json.loads(subprocess.check_output(["cargo", "metadata", "--format-version", "1"]))
     deps = defaultdict(list)
     duplicates = {}
-    has_duplicates = False
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--text", help="Text output instead of JSON", action="store_true")
@@ -30,16 +29,11 @@ def main():
 
         if args.text:
             print("{}{}\033[0m: {}".format(color, name, versions))
-            has_duplicates = True
         else:
             duplicates[name] = versions
 
     if not args.text and len(duplicates) > 0:
         print(json.dumps(duplicates, indent=2))
-        has_duplicates = True
-
-    if has_duplicates:
-        sys.exit(1)
 
 if __name__ == '__main__':
     main()

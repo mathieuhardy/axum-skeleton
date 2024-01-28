@@ -62,8 +62,17 @@ FROM alpine:3.19.0 as runtime
 
 WORKDIR axum
 
+# Binaries
 COPY --from=builder /app/target/release/axum-skeleton .
+
+# SQL
 COPY --from=builder /app/migrations ./migrations
-COPY --from=builder /app/crates/server/config ./config
+
+# Configurations
+COPY --from=builder /app/crates/sanity/config ./config/sanity
+COPY --from=builder /app/crates/server/config ./config/server
+
+# Data
+COPY --from=builder /app/crates/sanity/data/dashboard ./data/sanity/dashboard
 
 ENTRYPOINT ["./axum-skeleton"]
