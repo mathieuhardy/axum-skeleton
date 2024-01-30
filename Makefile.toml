@@ -1,3 +1,5 @@
+# TODO: add output directories to isolate builds
+
 [env]
 
 # Common

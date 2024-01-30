@@ -32,28 +32,6 @@ pub fn impl_export(input: TokenStream) -> TokenStream {
     generate_exports(&ast, &outputs)
 }
 
-/// Checks if a field has an attribute attached given the attribute name and an identifier it
-/// applies to.
-///
-/// # Arguments:
-/// * `field` - A field of the structure.
-/// * `scope` - `is_in`, `optional_in`, etc.
-/// * `name` - Target structure name.
-///
-/// # Returns:
-/// `true` if found, `false` otherwise.
-fn has_attribute(field: &Field, scope: &str, name: &Ident) -> bool {
-    let idents = find_attribute_idents_for_field(field, scope);
-
-    for ident in idents {
-        if &ident == name {
-            return true;
-        }
-    }
-
-    false
-}
-
 /// Finds the list of identifiers for a DeriveInput.
 ///
 /// # Arguments:
@@ -64,18 +42,6 @@ fn has_attribute(field: &Field, scope: &str, name: &Ident) -> bool {
 /// The list of identifiers found in for the macro.
 fn find_attribute_idents_for_input(input: &DeriveInput, name: &str) -> Vec<Ident> {
     find_attribute_idents(&input.attrs, name)
-}
-
-/// Finds the list of identifiers for a Field.
-///
-/// # Arguments:
-/// * `field` - The field to search into.
-/// * `name` - The name of the macro to find.
-///
-/// # Returns:
-/// The list of identifiers found in for the macro.
-fn find_attribute_idents_for_field(field: &Field, name: &str) -> Vec<Ident> {
-    find_attribute_idents(&field.attrs, name)
 }
 
 /// Finds the list of identifiers inside a list of attributes.
@@ -139,6 +105,40 @@ fn attribute_is(attr: &Attribute, name: &str) -> bool {
     }
 
     false
+}
+
+/// Checks if a field has an attribute attached given the attribute name and an identifier it
+/// applies to.
+///
+/// # Arguments:
+/// * `field` - A field of the structure.
+/// * `scope` - `is_in`, `optional_in`, etc.
+/// * `name` - Target structure name.
+///
+/// # Returns:
+/// `true` if found, `false` otherwise.
+fn has_attribute(field: &Field, scope: &str, name: &Ident) -> bool {
+    let idents = find_attribute_idents_for_field(field, scope);
+
+    for ident in idents {
+        if &ident == name {
+            return true;
+        }
+    }
+
+    false
+}
+
+/// Finds the list of identifiers for a Field.
+///
+/// # Arguments:
+/// * `field` - The field to search into.
+/// * `name` - The name of the macro to find.
+///
+/// # Returns:
+/// The list of identifiers found in for the macro.
+fn find_attribute_idents_for_field(field: &Field, name: &str) -> Vec<Ident> {
+    find_attribute_idents(&field.attrs, name)
 }
 
 /// Generate all the structures from the model.

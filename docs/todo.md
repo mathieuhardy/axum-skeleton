@@ -46,7 +46,7 @@ cargo clippy --workspace --all-targets --all-features --color always --keep-goin
 ### Various
 
 - [Crates](https://gist.github.com/vi/6620975b737a1caecf607e88cf6b7fea)
-- [Job queue](https://cetra3.github.io/blog/implementing-a-jobq-sql)
+- [Job queue](https://cetra3.github.io/blog/implementing-a-jobq)
 
 ### Versioning
 

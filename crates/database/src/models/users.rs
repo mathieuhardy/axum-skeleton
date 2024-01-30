@@ -6,6 +6,7 @@ use database_derives::*;
 use crate::prelude::*;
 
 /// Mirrors the `users`'s' table.
+/// TODO: create a derive macro that implements create, update
 #[derive(Clone, Debug, Default, FromRow, Deserialize, Serialize, TryFromVec, Export)]
 #[export(Request)]
 #[export(derives(Request(Debug, Deserialize)))]
@@ -39,6 +40,33 @@ pub struct Filters {
     /// Email of the user (or None).
     #[serde_as(as = "NoneAsEmptyString")]
     pub email: Option<String>,
+}
+
+impl CRUD for User {
+    type Data = UserRequest;
+    type Error = Error;
+    type Id = Uuid;
+    type Pool = PgPool;
+    type Struct = User;
+
+    fn id(&self) -> &Self::Id {
+        &self.id
+    }
+
+    fn table_name() -> &'static str {
+        "users"
+    }
+
+    async fn insert(data: &Self::Data, db: &Self::Pool) -> Result<Self::Struct, Self::Error> {
+        sqlx::query_as::<_, Self::Struct>(
+            "INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *",
+        )
+        .bind(data.name.clone())
+        .bind(data.email.clone())
+        .fetch_one(db)
+        .await
+        .map_err(Into::into)
+    }
 }
 
 impl User {
