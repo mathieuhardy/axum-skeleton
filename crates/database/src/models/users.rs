@@ -84,7 +84,7 @@ impl User {
             .bind(&filters.email)
             .fetch_all(db)
             .await
-            .inspect_err(|e| log::error!("{e}"))
+            .inspect_err(|e| event!(Level::ERROR, "{e}"))
             .map_err(|_| Error::NotFound)?;
 
         if users.is_empty() {

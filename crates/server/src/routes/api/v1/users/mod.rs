@@ -19,6 +19,7 @@ pub fn build() -> Router<AppState> {
 
 /// Handler used to get information about the currently logged user.
 #[axum::debug_handler]
+#[instrument]
 async fn get_me(State(state): State<AppState>) -> Res<Json<User>> {
     let user = User::find_by_filters(
         &Filters {
@@ -35,6 +36,7 @@ async fn get_me(State(state): State<AppState>) -> Res<Json<User>> {
 
 /// Handler used to get a list of users that match some filters.
 #[axum::debug_handler]
+#[instrument]
 async fn get_filtered(
     Query(filters): Query<Filters>,
     State(state): State<AppState>,
@@ -45,6 +47,8 @@ async fn get_filtered(
 }
 
 /// Handler used to create a new user.
+#[axum::debug_handler]
+#[instrument]
 async fn post_user(
     State(state): State<AppState>,
     FormOrJson(user): FormOrJson<UserRequest>,

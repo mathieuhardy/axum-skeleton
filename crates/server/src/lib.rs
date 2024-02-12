@@ -7,6 +7,7 @@ pub mod error;
 pub mod prelude;
 pub mod routes;
 pub mod state;
+pub mod tracing;
 pub mod types;
 
 pub use axum;
@@ -20,19 +21,21 @@ use tokio::signal;
 
 use crate::config::{Config, Environment};
 use crate::prelude::*;
+use crate::tracing::tracing_layer;
 
 /// Starts the server application.
 ///
 /// # Returns
 /// An empty Result.
 pub async fn start(config: Option<crate::config::Config>) -> Res<()> {
+    // Load configuration
     let config = match config {
         Some(config) => config,
         None => Config::new()?,
     };
 
-    log::info!("📄 Configuration loaded");
-    log::trace!("{:#?}", config);
+    event!(Level::INFO, "📄 Configuration loaded");
+    event!(Level::TRACE, "{:#?}", config);
 
     // Prepare application
     let app = app(&config).await?;
@@ -43,7 +46,8 @@ pub async fn start(config: Option<crate::config::Config>) -> Res<()> {
     let listener = TcpListener::bind(&address).await.map_err(Error::Socket)?;
 
     // Start server
-    log::info!(
+    event!(
+        Level::INFO,
         "🚀 Listening on {}",
         listener.local_addr().map_err(Error::Socket)?
     );
@@ -64,11 +68,17 @@ pub async fn start(config: Option<crate::config::Config>) -> Res<()> {
 /// # Returns
 /// An Axum router instance.
 pub async fn app(config: &Config) -> Res<Router> {
-    // Create CORS
+    // CORS layer
     let cors = cors::build(config);
 
-    log::info!("🔒 CORS configured");
-    log::trace!("{:#?}", cors);
+    event!(Level::INFO, "🔒 CORS configured");
+    event!(Level::TRACE, "{:#?}", cors);
+
+    // Sensitive layers
+    let (sensitive_request_layer, sensitive_response_layer) = tracing::sensitive_headers_layers();
+
+    // Request ID layers
+    let (request_id_layer, propagate_request_id_layer) = tracing::request_id_layers();
 
     // Create Postgresql pool connection
     #[cfg(not(test))]
@@ -82,23 +92,28 @@ pub async fn app(config: &Config) -> Res<Router> {
         .connect(&db_url)
         .await?;
 
-    log::info!("🗃  Database initialized");
+    event!(Level::INFO, "🗃  Database initialized");
 
     let state = AppState::new(pool.clone());
-    log::info!("📦 State configured");
+    event!(Level::INFO, "📦 State configured");
 
     let mut router = Router::new()
         .fallback(handler_404)
         .nest("/", routes::build().await)
         .with_state(state)
-        .layer(cors);
+        .layer(cors)
+        .layer(request_id_layer)
+        .layer(sensitive_request_layer)
+        .layer(tracing_layer())
+        .layer(propagate_request_id_layer)
+        .layer(sensitive_response_layer);
 
     #[cfg(debug_assertions)]
     #[cfg(feature = "sanity")]
     if Environment::Development.equals(&config.environment) {
         router = sanity::initialize(router).map_err(Error::Sanity)?;
 
-        log::info!("🩺 Sanity installed");
+        event!(Level::INFO, "🩺 Sanity installed");
     }
 
     Ok(router)
@@ -109,7 +124,7 @@ pub async fn app(config: &Config) -> Res<Router> {
 /// # Returns
 /// Anything that can be converted to a Response.
 async fn handler_404() -> impl IntoResponse {
-    log::warn!("Unhandled route");
+    event!(Level::WARN, "Unhandled route");
 
     StatusCode::NOT_FOUND
 }
@@ -141,5 +156,5 @@ async fn shutdown_signal() {
 
 /// Function called at the stopping of the server.
 fn bye() {
-    log::info!("👋 Bye bye");
+    event!(Level::INFO, "👋 Bye bye");
 }
