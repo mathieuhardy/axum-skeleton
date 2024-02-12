@@ -22,6 +22,7 @@ use utils::filesystem::{relative_path, root_relative_path};
 pub fn initialize(router: Router) -> Res<Router> {
     let config = crate::config::Config::new()?;
 
+    // TODO: don't fail if directory doesn't exists
     let inputs = root_relative_path(&config.paths.inputs).map_err(Error::Filesystem)?;
 
     let dashboard_dir = relative_path(&config.paths.dashboard)
