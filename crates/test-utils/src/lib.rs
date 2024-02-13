@@ -39,10 +39,10 @@ pub struct TestClient {
 impl TestClient {
     /// Builds an URL from base address and relative URL provided.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `url` - Relative URL of the destination.
     ///
-    /// # Returns:
+    /// # Returns
     /// The string of the full URL.
     fn build_url<T: ToString + Display>(&self, url: T) -> String {
         format!("http://{}{url}", self.address)
@@ -50,10 +50,10 @@ impl TestClient {
 
     /// Sends a DELETE request to the test server.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `url` - Relative URL of the destination.
     ///
-    /// # Returns:
+    /// # Returns
     /// A request builder that can be enriched before sending.
     pub fn delete<T: ToString + Display>(&self, url: T) -> RequestBuilder {
         self.client.delete(self.build_url(url))
@@ -61,10 +61,10 @@ impl TestClient {
 
     /// Sends a GET request to the test server.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `url` - Relative URL of the destination.
     ///
-    /// # Returns:
+    /// # Returns
     /// A request builder that can be enriched before sending.
     pub fn get<T: ToString + Display>(&self, url: T) -> RequestBuilder {
         self.client.get(self.build_url(url))
@@ -72,10 +72,10 @@ impl TestClient {
 
     /// Sends a HEAD request to the test server.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `url` - Relative URL of the destination.
     ///
-    /// # Returns:
+    /// # Returns
     /// A request builder that can be enriched before sending.
     pub fn head<T: ToString + Display>(&self, url: T) -> RequestBuilder {
         self.client.head(self.build_url(url))
@@ -83,10 +83,10 @@ impl TestClient {
 
     /// Sends a PATCH request to the test server.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `url` - Relative URL of the destination.
     ///
-    /// # Returns:
+    /// # Returns
     /// A request builder that can be enriched before sending.
     pub fn patch<T: ToString + Display>(&self, url: T) -> RequestBuilder {
         self.client.patch(self.build_url(url))
@@ -94,10 +94,10 @@ impl TestClient {
 
     /// Sends a POST request to the test server.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `url` - Relative URL of the destination.
     ///
-    /// # Returns:
+    /// # Returns
     /// A request builder that can be enriched before sending.
     pub fn post<T: ToString + Display>(&self, url: T) -> RequestBuilder {
         self.client.post(self.build_url(url))
@@ -105,10 +105,10 @@ impl TestClient {
 
     /// Sends a PUT request to the test server.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `url` - Relative URL of the destination.
     ///
-    /// # Returns:
+    /// # Returns
     /// A request builder that can be enriched before sending.
     pub fn put<T: ToString + Display>(&self, url: T) -> RequestBuilder {
         self.client.put(self.build_url(url))
@@ -117,7 +117,7 @@ impl TestClient {
 
 /// Initialize a test server and returns a client used to test it.
 ///
-/// # Returns:
+/// # Returns
 /// Result of TestClient.
 pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
     dotenv::dotenv()?;
@@ -151,7 +151,7 @@ pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
 
 /// Initialize the database use in the application.
 ///
-/// # Returns:
+/// # Returns
 /// Postgres pool or an error.
 async fn initialize_database() -> Result<PgPool, Box<dyn Error>> {
     let db_url = std::env::var("DATABASE_URL_TEST")?;
@@ -184,7 +184,7 @@ async fn initialize_database() -> Result<PgPool, Box<dyn Error>> {
 /// Runs a test calling a setup function before the test and a teardown function
 /// at the end.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `setup` - Setup function called before the body.
 /// * `body` - Body function of the test.
 /// * `teardown` - Teardown function called after the body.

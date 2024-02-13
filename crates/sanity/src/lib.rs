@@ -13,10 +13,10 @@ use utils::filesystem::{relative_path, root_relative_path};
 
 /// Initialize the sanity module and insert the needed routes in the provided router.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `router` - Router instance to be populated with new routes.
 ///
-/// # Returns:
+/// # Returns
 /// The new router instance or an error.
 pub fn initialize(router: Router) -> Res<Router> {
     let config = crate::config::Config::new()?;

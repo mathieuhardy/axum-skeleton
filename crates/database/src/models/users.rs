@@ -72,11 +72,11 @@ impl CRUD for User {
 impl User {
     /// Finds some users matching some filters.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `filters` - Filters used for matching.
     /// * `db` - Database connection.
     ///
-    /// # Returns:
+    /// # Returns
     /// A List of users or an Error.
     pub async fn find_by_filters(filters: &Filters, db: &PgPool) -> Res<Vec<Self>> {
         let users = sqlx::query_as::<_, User>(SQL_USERS_FIND_BY_FILTERS)
@@ -96,10 +96,10 @@ impl User {
 
     /// Finds all users.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `db` - Database connection.
     ///
-    /// # Returns:
+    /// # Returns
     /// A List of users or an Error.
     pub async fn all(db: &PgPool) -> Res<Vec<Self>> {
         Self::find_by_filters(&Filters::default(), db).await

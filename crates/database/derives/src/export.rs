@@ -16,10 +16,10 @@ use syn::{
 
 /// Entry point of the derice macro.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `input` - Token stream of the structure.
 ///
-/// # Returns:
+/// # Returns
 /// A new token stream added to the AST.
 pub fn impl_export(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
@@ -34,11 +34,11 @@ pub fn impl_export(input: TokenStream) -> TokenStream {
 
 /// Finds the list of identifiers for a DeriveInput.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `input` - The input to search into.
 /// * `name` - The name of the macro to find.
 ///
-/// # Returns:
+/// # Returns
 /// The list of identifiers found in for the macro.
 fn find_attribute_idents_for_input(input: &DeriveInput, name: &str) -> Vec<Ident> {
     find_attribute_idents(&input.attrs, name)
@@ -46,11 +46,11 @@ fn find_attribute_idents_for_input(input: &DeriveInput, name: &str) -> Vec<Ident
 
 /// Finds the list of identifiers inside a list of attributes.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `attrs` - The list of attributes.
 /// * `name` - The name of the macro to find.
 ///
-/// # Returns:
+/// # Returns
 /// The list of identifiers found in for the macro.
 fn find_attribute_idents(attrs: &[Attribute], name: &str) -> Vec<Ident> {
     let mut idents = Vec::new();
@@ -77,11 +77,11 @@ fn find_attribute_idents(attrs: &[Attribute], name: &str) -> Vec<Ident> {
 
 /// Checks if an attribute is of a given type.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `attr` - Attribute to check.
 /// * `name` - `is_in`, `optional_in`, etc.
 ///
-/// # Returns:
+/// # Returns
 /// `true` if it matches, `false` otherwise.
 fn attribute_is(attr: &Attribute, name: &str) -> bool {
     if attr.style != AttrStyle::Outer {
@@ -110,12 +110,12 @@ fn attribute_is(attr: &Attribute, name: &str) -> bool {
 /// Checks if a field has an attribute attached given the attribute name and an identifier it
 /// applies to.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `field` - A field of the structure.
 /// * `scope` - `is_in`, `optional_in`, etc.
 /// * `name` - Target structure name.
 ///
-/// # Returns:
+/// # Returns
 /// `true` if found, `false` otherwise.
 fn has_attribute(field: &Field, scope: &str, name: &Ident) -> bool {
     let idents = find_attribute_idents_for_field(field, scope);
@@ -131,11 +131,11 @@ fn has_attribute(field: &Field, scope: &str, name: &Ident) -> bool {
 
 /// Finds the list of identifiers for a Field.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `field` - The field to search into.
 /// * `name` - The name of the macro to find.
 ///
-/// # Returns:
+/// # Returns
 /// The list of identifiers found in for the macro.
 fn find_attribute_idents_for_field(field: &Field, name: &str) -> Vec<Ident> {
     find_attribute_idents(&field.attrs, name)
@@ -143,11 +143,11 @@ fn find_attribute_idents_for_field(field: &Field, name: &str) -> Vec<Ident> {
 
 /// Generate all the structures from the model.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `input` - The input of the model structure.
 /// * `idents` - List of identifiers of the structures to generate.
 ///
-/// # Returns:
+/// # Returns
 /// A new token stream to insert in the AST.
 fn generate_exports(input: &DeriveInput, idents: &[Ident]) -> TokenStream {
     let mut stream = TokenStream::new();
@@ -161,11 +161,11 @@ fn generate_exports(input: &DeriveInput, idents: &[Ident]) -> TokenStream {
 
 /// Generate one structure from the model.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `input` - The input of the model structure.
 /// * `ident` - Identifier of the structure to generate.
 ///
-/// # Returns:
+/// # Returns
 /// A new token stream to insert in the AST.
 fn generate_export(input: &DeriveInput, ident: &Ident) -> TokenStream {
     let input_name = &input.ident;
@@ -210,10 +210,10 @@ fn generate_export(input: &DeriveInput, ident: &Ident) -> TokenStream {
 
 /// Converts a type to an optional of this type.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `ty` - Input type to convert.
 ///
-/// # Returns:
+/// # Returns
 /// Option<T>.
 fn to_optional(ty: &Type) -> Type {
     let option = Ident::new("Option", Span::call_site());
@@ -247,11 +247,11 @@ fn to_optional(ty: &Type) -> Type {
 
 /// Finds the list of identifiers of the derives to apply to a generated structure.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `attrs` - List to attributes to traverse.
 /// * `target` - Target identifier to match (name of the generated structure).
 ///
-/// # Returns:
+/// # Returns
 /// List of identifiers found for this structure.
 fn find_derives(attrs: &[Attribute], target: &Ident) -> Vec<Ident> {
     for attr in attrs {
@@ -272,11 +272,11 @@ fn find_derives(attrs: &[Attribute], target: &Ident) -> Vec<Ident> {
 /// Finds the list of identifiers of the derives to apply to a generated structure for a given
 /// attribute.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `attr` - Attribute to traverse.
 /// * `target` - Target identifier to match (name of the generated structure).
 ///
-/// # Returns:
+/// # Returns
 /// List of identifiers found for this structure.
 fn find_derive_idents(attr: &Attribute, target: &Ident) -> Vec<Ident> {
     if attr.style != AttrStyle::Outer {

@@ -7,10 +7,10 @@ use crate::config::Config;
 
 /// Gets the layer used to configure the routes timeout.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `config`- Server configuration.
 ///
-/// # Returns:
+/// # Returns
 /// The timeout layer.
 pub fn timeout_layer(config: &Config) -> TimeoutLayer {
     TimeoutLayer::new(Duration::from_secs(config.application.timeout))

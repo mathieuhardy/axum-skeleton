@@ -8,10 +8,10 @@ use syn::{parse_macro_input, DeriveInput};
 /// Add a TryFrom<Vec<T>> for the type T. The idea is to get only the first
 /// element of a vector.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `input` - Input token stream.
 ///
-/// # Returns:
+/// # Returns
 /// Generated token stream to be added for compilation.
 pub fn impl_try_from_vec(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);

@@ -14,15 +14,37 @@ const ERROR_MSG: &str = "Attribute should be like: #[hook(setup, teardown)]";
 /// The attribute must be placed before other attribute macros like `#[tokio::test]`.
 ///
 /// The format of the attribute is `#[hook(setup, teardown)]` where setup and teardown are the
-/// names of functions to be called. If any of them is not needed, you can replace them by
-/// underscores.
+/// names of functions to be called. If any of them is not needed, you can replace it by a
+/// underscore.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `attr` - Attribute arguments (setup and teardown callbacks).
 /// * `item` - Tokens of the function this macro is attached to.
 ///
-/// # Returns:
+/// # Returns
 /// A new token stream that will fully replace the actual.
+///
+/// # Examples
+///
+/// ```rust
+/// async fn custom_setup() {}
+/// async fn custom_teardown() {}
+///
+/// #[hook(custom_setup, custom_teardown)]
+/// fn test_1() {
+///     assert!(true);
+/// }
+///
+/// #[hook(custom_setup, _)]
+/// fn test_2() {
+///     assert!(true);
+/// }
+///
+/// #[hook(_, custom_teardown)]
+/// fn test_3() {
+///     assert!(true);
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn hook(attr: TokenStream, item: TokenStream) -> TokenStream {
     let tokens = attr.into_iter().collect::<Vec<TokenTree>>();
