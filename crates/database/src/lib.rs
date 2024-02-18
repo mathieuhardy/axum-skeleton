@@ -7,5 +7,5 @@ pub mod error;
 pub mod models;
 pub mod traits;
 
-mod prelude;
-mod requests;
+pub(crate) mod prelude;
+pub(crate) mod requests;

@@ -35,6 +35,9 @@ pub struct ApplicationSettings {
 
     /// Port of the server.
     pub port: u16,
+
+    /// Timeout value for routes (in seconds).
+    pub timeout: u64,
 }
 
 /// Structure that contains all CORS settings.
