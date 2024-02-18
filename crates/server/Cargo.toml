@@ -10,7 +10,7 @@ serde = { version = "1.0.195", default-features = false, features = ["derive"] }
 sqlx = { version = "0.7.3", default-features = false, features = ["macros", "postgres", "runtime-tokio", "tls-native-tls", "uuid"] }
 thiserror = { version = "1.0.56", default-features = false }
 tokio = { version = "1.35.1", default-features = false, features = ["full"] }
-tower-http = { version = "0.5.1", default-features = false, features = ["cors", "request-id", "sensitive-headers", "trace"] }
+tower-http = { version = "0.5.1", default-features = false, features = ["cors", "request-id", "sensitive-headers","timeout" ,"trace"] }
 tracing = { version = "0.1.40", default-features = false, features = ["attributes", "log", "std"] }
 uuid = { version = "1.7.0", default-features = false }
 
