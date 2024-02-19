@@ -1,4 +1,4 @@
-# Commands
+# Get started
 
 ## Build, test, run
 
@@ -16,6 +16,14 @@ cargo test --workspace
 cargo run
 ```
 
+## Generate crates documentations
+
+```shell
+cargo doc
+```
+
+The entry point documentation can be located here: `target/doc/axum_skeleton/index.html`.
+
 ## Advanced commands
 
 Advanced commands, like sanity checks, are available in `Makefile.toml`. First
@@ -25,4 +33,4 @@ install the `cargo-make` tool:
 cargo install cargo-make
 ```
 
-Then you can call the command `makers` to get the list of available commands.
+Then you can call the command `makers` to get the list of available commands and run them.

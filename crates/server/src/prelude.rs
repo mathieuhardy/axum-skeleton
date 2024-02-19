@@ -7,6 +7,7 @@ pub use axum::{Json, Router};
 pub use serde::{Deserialize, Serialize};
 pub use sqlx::PgPool;
 pub use tracing::{event, instrument, Level};
+pub(crate) use uuid::Uuid;
 
 pub use database::error::Error as DatabaseError;
 

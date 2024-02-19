@@ -1,7 +1,7 @@
 //! This file contains all routes dedicated to the users management.
 
 use database::models::users::*;
-use database::traits::*;
+use database::traits::sqlx::postgres::crud::*;
 
 use crate::prelude::*;
 use crate::state::AppState;
@@ -14,7 +14,9 @@ pub fn build() -> Router<AppState> {
     Router::new()
         .route("/me", get(get_me))
         .route("/", get(get_filtered))
+        .route("/:id", get(get_by_id))
         .route("/", post(post_user))
+        .route("/:id", put(put_user))
 }
 
 /// Handler used to get information about the currently logged user.
@@ -46,6 +48,15 @@ async fn get_filtered(
     Ok(Json(users))
 }
 
+/// Handler used to get a specify user by providing its ID.
+#[axum::debug_handler]
+#[instrument]
+async fn get_by_id(Path(id): Path<Uuid>, State(state): State<AppState>) -> Res<Json<User>> {
+    let user = User::get(&id, &state.db).await?;
+
+    Ok(Json(user))
+}
+
 /// Handler used to create a new user.
 #[axum::debug_handler]
 #[instrument]
@@ -53,7 +64,20 @@ async fn post_user(
     State(state): State<AppState>,
     FormOrJson(user): FormOrJson<UserRequest>,
 ) -> Res<Json<User>> {
-    let user = User::insert(&user, &state.db).await?;
+    let user = User::insert(&user.into(), &state.db).await?;
+
+    Ok(Json(user))
+}
+
+/// Handler used to update an existing user by providing its ID.
+#[axum::debug_handler]
+#[instrument]
+async fn put_user(
+    Path(id): Path<Uuid>,
+    State(state): State<AppState>,
+    FormOrJson(user): FormOrJson<UserRequest>,
+) -> Res<Json<User>> {
+    let user = User::update_by_id(&id, &user.into(), &state.db).await?;
 
     Ok(Json(user))
 }

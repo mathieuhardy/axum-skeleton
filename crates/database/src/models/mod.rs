@@ -1,3 +1,3 @@
-//! This file imports all database models modules.
+//! Lists all stuctures used to mirror the database tables.
 
 pub mod users;
