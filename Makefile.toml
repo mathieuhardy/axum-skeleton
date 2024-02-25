@@ -96,7 +96,10 @@ args = ["audit"]
 [tasks.crates-audit-json]
 workspace = false
 script = '''
-cargo install cargo-audit 1>/dev/null 2>&1
+if ! command -v cargo-audit 1>/dev/null 2>&1
+then
+    cargo install cargo-audit 1>/dev/null 2>&1
+fi
 
 cargo audit --json > ${SAN_OUTPUT_DIR}/crates-audit.json || /bin/true
 

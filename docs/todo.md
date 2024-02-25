@@ -1,8 +1,8 @@
 # TODO
 
+- Reddis
 - Guards/fairing
 - OpenApi
-- Reddis
 - GraphQL
 - Job queue
 
