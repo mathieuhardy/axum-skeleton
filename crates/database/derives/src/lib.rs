@@ -12,7 +12,13 @@ use proc_macro::TokenStream;
 /// # Examples
 ///
 /// ```rust
-/// #[derive(TryFromVec)]
+/// use database_derives::TryFromVec;
+///
+/// enum Error {
+///   NotFound,
+/// }
+///
+/// #[derive(Clone, TryFromVec)]
 /// struct Foo {
 ///   pub field: Option<bool>,
 /// }
@@ -27,6 +33,8 @@ pub fn derive_try_from_vec(input: TokenStream) -> TokenStream {
 /// # Examples
 ///
 /// ```rust
+/// use database_derives::*;
+///
 /// // A struct FooBar will be created. By default no fields from Foo will be added to FooBar.
 /// // Fields with attribute `is_in` will be added as is.
 /// // Fields with attribute `optional_in` will be added as an optional value.
@@ -63,6 +71,9 @@ pub fn export_derives(_attribute: TokenStream, input: TokenStream) -> TokenStrea
 /// # Examples
 ///
 /// ```rust
+/// use database_derives::SqlxPgInsertable;
+/// use database::traits::sqlx::postgres::crud::SqlxPgInsertable;
+///
 /// #[derive(SqlxPgInsertable)]
 /// struct Foo {
 ///   pub field: Option<bool>,
