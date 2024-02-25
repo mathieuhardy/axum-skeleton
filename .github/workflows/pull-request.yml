@@ -1,0 +1,112 @@
+# TODO: use environment variables
+
+name: Pull request checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # Check that the project can be build in release mode
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Rust environment
+        uses: moonrepo/setup-rust@v1
+        with:
+          cache-target: release
+
+      - name: Build release
+        run: |
+          cargo build --release --all-features
+
+  # Run clippy on project
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Rust environment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: moonrepo/setup-rust@v1
+        with:
+          cache-target: release
+          bins: cargo-make
+      
+      - name: Run clippy
+        run: |
+          cargo make clippy
+
+  # Run linter to check the code formating
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Rust environment
+        uses: moonrepo/setup-rust@v1
+        with:
+          cache-target: release
+          components: rustfmt
+
+      - name: Run linter
+        run: |
+          cargo fmt --all -- --check
+
+  # Run unit tests
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: demo
+          POSTGRES_PASSWORD: demo
+          POSTGRES_DB: axum_test
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Rust environment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: moonrepo/setup-rust@v1
+        with:
+          cache-target: release
+          bins: sqlx-cli
+
+      - name: Install SQLx CLI
+        run: |
+          sudo apt-get install libpq-dev -y
+          #cargo install sqlx-cli --no-default-features --features postgres --version 0.7.0
+
+      - name: Setup database
+        env:
+          DATABASE_URL: postgres://demo:demo@localhost:5432/axum_test
+        run: |
+          sqlx database create
+          sqlx migrate run
+
+      - name: Run unit tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --workspace --release

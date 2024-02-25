@@ -122,6 +122,8 @@ impl TestClient {
 pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
     dotenv::dotenv()?;
 
+    let db_env_variable = "DATABASE_URL_TEST";
+
     let config: Config = Environment::Testing.try_into()?;
 
     // Configure server
@@ -135,12 +137,12 @@ pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
 
     // TODO: get logs from server
     tokio::spawn(async move {
-        let app = app(&config).await.unwrap();
+        let app = app(&config, Some(db_env_variable)).await.unwrap();
         axum::serve(listener, app).await.unwrap();
     });
 
     // Configure connection to the database
-    let db = initialize_database().await?;
+    let db = initialize_database(db_env_variable).await?;
 
     Ok(TestClient {
         client: reqwest::Client::new(),
@@ -153,8 +155,8 @@ pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
 ///
 /// # Returns
 /// Postgres pool or an error.
-async fn initialize_database() -> Result<PgPool, Box<dyn Error>> {
-    let db_url = std::env::var("DATABASE_URL_TEST")?;
+async fn initialize_database(db_env_variable: &str) -> Result<PgPool, Box<dyn Error>> {
+    let db_url = std::env::var(db_env_variable)?;
 
     let db = PgPoolOptions::new().connect(&db_url).await?;
 

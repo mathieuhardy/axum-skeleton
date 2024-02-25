@@ -90,14 +90,14 @@ mod post {
             |client| async move {
                 let client = client.lock().unwrap();
 
-                let user = [("name", "John Doe"), ("email", "john@doe.com")];
+                let user = [("name", "New User"), ("email", "new@user.com")];
 
                 let response = client.post("/api/users").form(&user).send().await.unwrap();
                 assert_eq!(response.status(), test_utils::StatusCode::OK);
 
                 let user = response.json::<User>().await.unwrap();
-                assert_eq!(user.name, "John Doe");
-                assert_eq!(user.email, "john@doe.com");
+                assert_eq!(user.name, "New User");
+                assert_eq!(user.email, "new@user.com");
             },
             no_teardown,
         )
@@ -113,8 +113,8 @@ mod post {
                 let client = client.lock().unwrap();
 
                 let user = User {
-                    name: "John Doe".to_string(),
-                    email: "john@doe.com".to_string(),
+                    name: "New User".to_string(),
+                    email: "new@user.com".to_string(),
                     ..User::default()
                 };
 
@@ -122,8 +122,8 @@ mod post {
                 assert_eq!(response.status(), test_utils::StatusCode::OK);
 
                 let user = response.json::<User>().await.unwrap();
-                assert_eq!(user.name, "John Doe");
-                assert_eq!(user.email, "john@doe.com");
+                assert_eq!(user.name, "New User");
+                assert_eq!(user.email, "new@user.com");
             },
             no_teardown,
         )

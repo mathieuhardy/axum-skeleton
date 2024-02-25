@@ -39,7 +39,7 @@ pub async fn start(config: Option<crate::config::Config>) -> Res<()> {
     event!(Level::TRACE, "{:#?}", config);
 
     // Prepare application
-    let app = app(&config).await?;
+    let app = app(&config, None).await?;
 
     // Create TCP listener
     let address = format!("{}:{}", config.application.host, config.application.port);
@@ -68,7 +68,7 @@ pub async fn start(config: Option<crate::config::Config>) -> Res<()> {
 ///
 /// # Returns
 /// An Axum router instance.
-pub async fn app(config: &Config) -> Res<Router> {
+pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> {
     // CORS layer
     let cors = cors::build(config);
 
@@ -87,11 +87,7 @@ pub async fn app(config: &Config) -> Res<Router> {
     let (request_id_layer, propagate_request_id_layer) = tracing::request_id_layers();
 
     // Create Postgresql pool connection
-    #[cfg(not(test))]
-    let db_url = std::env::var("DATABASE_URL").map_err(Error::Env)?;
-
-    #[cfg(test)]
-    let db_url = std::env::var("DATABASE_URL_TEST").map_err(Error::Env)?;
+    let db_url = std::env::var(db_env_variable.unwrap_or("DATABASE_URL")).map_err(Error::Env)?;
 
     let pool = PgPoolOptions::new()
         .max_connections(8)

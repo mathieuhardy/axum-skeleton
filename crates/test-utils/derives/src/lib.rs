@@ -26,23 +26,25 @@ const ERROR_MSG: &str = "Attribute should be like: #[hook(setup, teardown)]";
 ///
 /// # Examples
 ///
-/// ```rust
-/// async fn custom_setup() {}
-/// async fn custom_teardown() {}
+/// ```ignore
+/// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+///   async fn custom_setup() {}
+///   async fn custom_teardown() {}
 ///
-/// #[hook(custom_setup, custom_teardown)]
-/// fn test_1() {
-///     assert!(true);
-/// }
+///   #[hook(custom_setup, custom_teardown)]
+///   fn test_1() {
+///       assert!(true);
+///   }
 ///
-/// #[hook(custom_setup, _)]
-/// fn test_2() {
-///     assert!(true);
-/// }
+///   #[hook(custom_setup, _)]
+///   fn test_2() {
+///       assert!(true);
+///   }
 ///
-/// #[hook(_, custom_teardown)]
-/// fn test_3() {
-///     assert!(true);
+///   #[hook(_, custom_teardown)]
+///   fn test_3() {
+///       assert!(true);
+///   }
 /// }
 /// ```
 #[proc_macro_attribute]

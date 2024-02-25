@@ -412,6 +412,7 @@ dependencies = [
  "serde_with",
  "sqlx",
  "thiserror",
+ "tokio",
  "tracing",
  "uuid",
  "walkdir",
