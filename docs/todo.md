@@ -10,6 +10,7 @@
 - Docs migration sqlx
 - URL overload ?
 - Derive macros
+- database-derives naming
 
 ## Devops
 

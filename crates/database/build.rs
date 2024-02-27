@@ -30,8 +30,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             .display()
             .to_string()
             .to_uppercase()
-            .replace("/", "_")
-            .replace("-", "_")
+            .replace(['/', '-'], "_")
             .replace("SCRIPTS_", "SQL_")
             .replace(".SQL", "");
 
