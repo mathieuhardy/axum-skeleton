@@ -1,10 +1,12 @@
 //! This file contains all structures and methods used to manage users in
 //! database.
 
+use derives::*;
+
 use crate::prelude::*;
 
 /// Mirrors the `users`'s' table.
-#[derive(Clone, Debug, Default, FromRow, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, FromRow, Deserialize, Serialize, TryFromVec)]
 pub struct User {
     /// Unique record identifier.
     pub id: Uuid,
@@ -43,15 +45,6 @@ pub struct Filters {
     /// Email of the user (or None).
     #[serde_as(as = "NoneAsEmptyString")]
     pub email: Option<String>,
-}
-
-// TODO: derive macros
-impl std::convert::TryFrom<Vec<User>> for User {
-    type Error = crate::error::Error;
-
-    fn try_from(users: Vec<User>) -> Result<Self, Self::Error> {
-        users.first().ok_or(Error::NotFound).cloned()
-    }
 }
 
 impl User {
