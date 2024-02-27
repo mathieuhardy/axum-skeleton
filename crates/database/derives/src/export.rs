@@ -12,8 +12,6 @@ use syn::{
     Field, GenericArgument, MacroDelimiter, Meta, Path, PathArguments, PathSegment, Type, TypePath,
 };
 
-// TODO: ensure it applies to a structure
-
 /// Entry point of the derice macro.
 ///
 /// # Arguments
@@ -23,6 +21,11 @@ use syn::{
 /// A new token stream added to the AST.
 pub fn impl_export(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
+
+    match ast.data {
+        Data::Struct(_) => (),
+        _ => panic!("Derive macro can be applied to struct only"),
+    }
 
     let outputs = find_attribute_idents_for_input(&ast, "export")
         .into_iter()

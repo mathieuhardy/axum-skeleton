@@ -3,7 +3,7 @@
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, DeriveInput};
+use syn::{parse_macro_input, Data, DeriveInput};
 
 /// Add a TryFrom<Vec<T>> for the type T. The idea is to get only the first
 /// element of a vector.
@@ -15,6 +15,12 @@ use syn::{parse_macro_input, DeriveInput};
 /// Generated token stream to be added for compilation.
 pub fn impl_try_from_vec(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
+
+    match ast.data {
+        Data::Struct(_) => (),
+        _ => panic!("Derive macro can be applied to struct only"),
+    }
+
     let name = &ast.ident;
 
     let expanded = quote! {

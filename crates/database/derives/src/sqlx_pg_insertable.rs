@@ -13,6 +13,12 @@ use syn::{parse_macro_input, Data, DeriveInput};
 /// New tokens to be inserted in the AST.
 pub fn impl_sqlx_pg_insertable(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
+
+    match ast.data {
+        Data::Struct(_) => (),
+        _ => panic!("Derive macro can be applied to struct only"),
+    }
+
     let struct_name = &ast.ident;
 
     let fields = match &ast.data {
