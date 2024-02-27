@@ -19,6 +19,7 @@ skeleton can be used as starter kit.
 - graphQL
 - job queue
 - docs migration sqlx
+- tests-u
 
 ## Sanity
 

@@ -4,6 +4,8 @@ mod error;
 mod routes;
 mod state;
 
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use axum::Router;
 use tokio::signal;
 //use sqlx::postgres::PgPoolOptions;
@@ -56,6 +58,8 @@ pub async fn start() -> Result<(), Error> {
         .with_state(state)
         .layer(cors);
 
+    let app = app.fallback(handler_404);
+
     // Start server
     log::info!(
         "🚀 Listening on {}",
@@ -68,6 +72,12 @@ pub async fn start() -> Result<(), Error> {
         .unwrap();
 
     Ok(())
+}
+
+async fn handler_404() -> impl IntoResponse {
+    log::warn!("Unhandled route");
+
+    StatusCode::NOT_FOUND
 }
 
 async fn shutdown_signal() {
