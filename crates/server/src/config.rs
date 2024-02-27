@@ -144,10 +144,10 @@ impl From<&Environment> for config::ValueKind {
 impl Environment {
     /// Checks if the environment value equals a provided one.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `value` - Value to check.
     ///
-    /// # Returns:
+    /// # Returns
     /// `true` if self equals the given value, `false` otherwise.
     pub fn equals(&self, value: &str) -> bool {
         self.to_string().as_str() == value

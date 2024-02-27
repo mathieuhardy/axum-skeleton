@@ -29,22 +29,22 @@ where
 
     /// Get the ID column for a database structure.
     ///
-    /// # Returns:
+    /// # Returns
     /// ID of the database structure.
     fn id(&self) -> &Self::Id;
 
     /// Get the table's name for this database structure.
     ///
-    /// # Returns:
+    /// # Returns
     /// Name of the corresponding table in the database.
     fn table_name() -> &'static str;
 
     /// Deletes an entry from the database.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `db` - Database handle.
     ///
-    /// # Returns:
+    /// # Returns
     /// Empty result or an error.
     async fn delete(&self, db: &Self::Pool) -> Result<(), Self::Error> {
         Self::delete_by_id(self.id(), db).await
@@ -52,11 +52,11 @@ where
 
     /// Deletes a list of entries from the database.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `ids` - List of IDs of the entries to remove.
     /// * `db` - Database handle.
     ///
-    /// # Returns:
+    /// # Returns
     /// Empty result or an error.
     async fn delete_batch(ids: &[Self::Id], db: &Self::Pool) -> Result<(), Self::Error> {
         let _ = sqlx::query(&format!(
@@ -72,11 +72,11 @@ where
 
     /// Deletes an entry from the database giving its ID.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `id` - ID of the entry to remove.
     /// * `db` - Database handle.
     ///
-    /// # Returns:
+    /// # Returns
     /// Empty result or an error.
     async fn delete_by_id(id: &Self::Id, db: &Self::Pool) -> Result<(), Self::Error> {
         let _ = sqlx::query(&format!("DELETE FROM {} WHERE id=$1", Self::table_name()))
@@ -89,11 +89,11 @@ where
 
     /// Gets a record from the database giving its ID.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `id` - ID of the entry to fetch.
     /// * `db` - Database handle.
     ///
-    /// # Returns:
+    /// # Returns
     /// Entry found or an error.
     async fn get(id: &Self::Id, db: &Self::Pool) -> Result<Self::Struct, Self::Error> {
         sqlx::query_as::<_, Self::Struct>(&format!(
@@ -108,11 +108,11 @@ where
 
     /// Gets a list of records from the database giving their IDs.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `ids` - List of IDs of the entries to fetch.
     /// * `db` - Database handle.
     ///
-    /// # Returns:
+    /// # Returns
     /// Entries found or an error.
     async fn get_batch(
         ids: &[Self::Id],
@@ -130,11 +130,11 @@ where
 
     /// Insert a new record in database.
     ///
-    /// # Arguments:
+    /// # Arguments
     /// * `data` - Data structure to be added to the database.
     /// * `db` - Database handle.
     ///
-    /// # Returns:
+    /// # Returns
     /// Entry inserted or an error.
     async fn insert(data: &Self::Data, db: &Self::Pool) -> Result<Self::Struct, Self::Error>;
 

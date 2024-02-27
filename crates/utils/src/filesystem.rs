@@ -7,10 +7,10 @@ use crate::prelude::*;
 
 /// Returns a path relative to the current directory.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `path` - Path to add to the current directory.
 ///
-/// # Returns:
+/// # Returns
 /// The relative path or an error.
 pub fn relative_path(path: &str) -> Res<PathBuf> {
     let base_path = match std::env::var("CARGO_MANIFEST_DIR") {
@@ -31,10 +31,10 @@ pub fn relative_path(path: &str) -> Res<PathBuf> {
 
 /// Returns a path relative to the root directory.
 ///
-/// # Arguments:
+/// # Arguments
 /// * `path` - Path to add to the root directory.
 ///
-/// # Returns:
+/// # Returns
 /// The relative path or an error.
 pub fn root_relative_path(path: &str) -> Res<PathBuf> {
     let base_path = project_root::get_project_root().map_err(Error::Filesystem)?;
