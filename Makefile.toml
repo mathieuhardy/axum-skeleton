@@ -30,6 +30,7 @@ echo ""
 echo "  ${BV}crates-audit${NC}        Make an audit of the crates"
 echo "  ${BV}crates-bloats${NC}       Show the list of crates inside the binary with their size"
 echo "  ${BV}crates-duplicates${NC}   Show the list of duplicated crates"
+echo "  ${BV}crates-unused${NC}       Show the list of unused crates"
 echo "  ${BV}crates-upgradables${NC}  Show the list of upgradable crates"
 '''
 
@@ -79,6 +80,15 @@ workspace = false
 script = '''
 ${ROOT}/scripts/sanity/crates/duplicates.py --text
 '''
+
+# ------------------------------------------------------------------------------
+# Show unused crates
+# ------------------------------------------------------------------------------
+
+[tasks.crates-unused]
+workspace = false
+command = "cargo"
+args = ["machete"]
 
 # ------------------------------------------------------------------------------
 # Show upgradable crates
