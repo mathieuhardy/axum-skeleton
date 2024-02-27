@@ -9,8 +9,10 @@ walkdir = "2.4.0"
 
 [dependencies]
 chrono = { version = "0.4.31", features = ["serde"] }
+log = "0.4.20"
 serde = { version = "1.0.195", features = ["derive"] }
+serde_with = "3.5.0"
 #sqlx = { version = "0.7.3", features = ["postgres", "runtime-tokio"] }
-sqlx = { version = "0.7.3", features = ["chrono", "uuid"] }
-#sqlx = "0.7.3"
+sqlx = { version = "0.7.3", features = ["chrono", "uuid", "runtime-tokio"] }
+thiserror = "1.0.56"
 uuid = { version = "1.6.1", features = ["serde", "v4"] }

@@ -2,14 +2,12 @@
 
 mod v1;
 
-use axum::Router;
-
-use crate::state::State;
+use crate::prelude::*;
 
 /// Builds a router for the APIs.
 ///
 /// # Returns
 /// An Axum router.
-pub fn build() -> Router<State> {
+pub fn build() -> Router<AppState> {
     Router::new().nest("/users", v1::users::build())
 }

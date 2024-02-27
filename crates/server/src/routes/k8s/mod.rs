@@ -1,16 +1,12 @@
 //! This file contains all routes dedicated to Kubernetes.
 
-use axum::http::StatusCode;
-use axum::routing::get;
-use axum::Router;
-
-use crate::state::State;
+use crate::prelude::*;
 
 /// Builds a router for Kubernetes.
 ///
 /// # Returns
 /// An Axum router.
-pub fn build() -> Router<State> {
+pub fn build() -> Router<AppState> {
     Router::new()
         .route("/liveness", get(liveness))
         .route("/readiness", get(readiness))

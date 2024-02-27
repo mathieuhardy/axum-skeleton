@@ -7,7 +7,7 @@ use std::fmt;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-use crate::error::Error;
+use crate::prelude::*;
 
 /// Name of the development environment.
 const DEVELOPMENT: &str = "development";
@@ -146,7 +146,7 @@ impl Config {
     ///
     /// # Returns
     /// A result that contains an instance of Config.
-    pub fn new() -> Result<Self, Error> {
+    pub fn new() -> Res<Self> {
         let environment: Environment = std::env::var("ENVIRONMENT")
             .unwrap_or(DEFAULT_ENVIRONMENT.into())
             .try_into()?;

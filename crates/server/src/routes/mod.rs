@@ -5,16 +5,14 @@ mod api;
 mod k8s;
 
 use axum::response::Html;
-use axum::routing::get;
-use axum::Router;
 
-use crate::state::State;
+use crate::prelude::*;
 
 /// Builds a router for the entire application.
 ///
 /// # Returns
 /// An Axum router.
-pub async fn build() -> Router<State> {
+pub async fn build() -> Router<AppState> {
     let router = Router::new()
         .route("/", get(hello().await))
         .nest("/api", api::build());

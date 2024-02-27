@@ -7,7 +7,7 @@ use std::error::Error;
 fn main() -> Result<(), Box<dyn Error>> {
     println!("cargo:rerun-if-changed=scripts/sql");
 
-    let mut output = "".to_string();
+    let mut output = "//! This file contains all SQL requests as variables.\n".to_string();
 
     for entry in WalkDir::new("scripts/sql").into_iter() {
         // Get SQL files only
@@ -40,7 +40,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             output += "\n";
         }
 
-        output += &format!("const {var}: &str = \"{content}\";\n");
+        output += "/// Undocumented.\n";
+        output += &format!("pub const {var}: &str = \"{content}\";\n");
     }
 
     File::create("src/requests.rs")?.write_all(output.as_bytes())?;

@@ -22,6 +22,10 @@ pub struct TestClient {
 }
 
 impl TestClient {
+    fn build_url<T: ToString + Display>(&self, url: T) -> String {
+        format!("http://{}{url}", self.address)
+    }
+
     /// Sends a DELETE request to the test server.
     ///
     /// # Arguments:
@@ -30,7 +34,7 @@ impl TestClient {
     /// # Returns:
     /// A request builder htat can be enriched before sending.
     pub fn delete<T: ToString + Display>(&self, url: T) -> RequestBuilder {
-        self.client.delete(format!("http://{}{url}", self.address))
+        self.client.delete(self.build_url(url))
     }
 
     /// Sends a GET request to the test server.
@@ -41,7 +45,7 @@ impl TestClient {
     /// # Returns:
     /// A request builder htat can be enriched before sending.
     pub fn get<T: ToString + Display>(&self, url: T) -> RequestBuilder {
-        self.client.get(format!("http://{}{url}", self.address))
+        self.client.get(self.build_url(url))
     }
 
     /// Sends a HEAD request to the test server.
@@ -52,7 +56,7 @@ impl TestClient {
     /// # Returns:
     /// A request builder htat can be enriched before sending.
     pub fn head<T: ToString + Display>(&self, url: T) -> RequestBuilder {
-        self.client.head(format!("http://{}{url}", self.address))
+        self.client.head(self.build_url(url))
     }
 
     /// Sends a PATCH request to the test server.
@@ -63,7 +67,7 @@ impl TestClient {
     /// # Returns:
     /// A request builder htat can be enriched before sending.
     pub fn patch<T: ToString + Display>(&self, url: T) -> RequestBuilder {
-        self.client.patch(format!("http://{}{url}", self.address))
+        self.client.patch(self.build_url(url))
     }
 
     /// Sends a POST request to the test server.
@@ -74,7 +78,7 @@ impl TestClient {
     /// # Returns:
     /// A request builder htat can be enriched before sending.
     pub fn post<T: ToString + Display>(&self, url: T) -> RequestBuilder {
-        self.client.post(format!("http://{}{url}", self.address))
+        self.client.post(self.build_url(url))
     }
 
     /// Sends a PUT request to the test server.
@@ -85,7 +89,7 @@ impl TestClient {
     /// # Returns:
     /// A request builder htat can be enriched before sending.
     pub fn put<T: ToString + Display>(&self, url: T) -> RequestBuilder {
-        self.client.put(format!("http://{}{url}", self.address))
+        self.client.put(self.build_url(url))
     }
 }
 
@@ -94,6 +98,8 @@ impl TestClient {
 /// # Returns:
 /// Result of TestClient.
 pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
+    dotenv::dotenv()?;
+
     let config: Config = Environment::Testing.try_into()?;
 
     let listener = TcpListener::bind(format!(
@@ -106,7 +112,7 @@ pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
 
     // TODO: get logs from server
     tokio::spawn(async move {
-        let app = app(&config).await;
+        let app = app(&config).await.unwrap();
         axum::serve(listener, app).await.unwrap();
     });
 
