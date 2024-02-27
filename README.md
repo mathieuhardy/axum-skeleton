@@ -13,7 +13,6 @@ skeleton can be used as starter kit.
 
 # TODO
 
-- shutdown signal
 - routes
 - features
 - reddis
