@@ -4,8 +4,8 @@
 use serde::Deserialize;
 use std::convert::TryFrom;
 use std::fmt;
-use std::path::PathBuf;
-use std::str::FromStr;
+
+use utils::filesystem::relative_path;
 
 use crate::prelude::*;
 
@@ -58,9 +58,13 @@ pub struct Config {
 
     /// CORS settings.
     pub cors: CorsSettings,
+
+    /// Environment value.
+    pub environment: String,
 }
 
 /// Possible environment values.
+#[derive(Debug, Deserialize)]
 pub enum Environment {
     /// Development (used in local or development platform).
     Development,
@@ -107,24 +111,12 @@ impl TryFrom<Environment> for Config {
     type Error = Error;
 
     fn try_from(environment: Environment) -> Result<Self, Self::Error> {
-        let config_dir = match std::env::var("CARGO_MANIFEST_DIR") {
-            Ok(dir) => PathBuf::from_str(&dir).map_err(Error::Unexpected),
-            Err(_) => std::env::current_dir().map_err(Error::Filesystem),
-        }?;
-
-        let exists = config_dir
-            .join("config")
-            .try_exists()
+        let config_dir = relative_path("config")
+            .or(relative_path("crates/server/config")) // TODO: not satisfying
             .map_err(Error::Filesystem)?;
 
-        let config_dir = if !exists {
-            config_dir.join("crates/server") // TODO: not satisfying
-        } else {
-            config_dir
-        }
-        .join("config");
-
         let config = config::Config::builder()
+            .set_default("environment", &environment)?
             .add_source(config::File::from(config_dir.join(BASE_CONFIG)))
             .add_source(config::File::from(
                 config_dir.join(format!("{environment}.yml")),
@@ -137,6 +129,25 @@ impl TryFrom<Environment> for Config {
             .build()?;
 
         config.try_deserialize::<Self>().map_err(Into::into)
+    }
+}
+
+impl From<&Environment> for config::ValueKind {
+    fn from(value: &Environment) -> Self {
+        Self::String(value.to_string())
+    }
+}
+
+impl Environment {
+    /// Checks if the environment value equals a provided one.
+    ///
+    /// # Arguments:
+    /// * `value` - Value to check.
+    ///
+    /// # Returns:
+    /// `true` if self equals the given value, `false` otherwise.
+    pub fn equals(&self, value: &str) -> bool {
+        self.to_string().as_str() == value
     }
 }
 

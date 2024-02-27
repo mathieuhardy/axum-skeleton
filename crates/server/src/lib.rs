@@ -18,7 +18,7 @@ use sqlx::postgres::PgPoolOptions;
 use tokio::net::TcpListener;
 use tokio::signal;
 
-use crate::config::Config;
+use crate::config::{Config, Environment};
 use crate::prelude::*;
 
 /// Starts the server application.
@@ -83,16 +83,26 @@ pub async fn app(config: &Config) -> Res<Router> {
         .connect(&db_url)
         .await?;
 
-    log::info!("💾 Database connection Initialized");
+    log::info!("🗃  Database initialized");
 
     let state = AppState::new(pool.clone());
     log::info!("📦 State configured");
 
-    Ok(Router::new()
+    let mut router = Router::new()
         .fallback(handler_404)
         .nest("/", routes::build().await)
         .with_state(state)
-        .layer(cors))
+        .layer(cors);
+
+    #[cfg(debug_assertions)]
+    #[cfg(feature = "sanity")]
+    if Environment::Development.equals(&config.environment) {
+        router = sanity::initialize(router).map_err(Error::Sanity)?;
+
+        log::info!("🩺 Sanity installed");
+    }
+
+    Ok(router)
 }
 
 /// Default handler for NotFound errors.

@@ -13,15 +13,16 @@
 # Docs
 
 - Documentation of macros, derives
+- Sanity dashboard
 
 ## Devops
 
 - CircleCI DLC
+- Kubernetes, terraform, helm
 
 ## Tests
 
 - unit tests for derive macro in test-utils
-- Setup teardown
 - Dedicated database URL for tests
 - Script to initialize database for tests
 
@@ -42,7 +43,6 @@ cargo clippy --workspace --all-targets --all-features --color always --keep-goin
 - [Axum Postgres Skeleton](https://github.com/koskeller/axum-postgres-skeleton)
 - [Axum Postgres Skeleton (2)](https://github.com/Sirneij/cryptoflow)
 
-- [Axum static](https://github.com/tokio-rs/axum/tree/main/examples/static-file-server)
 - [Axum testing](https://github.com/tokio-rs/axum/tree/main/examples/testing)
 - [Axum validator](https://github.com/tokio-rs/axum/tree/main/examples/validator)
 - [Axum SQLX Postgres](https://github.com/tokio-rs/axum/tree/main/examples/sqlx-postgres)
