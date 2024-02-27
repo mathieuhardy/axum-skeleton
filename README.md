@@ -10,3 +10,4 @@ skeleton can be used as starter kit.
 - [💻 Commands](docs/commands.md)
 - [⚙️ Backend configuration](docs/configuration.md)
 - [📄 Logging system](docs/logging.md)
+- [💯 Testing](docs/testing.md)
