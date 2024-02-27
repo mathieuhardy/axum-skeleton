@@ -152,23 +152,20 @@ pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
 async fn initialize_database() -> Result<PgPool, Box<dyn Error>> {
     let db_url = std::env::var("DATABASE_URL_TEST")?;
 
-    if sqlx::Postgres::database_exists(&db_url).await? {
-        sqlx::Postgres::drop_database(&db_url).await?;
-    }
-
-    if !sqlx::Postgres::database_exists(&db_url).await? {
-        sqlx::Postgres::create_database(&db_url).await?;
-    }
-
-    // Migrations
-    let migrations_dir = root_relative_path("migrations")?;
-
     let db = PgPoolOptions::new().connect(&db_url).await?;
 
-    sqlx::migrate::Migrator::new(migrations_dir)
-        .await?
-        .run(&db)
-        .await?;
+    if !sqlx::Postgres::database_exists(&db_url).await? {
+        // Create DB
+        sqlx::Postgres::create_database(&db_url).await?;
+
+        // Run migrations
+        let migrations_dir = root_relative_path("migrations")?;
+
+        sqlx::migrate::Migrator::new(migrations_dir)
+            .await?
+            .run(&db)
+            .await?;
+    }
 
     // Run custom test script to populate
     let test_script = root_relative_path("data/tests/populate.sql")?;

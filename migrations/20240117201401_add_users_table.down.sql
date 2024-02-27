@@ -1,12 +1,12 @@
 -- Drop tables
 
-drop table users;
+DROP table users;
 
 -- Drop functions
 
-drop function create_updated_at_trigger;
-drop function set_updated_at;
+DROP FUNCTION create_updated_at_trigger;
+DROP FUNCTION set_updated_at;
 
 -- Drop extensions
 
-drop extension "uuid-ossp";
+DROP EXTENSION "uuid-ossp";
