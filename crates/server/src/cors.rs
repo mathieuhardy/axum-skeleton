@@ -6,6 +6,7 @@ use std::str::FromStr;
 use tower_http::cors::CorsLayer;
 
 use crate::config::Config;
+use crate::prelude::*;
 
 /// Builds a CORS layer for Axum server using values defined in the
 /// configuration.
@@ -22,7 +23,7 @@ pub fn build(config: &Config) -> CorsLayer {
         .iter()
         .filter_map(|method| {
             Method::from_str(method)
-                .map_err(|e| log::warn!("{}", e))
+                .map_err(|e| event!(Level::WARN, "{}", e))
                 .ok()
         })
         .collect();
@@ -33,7 +34,7 @@ pub fn build(config: &Config) -> CorsLayer {
         .iter()
         .filter_map(|header| {
             HeaderName::from_str(header)
-                .map_err(|e| log::warn!("{}", e))
+                .map_err(|e| event!(Level::WARN, "{}", e))
                 .ok()
         })
         .collect();
@@ -44,7 +45,7 @@ pub fn build(config: &Config) -> CorsLayer {
         .iter()
         .filter_map(|origin| {
             HeaderValue::from_str(origin)
-                .map_err(|e| log::warn!("{}", e))
+                .map_err(|e| event!(Level::WARN, "{}", e))
                 .ok()
         })
         .collect();

@@ -3,8 +3,6 @@
 - Guards/fairing
 - OpenApi
 - Reddis
-- Tower_http::trace::TraceLayer
-- [tracing](https://docs.rs/tracing/latest/tracing/)
 - GraphQL
 - Job queue
 
@@ -46,6 +44,9 @@ cargo clippy --workspace --all-targets --all-features --color always --keep-goin
 ### Various
 
 - [Crates](https://gist.github.com/vi/6620975b737a1caecf607e88cf6b7fea)
+- [Tracing](https://carlosmv.hashnode.dev/adding-logging-and-tracing-to-an-axum-app-rust)
+- [OpenApi](https://docs.rs/okapi-operation/latest/okapi_operation/#example-using-axum-but-without-axum_integration-feature)
+- [Prometheus](https://docs.rs/axum-prometheus/latest/axum_prometheus/)
 - [Job queue](https://cetra3.github.io/blog/implementing-a-jobq)
 
 ### Versioning

@@ -4,6 +4,7 @@ pub use chrono::{DateTime, Utc};
 pub use serde::{Deserialize, Serialize};
 pub use serde_with::serde_as;
 pub use sqlx::{FromRow, PgPool};
+pub use tracing::{event, Level};
 pub use uuid::Uuid;
 
 pub use crate::error::*;

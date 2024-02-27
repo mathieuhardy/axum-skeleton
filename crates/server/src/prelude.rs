@@ -6,6 +6,7 @@ pub use axum::routing::{delete, get, post, put};
 pub use axum::{Json, Router};
 pub use serde::{Deserialize, Serialize};
 pub use sqlx::PgPool;
+pub use tracing::{event, instrument, Level};
 
 pub use database::error::Error as DatabaseError;
 

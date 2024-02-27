@@ -1,14 +1,14 @@
 # Logging
 
-Logging is performed using the [log][0] crate and these macros are available:
+Logging is performed using the [tracing][0] crate and these macros are available:
 
-- `log::error!(...)`
-- `log::warn!(...)`
-- `log::info!(...)`
-- `log::debug!(...)`
-- `log::trace!(...)`
+- `event!(Level::ERROR, ...)`
+- `event!(Level::WARN, ...)`
+- `event!(Level::INFO, ...)`
+- `event!(Level::DEBUG, ...)`
+- `event!(Level::TRACE, ...)`
 
 Configuration is made via the `RUST_LOG` environment variable either in `.env`
 file or the variables defined in the platform.
 
-[0]: https://docs.rs/log/latest/log
+[0]: https://docs.rs/tracing/latest/tracing
