@@ -1,12 +1,15 @@
 # TODO
 
-- reddis
-- tower_http::trace::TraceLayer
+- Guards/fairing
+- OpenApi
+- Reddis
+- Tower_http::trace::TraceLayer
 - [tracing](https://docs.rs/tracing/latest/tracing/)
-- graphQL
-- job queue
-- docs migration sqlx
-- tests-u
+- GraphQL
+- Job queue
+- Docs migration sqlx
+- URL overload ?
+- Docker
 
 ## Sanity
 
