@@ -41,6 +41,8 @@ echo ""
 echo "  ${BV}cov-docs${NC}            Generate documentation coverage results"
 echo "  ${BV}cov-docs-show${NC}       Show the HTML results of the documentation coverage"
 echo ""
+echo "  ${BV}doc${NC}                 Generate documentations for the crates"
+echo ""
 echo "  ${BV}crates-audit${NC}        Make an audit of the crates"
 echo "  ${BV}crates-bloats${NC}       Show the list of crates inside the binary with their size"
 echo "  ${BV}crates-licenses${NC}     Show the list of licenses by crates"
@@ -237,6 +239,22 @@ echo "🟢 ${B_WHITE}Done: ${SAN_OUTPUT_DIR}/docs-coverage.html${NC}"
 cp ${TESTS_COV_HTML} ${SAN_OUTPUT_DIR}/tests-coverage.html
 echo "🟢 ${B_WHITE}Done: ${SAN_OUTPUT_DIR}/tests-coverage.html${NC}"
 '''
+
+# ------------------------------------------------------------------------------
+# Documentations generation
+# ------------------------------------------------------------------------------
+
+[tasks.doc]
+workspace = false
+command = "cargo"
+args = [
+    "doc",
+    "--workspace",
+    "--all-features",
+    "--locked",
+    "--offline",
+    "--no-deps"
+]
 
 # ------------------------------------------------------------------------------
 # Documentation coverage targets

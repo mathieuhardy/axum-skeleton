@@ -1,25 +1,27 @@
-//! This file contains all structures and methods used to manage users in
-//! database.
+//! List all structures and methods used to manage users in database.
 
 use database_derives::*;
 
 use crate::prelude::*;
 
 /// Mirrors the `users`'s' table.
+///
 /// TODO: create a derive macro that implements create, update
 #[derive(Clone, Debug, Default, FromRow, Deserialize, Serialize, TryFromVec, Export)]
-#[export(Request)]
+#[export(Data, Request)]
+#[export(derives(Data(Debug, SqlxPgInsertable)))]
 #[export(derives(Request(Debug, Deserialize)))]
 pub struct User {
     /// Unique record identifier.
+    #[optional_in(Request)]
     pub id: Uuid,
 
     /// Name of the user.
-    #[optional_in(Request)]
+    #[optional_in(Data, Request)]
     pub name: String,
 
     /// Email of the user.
-    #[optional_in(Request)]
+    #[optional_in(Data, Request)]
     pub email: String,
 
     /// Date of record's creation.
@@ -43,10 +45,9 @@ pub struct Filters {
 }
 
 impl CRUD for User {
-    type Data = UserRequest;
+    type Data = UserData;
     type Error = Error;
     type Id = Uuid;
-    type Pool = PgPool;
     type Struct = User;
 
     fn id(&self) -> &Self::Id {
@@ -56,16 +57,14 @@ impl CRUD for User {
     fn table_name() -> &'static str {
         "users"
     }
+}
 
-    async fn insert(data: &Self::Data, db: &Self::Pool) -> Result<Self::Struct, Self::Error> {
-        sqlx::query_as::<_, Self::Struct>(
-            "INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *",
-        )
-        .bind(data.name.clone())
-        .bind(data.email.clone())
-        .fetch_one(db)
-        .await
-        .map_err(Into::into)
+impl From<UserRequest> for UserData {
+    fn from(request: UserRequest) -> Self {
+        Self {
+            name: request.name.clone(),
+            email: request.email.clone(),
+        }
     }
 }
 
@@ -78,6 +77,17 @@ impl User {
     ///
     /// # Returns
     /// A List of users or an Error.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// let filters = Filters {
+    ///     name: Some("foo".to_string()),
+    ///     email: None
+    /// };
+    ///
+    /// let results = User::find_by_filters(&filters, &db).await?;
+    /// ```
     pub async fn find_by_filters(filters: &Filters, db: &PgPool) -> Res<Vec<Self>> {
         let users = sqlx::query_as::<_, User>(SQL_USERS_FIND_BY_FILTERS)
             .bind(&filters.name)
@@ -101,6 +111,12 @@ impl User {
     ///
     /// # Returns
     /// A List of users or an Error.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// let results = User::all(&db).await?;
+    /// ```
     pub async fn all(db: &PgPool) -> Res<Vec<Self>> {
         Self::find_by_filters(&Filters::default(), db).await
     }

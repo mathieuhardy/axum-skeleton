@@ -9,4 +9,4 @@ pub use uuid::Uuid;
 
 pub use crate::error::*;
 pub use crate::requests::*;
-pub use crate::traits::*;
+pub use crate::traits::sqlx::postgres::crud::*;

@@ -8,7 +8,7 @@ skeleton can be used as starter kit.
 ## Documentations
 
 - [⚡ Setup](docs/setup.md)
-- [💻 Commands](docs/commands.md)
+- [💻 Get started](docs/get-started.md)
 - [⚙️ Backend configuration](docs/configuration.md)
 - [🐳 Docker](docs/docker.md)
 - [💻 Development](docs/development.md)

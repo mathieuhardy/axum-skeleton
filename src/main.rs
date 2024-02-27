@@ -1,5 +1,16 @@
-//! This file contains only the entry point called to run the backend
-//! application.
+//! Axum Skeleton is a proof-of-concept of a backend server using Axum. It can be used as a starter
+//! kit. The idea is to provide out-of-the-box almost all functionnalities and configuration that
+//! you can encounter when implementing a web server application.
+//!
+//! Here's the list of crates implemented and used in this project:
+//!
+//! - **[Database](../database/index.html)**: All database related utilities.
+//! - **[Database derive macros](../database_derives/index.html)**: All derive macros used by the
+//! `Database`'s crate.
+//! - **[Sanity](../sanity/index.html)**: Files used to display a sanity dashboard of the project.
+//! - **[Server](../server/index.html)**: Web server routes and configurations.
+//! - **[Test utils](../test_utils/index.html)**: Unit tests utilities.
+//! - **[Utils](../utils/index.html)**: Global project utilities.
 
 use std::error::Error;
 

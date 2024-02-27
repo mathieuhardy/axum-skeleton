@@ -1,17 +1,46 @@
 //! This file contains derive macros used in database crate.
 
 mod export;
+mod sqlx_pg_insertable;
 mod try_from_vec;
 
 use proc_macro::TokenStream;
 
-/// See [impl_try_from_vec]
+/// Adds a `TryFrom<Vec<T>>` for the type T. The idea is to get only the first
+/// element of a vector.
+///
+/// # Examples
+///
+/// ```rust
+/// #[derive(TryFromVec)]
+/// struct Foo {
+///   pub field: Option<bool>,
+/// }
+/// ```
 #[proc_macro_derive(TryFromVec)]
 pub fn derive_try_from_vec(input: TokenStream) -> TokenStream {
     try_from_vec::impl_try_from_vec(input)
 }
 
-/// See [impl_export]
+/// Creates another structure taking this one as model.
+///
+/// # Examples
+///
+/// ```rust
+/// // A struct FooBar will be created. By default no fields from Foo will be added to FooBar.
+/// // Fields with attribute `is_in` will be added as is.
+/// // Fields with attribute `optional_in` will be added as an optional value.
+/// #[derive(Export)]
+/// #[export(Bar)]
+/// #[export(derives(Bar(Debug)))]
+/// struct Foo {
+///   pub field: bool,
+///   #[is_in(Bar)]
+///   pub field_1: bool,
+///   #[optional_in(Bar)]
+///   pub field_2: bool,
+/// }
+/// ```
 #[proc_macro_derive(Export, attributes(is_in, optional_in))]
 pub fn derive_export(input: TokenStream) -> TokenStream {
     export::impl_export(input)
@@ -27,4 +56,19 @@ pub fn export(_attribute: TokenStream, input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn export_derives(_attribute: TokenStream, input: TokenStream) -> TokenStream {
     input
+}
+
+/// Implements the methods of the trait SqlxPgInsertable for a struct.
+///
+/// # Examples
+///
+/// ```rust
+/// #[derive(SqlxPgInsertable)]
+/// struct Foo {
+///   pub field: Option<bool>,
+/// }
+/// ```
+#[proc_macro_derive(SqlxPgInsertable)]
+pub fn derive_insertable(input: TokenStream) -> TokenStream {
+    sqlx_pg_insertable::impl_sqlx_pg_insertable(input)
 }
