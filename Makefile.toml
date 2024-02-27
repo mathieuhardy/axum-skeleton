@@ -9,7 +9,7 @@ BY = '\033[1;33m'
 BV = '\033[1;35m'
 
 # Documentation specifics
-DOCS_OUTPUT_DIR = "${TARGET_DIR}/docs"
+DOCS_OUTPUT_DIR = "${TARGET_DIR}/doc"
 DOCS_COV_RESULTS = "${DOCS_OUTPUT_DIR}/coverage.txt"
 DOCS_COV_HTML = "${DOCS_OUTPUT_DIR}/coverage.html"
 
@@ -43,10 +43,10 @@ args = [
   "--workspace",
   "--all-targets",
   "--all-features",
+  "--locked",
   "--color", "always",
   "--keep-going",
   "-Z", "unstable-options",
-  "--locked",
   "--offline"
 ]
 
@@ -90,7 +90,7 @@ workspace = false
 private = true
 env.RUSTDOCFLAGS = "-Zunstable-options --show-coverage"
 script.main = '''
-cargo doc -j 1 --no-deps --workspace --all-features --keep-going --locked 1>${DOCS_COV_RESULTS} 2>&1
+cargo doc -j 1 --no-deps --workspace --all-features --locked --document-private-items 1>${DOCS_COV_RESULTS} 2>&1
 '''
 script.post = '''
 echo "🟢 ${B_WHITE}Results generated: ${DOCS_COV_RESULTS}${NC}"

@@ -1,3 +1,6 @@
+//! This file is the entry point for the server application. It provides a
+//! function to start it and some default handlers.
+
 mod config;
 mod cors;
 mod error;
@@ -16,6 +19,10 @@ use crate::config::Config;
 use crate::error::Error;
 use crate::state::State;
 
+/// Starts the server application.
+///
+/// # Returns
+/// An empty Result.
 pub async fn start() -> Result<(), Error> {
     let config = Config::new()?;
 
@@ -74,12 +81,17 @@ pub async fn start() -> Result<(), Error> {
     Ok(())
 }
 
+/// Default handler for NotFound errors.
+///
+/// # Returns
+/// Anything that can be converted to a Response.
 async fn handler_404() -> impl IntoResponse {
     log::warn!("Unhandled route");
 
     StatusCode::NOT_FOUND
 }
 
+/// Default handler for signals (CTRL-C, terminate, etc).
 async fn shutdown_signal() {
     let ctrl_c = async {
         signal::ctrl_c()
@@ -104,6 +116,7 @@ async fn shutdown_signal() {
     }
 }
 
+/// Function called at the stopping of the server.
 fn bye() {
     log::info!("👋 Bye bye");
 }

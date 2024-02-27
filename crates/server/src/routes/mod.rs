@@ -1,3 +1,5 @@
+//! This file contains all routes of the application.
+
 #[cfg(feature = "k8s")]
 mod k8s;
 
@@ -7,6 +9,10 @@ use axum::Router;
 
 use crate::state::State;
 
+/// Builds a router for the entire application.
+///
+/// # Returns
+/// An Axum router.
 pub async fn build() -> Router<State> {
     let router = Router::new().route("/", get(hello().await));
 
@@ -16,6 +22,7 @@ pub async fn build() -> Router<State> {
     router
 }
 
+/// Demo handler.
 #[axum::debug_handler]
 async fn hello() -> Html<&'static str> {
     Html("<h1>Hello, World!</h1>")
