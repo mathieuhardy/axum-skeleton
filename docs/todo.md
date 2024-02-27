@@ -10,7 +10,7 @@
 - Docs migration sqlx
 - URL overload ?
 - Derive macros
-- database-derives naming
+- check default features for imported crates
 
 ## Devops
 

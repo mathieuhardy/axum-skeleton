@@ -1,7 +1,7 @@
 //! This file contains all structures and methods used to manage users in
 //! database.
 
-use derives::*;
+use database_derives::*;
 
 use crate::prelude::*;
 
