@@ -19,3 +19,12 @@
 ```shell
 cargo clippy --workspace --all-targets --all-features --color always --keep-going -Z unstable-options --locked --offline 2>&1 | egrep "generated \d+ warning"
 ```
+
+## Links
+
+- [Axum Postgres Skeleton](https://github.com/koskeller/axum-postgres-skeleton)
+
+- [Axum testing](https://github.com/tokio-rs/axum/tree/main/examples/testing)
+- [Axum validator](https://github.com/tokio-rs/axum/tree/main/examples/validator)
+- [Axum SQLX Postgres](https://github.com/tokio-rs/axum/tree/main/examples/sqlx-postgres)
+- [Axum Prometheus Metrics](https://github.com/tokio-rs/axum/tree/main/examples/prometheus-metrics)
