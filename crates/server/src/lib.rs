@@ -1,17 +1,20 @@
 //! This file is the entry point for the server application. It provides a
 //! function to start it and some default handlers.
 
-mod config;
-mod cors;
-mod error;
-mod prelude;
-mod routes;
-mod state;
-mod types;
+pub mod config;
+pub mod cors;
+pub mod error;
+pub mod prelude;
+pub mod routes;
+pub mod state;
+pub mod types;
+
+pub use axum;
 
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Router;
+use tokio::net::TcpListener;
 use tokio::signal;
 //use sqlx::postgres::PgPoolOptions;
 
@@ -25,12 +28,7 @@ use crate::state::State;
 ///
 /// # Returns
 /// An empty Result.
-pub async fn start() -> Result<(), Error> {
-    let config = Config::new()?;
-
-    log::info!("📄 Configuration loaded");
-    log::trace!("{:#?}", config);
-
+pub async fn start(config: Option<crate::config::Config>) -> Result<(), Error> {
     //let db_url = std::env::var("DATABASE_URL").expect("Failed to get DATABASE_URL.");
 
     //let dbpool = PgPoolOptions::new()
@@ -46,28 +44,21 @@ pub async fn start() -> Result<(), Error> {
 
     //log::debug!("{:#?}", user);
 
-    // Start TCP listener
-    let address = format!("{}:{}", config.application.host, config.application.port);
+    let config = match config {
+        Some(config) => config,
+        None => Config::new()?,
+    };
 
-    let listener = tokio::net::TcpListener::bind(&address)
-        .await
-        .map_err(Error::Socket)?;
+    log::info!("📄 Configuration loaded");
+    log::trace!("{:#?}", config);
 
     // Prepare application
-    let cors = cors::build(&config);
+    let app = app(&config).await;
 
-    log::info!("🔒 CORS configured");
-    log::trace!("{:#?}", cors);
+    // Create TCP listener
+    let address = format!("{}:{}", config.application.host, config.application.port);
 
-    let state = State::new();
-    log::info!("📦 State configured");
-
-    let app = Router::new()
-        .nest("/", routes::build().await)
-        .with_state(state)
-        .layer(cors);
-
-    let app = app.fallback(handler_404);
+    let listener = TcpListener::bind(&address).await.map_err(Error::Socket)?;
 
     // Start server
     log::info!(
@@ -78,9 +69,32 @@ pub async fn start() -> Result<(), Error> {
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await
-        .unwrap();
+        .map_err(Error::Axum)?;
 
     Ok(())
+}
+
+/// Creates an Axum application that can be served.
+///
+/// # Arguments
+/// * `config` - Configuration object.
+///
+/// # Returns
+/// An Axum router instance.
+pub async fn app(config: &Config) -> Router {
+    let cors = cors::build(config);
+
+    log::info!("🔒 CORS configured");
+    log::trace!("{:#?}", cors);
+
+    let state = State::new();
+    log::info!("📦 State configured");
+
+    Router::new()
+        .fallback(handler_404)
+        .nest("/", routes::build().await)
+        .with_state(state)
+        .layer(cors)
 }
 
 /// Default handler for NotFound errors.

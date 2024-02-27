@@ -3,6 +3,8 @@
 
 use serde::Deserialize;
 use std::fmt;
+use std::path::PathBuf;
+use std::str::FromStr;
 
 use crate::error::Error;
 
@@ -14,6 +16,9 @@ const STAGING: &str = "staging";
 
 /// Name of the production environment.
 const PRODUCTION: &str = "production";
+
+/// Name of the testing environment.
+const TESTING: &str = "testing";
 
 /// Name of the default environment.
 const DEFAULT_ENVIRONMENT: &str = DEVELOPMENT;
@@ -64,6 +69,9 @@ pub enum Environment {
 
     /// Production environment.
     Production,
+
+    /// Unit testing environment.
+    Testing,
 }
 
 impl TryFrom<String> for Environment {
@@ -74,6 +82,7 @@ impl TryFrom<String> for Environment {
             DEVELOPMENT => Ok(Self::Development),
             STAGING => Ok(Self::Staging),
             PRODUCTION => Ok(Self::Production),
+            TESTING => Ok(Self::Testing),
 
             unsupported => Err(Self::Error::InvalidEnvironment(unsupported.to_string())),
         }
@@ -86,6 +95,7 @@ impl fmt::Display for Environment {
             Environment::Development => DEVELOPMENT,
             Environment::Staging => STAGING,
             Environment::Production => PRODUCTION,
+            Environment::Testing => TESTING,
         };
 
         write!(f, "{output}")
@@ -103,9 +113,30 @@ impl Config {
             .unwrap_or(DEFAULT_ENVIRONMENT.into())
             .try_into()?;
 
-        let config_dir = std::env::current_dir()
-            .map_err(Error::Filesystem)?
-            .join("config");
+        Self::from_env(&environment)
+    }
+
+    /// Creates a new configuration from a given environment.
+    ///
+    /// # Returns
+    /// A result that contains an instance of Config.
+    pub fn from_env(environment: &Environment) -> Result<Self, Error> {
+        let config_dir = match std::env::var("CARGO_MANIFEST_DIR") {
+            Ok(dir) => PathBuf::from_str(&dir).map_err(Error::Unexpected),
+            Err(_) => std::env::current_dir().map_err(Error::Filesystem),
+        }?;
+
+        let exists = config_dir
+            .join("config")
+            .try_exists()
+            .map_err(Error::Filesystem)?;
+
+        let config_dir = if !exists {
+            config_dir.join("crates/server") // TODO: not satisfying
+        } else {
+            config_dir
+        }
+        .join("config");
 
         let config = config::Config::builder()
             .add_source(config::File::from(config_dir.join(BASE_CONFIG)))

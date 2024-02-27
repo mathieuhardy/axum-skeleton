@@ -6,6 +6,10 @@ use thiserror::Error;
 /// Enumerates the possible errors returned by this crate.
 #[derive(Debug, Error)]
 pub enum Error {
+    /// Generic Axum error.
+    #[error("{0}")]
+    Axum(#[source] std::io::Error),
+
     /// Error during the loading of the server configuration.
     #[error("{0}")]
     Configuration(#[from] config::ConfigError),
@@ -25,6 +29,10 @@ pub enum Error {
     /// Generic Sqlx error.
     #[error("TODO")]
     Sqlx(#[from] sqlx::Error),
+
+    /// Unexpected error that should never happen.
+    #[error("Unexpected server error")]
+    Unexpected(#[source] std::convert::Infallible),
 
     /// Unknown error (should be avoided).
     #[error("Unknown server error")]
