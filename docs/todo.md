@@ -24,7 +24,6 @@
 
 ## Sanity
 
-- generate report for test coverage
 - add test plan in markdown files
 - dashboard with endpoints (/sanity/coverage/...)
 

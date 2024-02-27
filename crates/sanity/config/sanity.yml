@@ -1,0 +1,3 @@
+paths:
+  inputs: "target/sanity"
+  dashboard: "data/sanity/dashboard"

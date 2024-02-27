@@ -4,12 +4,13 @@
 pub mod error;
 pub mod prelude;
 
+mod config;
+
 use axum::Router;
 use tower_http::services::ServeDir;
 
-use utils::filesystem::relative_path;
-
 use crate::prelude::*;
+use utils::filesystem::{relative_path, root_relative_path};
 
 /// Initialize the sanity module and insert the needed routes in the provided router.
 ///
@@ -19,12 +20,17 @@ use crate::prelude::*;
 /// # Returns:
 /// The new router instance or an error.
 pub fn initialize(router: Router) -> Res<Router> {
-    // TODO: Get name of folder through configuration file
-    let dashboard_path = "data/dashboard";
+    let config = crate::config::Config::new()?;
 
-    let sanity_dir = relative_path(dashboard_path)
-        .or(relative_path(&format!("crates/sanity/{dashboard_path}"))) // TODO: not satisfying
+    let inputs = root_relative_path(&config.paths.inputs).map_err(Error::Filesystem)?;
+
+    let dashboard_dir = relative_path(&config.paths.dashboard)
+        .or(root_relative_path("crates/sanity/data/dashboard"))
         .map_err(Error::Filesystem)?;
 
-    Ok(router.nest_service("/sanity", ServeDir::new(sanity_dir)))
+    let router = router
+        .nest_service("/sanity/data", ServeDir::new(inputs))
+        .nest_service("/sanity", ServeDir::new(dashboard_dir));
+
+    Ok(router)
 }

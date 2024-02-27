@@ -5,7 +5,7 @@ use serde::Deserialize;
 use std::convert::TryFrom;
 use std::fmt;
 
-use utils::filesystem::relative_path;
+use utils::filesystem::{relative_path, root_relative_path};
 
 use crate::prelude::*;
 
@@ -111,8 +111,8 @@ impl TryFrom<Environment> for Config {
     type Error = Error;
 
     fn try_from(environment: Environment) -> Result<Self, Self::Error> {
-        let config_dir = relative_path("config")
-            .or(relative_path("crates/server/config")) // TODO: not satisfying
+        let config_dir = relative_path("config/server")
+            .or(root_relative_path("crates/server/config"))
             .map_err(Error::Filesystem)?;
 
         let config = config::Config::builder()
