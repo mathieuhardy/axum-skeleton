@@ -4,7 +4,31 @@ create extension if not exists "uuid-ossp";
 
 -- Create functions
 
--- TODO: updated_at
+create function set_updated_at()
+returns trigger
+as
+$$
+begin
+    if (
+        new is distinct from old and
+        new.updated_at is not distinct from old.updated_at
+    ) then
+        new.updated_at := current_timestamp;
+    end if;
+
+    return new;
+end;
+$$ language plpgsql;
+
+create function create_updated_at_trigger(table_name regclass)
+returns void
+as
+$$
+begin
+    execute format('create trigger set_updated_at before update on %s
+                    for each row execute procedure set_updated_at()', table_name);
+end;
+$$ language plpgsql;
 
 -- Create tables
 
@@ -17,6 +41,8 @@ create table users (
 
     unique(email)
 );
+
+select create_updated_at_trigger('users');
 
 -- For testing purpose
 
