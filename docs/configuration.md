@@ -1,9 +1,5 @@
 # Configuration
 
-## Dotenv
-
-TODO
-
 ## Environments
 
 Here's the list of available environment:
@@ -16,10 +12,10 @@ Here's the list of available environment:
 The application expect the environment variable `ENVIRONMENT` to be set or
 fallbacks to the development value.
 
-## Inputs
+## Static configuration
 
-Settings files are located in `<root>/settings` directory. Each environment has
-a dedicated [YAML][0] configuration:
+Configuration files are located in `<root>/settings` directory. Each environment
+has a dedicated [YAML][0] configuration:
 
 - `development.yml`
 - `staging.yml`
@@ -27,6 +23,15 @@ a dedicated [YAML][0] configuration:
 
 A base file is loaded (`base.yml`) by the application and all settings are
 available unless they are overrided by the environment configuration.
+
+## Dotenv configuration
+
+Some configurations are made by environment variables. They can be defined in a
+`.env` file placed at the root folder of the repository and are loaded during
+development process (i.e. not for productions environments).
+
+> **Note**
+> Get more information about [dotenv][1].
 
 ## Dynamic overrides
 
@@ -44,4 +49,5 @@ application:
   port: 8080
 ```
 
-[0]: https://yaml.org/spec "YAML documentation"
+[0]: https://yaml.org/spec
+[1]: dotenv.md
