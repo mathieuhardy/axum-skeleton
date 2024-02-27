@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-#[derive(Debug, FromRow, Deserialize, Serialize)]
+#[derive(Debug, Default, FromRow, Deserialize, Serialize)]
 pub struct User {
     pub id: Uuid,
     pub name: String,
