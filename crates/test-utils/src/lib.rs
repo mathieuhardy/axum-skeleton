@@ -149,6 +149,10 @@ pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
     })
 }
 
+/// Initialize the database use in the application.
+///
+/// # Returns:
+/// Postgres pool or an error.
 async fn initialize_database() -> Result<PgPool, Box<dyn Error>> {
     let db_url = std::env::var("DATABASE_URL_TEST")?;
 

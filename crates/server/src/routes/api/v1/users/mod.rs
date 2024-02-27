@@ -1,6 +1,7 @@
 //! This file contains all routes dedicated to the users management.
 
 use database::models::users::*;
+use database::traits::*;
 
 use crate::prelude::*;
 use crate::state::AppState;
@@ -44,12 +45,11 @@ async fn get_filtered(
 }
 
 /// Handler used to create a new user.
-async fn post_user(FormOrJson(user): FormOrJson<UserRequest>) -> Json<User> {
-    dbg!(&user);
+async fn post_user(
+    State(state): State<AppState>,
+    FormOrJson(user): FormOrJson<UserRequest>,
+) -> Res<Json<User>> {
+    let user = User::insert(&user, &state.db).await?;
 
-    Json(User {
-        name: user.name.unwrap_or_default(),
-        email: user.email.unwrap_or_default(),
-        ..User::default()
-    })
+    Ok(Json(user))
 }

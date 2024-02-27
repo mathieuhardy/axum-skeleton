@@ -15,5 +15,5 @@ pub enum Error {
 
     /// Generic SQLx error.
     #[error("{0}")]
-    SQLx(#[source] sqlx::Error),
+    SQLx(#[from] sqlx::Error),
 }

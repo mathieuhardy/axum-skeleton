@@ -20,6 +20,7 @@ pub struct PathsConfig {
 /// Global configuration structure.
 #[derive(Debug, Deserialize)]
 pub struct Config {
+    /// Paths configurations.
     pub paths: PathsConfig,
 }
 
