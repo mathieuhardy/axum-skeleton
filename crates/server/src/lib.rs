@@ -20,7 +20,10 @@ use sqlx::postgres::PgPoolOptions;
 use tokio::net::TcpListener;
 use tokio::signal;
 
-use crate::config::{Config, Environment};
+use crate::config::Config;
+#[cfg(debug_assertions)]
+#[cfg(feature = "sanity")]
+use crate::config::Environment;
 use crate::prelude::*;
 use crate::tracing::tracing_layer;
 
@@ -102,7 +105,9 @@ pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> 
     let mut router = Router::new()
         .fallback(handler_404)
         .nest("/", routes::build().await)
-        .with_state(state)
+        .with_state(state);
+
+    router = router
         .layer(cors)
         .layer(timeout)
         .layer(request_id_layer)
