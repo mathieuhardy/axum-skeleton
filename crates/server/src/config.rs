@@ -1,6 +1,4 @@
-use config::{Config, File};
 use serde::Deserialize;
-//use std::error::Error;
 use std::fmt;
 
 use crate::error::Error;
@@ -10,16 +8,25 @@ const STAGING: &str = "staging";
 const PRODUCTION: &str = "production";
 const DEFAULT_ENVIRONMENT: &str = DEVELOPMENT;
 
-const BASE_SETTINGS: &str = "base.yml";
+const BASE_CONFIG: &str = "base.yml";
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct ApplicationSettings {
+    pub host: String,
     pub port: u16,
 }
 
-#[derive(Deserialize)]
-pub struct Settings {
+#[derive(Debug, Deserialize)]
+pub struct CorsSettings {
+    pub methods: Vec<String>,
+    pub headers: Vec<String>,
+    pub allow_origins: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Config {
     pub application: ApplicationSettings,
+    pub cors: CorsSettings,
 }
 
 pub enum Environment {
@@ -54,19 +61,21 @@ impl fmt::Display for Environment {
     }
 }
 
-impl Settings {
+impl Config {
     pub fn new() -> Result<Self, Error> {
         let environment: Environment = std::env::var("ENVIRONMENT")
             .unwrap_or(DEFAULT_ENVIRONMENT.into())
             .try_into()?;
 
-        let settings_dir = std::env::current_dir()
+        let config_dir = std::env::current_dir()
             .map_err(Error::Filesystem)?
-            .join("settings");
+            .join("config");
 
-        let settings = Config::builder()
-            .add_source(File::from(settings_dir.join(BASE_SETTINGS)))
-            .add_source(File::from(settings_dir.join(format!("{environment}.yml"))))
+        let config = config::Config::builder()
+            .add_source(config::File::from(config_dir.join(BASE_CONFIG)))
+            .add_source(config::File::from(
+                config_dir.join(format!("{environment}.yml")),
+            ))
             .add_source(
                 config::Environment::with_prefix("OVERRIDE")
                     .prefix_separator("_")
@@ -74,6 +83,6 @@ impl Settings {
             )
             .build()?;
 
-        settings.try_deserialize::<Self>().map_err(Into::into)
+        config.try_deserialize::<Self>().map_err(Into::into)
     }
 }

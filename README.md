@@ -12,5 +12,10 @@ skeleton can be used as starter kit.
 
 # TODO
 
+- reddis
+- app state
+- routes
+- shutdown signal
+- tower_http::trace::TraceLayer
 - script to check upgradable dependencies
 - [tracing](https://docs.rs/tracing/latest/tracing/)

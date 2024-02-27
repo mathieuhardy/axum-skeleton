@@ -14,7 +14,7 @@ fallbacks to the development value.
 
 ## Static configuration
 
-Configuration files are located in `<root>/settings` directory. Each environment
+Configuration files are located in `<root>/config` directory. Each environment
 has a dedicated [YAML][0] configuration:
 
 - `development.yml`
