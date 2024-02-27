@@ -13,14 +13,15 @@ skeleton can be used as starter kit.
 
 # TODO
 
-- reddis
-- app state
-- routes
 - shutdown signal
+- routes
+- features
+- reddis
 - tower_http::trace::TraceLayer
 - [tracing](https://docs.rs/tracing/latest/tracing/)
 - graphQL
 - job queue
+- docs migration sqlx
 
 ## Sanity
 
