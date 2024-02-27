@@ -48,8 +48,8 @@ async fn post_user(FormOrJson(user): FormOrJson<UserRequest>) -> Json<User> {
     dbg!(&user);
 
     Json(User {
-        name: user.name.clone(),
-        email: user.email.clone(),
+        name: user.name.unwrap_or_default(),
+        email: user.email.unwrap_or_default(),
         ..User::default()
     })
 }

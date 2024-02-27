@@ -1,33 +1,30 @@
 //! This file contains derive macros used in database crate.
 
-use quote::quote;
-
-use syn::{parse_macro_input, DeriveInput};
+mod export;
+mod try_from_vec;
 
 use proc_macro::TokenStream;
 
-/// Add a TryFrom<Vec<T>> for the type T. The idea is to get only the first
-/// element of a vector.
-///
-/// # Arguments:
-/// * `input` - Input token stream.
-///
-/// # Returns:
-/// Generated token stream to be added for compilation.
+/// See [impl_try_from_vec]
 #[proc_macro_derive(TryFromVec)]
-pub fn macro_try_from_vec(input: TokenStream) -> TokenStream {
-    let ast = parse_macro_input!(input as DeriveInput);
-    let name = &ast.ident;
+pub fn derive_try_from_vec(input: TokenStream) -> TokenStream {
+    try_from_vec::impl_try_from_vec(input)
+}
 
-    let expanded = quote! {
-        impl std::convert::TryFrom<Vec<#name>> for #name {
-            type Error = crate::error::Error;
+/// See [impl_export]
+#[proc_macro_derive(Export, attributes(is_in, optional_in))]
+pub fn derive_export(input: TokenStream) -> TokenStream {
+    export::impl_export(input)
+}
 
-            fn try_from(values: Vec<#name>) -> Result<Self, Self::Error> {
-                values.first().ok_or(Error::NotFound).cloned()
-            }
-        }
-    };
+/// Macro used to define the list of Structure names to generate.
+#[proc_macro_attribute]
+pub fn export(_attribute: TokenStream, input: TokenStream) -> TokenStream {
+    input
+}
 
-    TokenStream::from(expanded)
+/// Macro used to define the list of derives to apply to a generated structure.
+#[proc_macro_attribute]
+pub fn export_derives(_attribute: TokenStream, input: TokenStream) -> TokenStream {
+    input
 }

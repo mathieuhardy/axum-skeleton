@@ -6,15 +6,19 @@ use database_derives::*;
 use crate::prelude::*;
 
 /// Mirrors the `users`'s' table.
-#[derive(Clone, Debug, Default, FromRow, Deserialize, Serialize, TryFromVec)]
+#[derive(Clone, Debug, Default, FromRow, Deserialize, Serialize, TryFromVec, Export)]
+#[export(Request)]
+#[export(derives(Request(Debug, Deserialize)))]
 pub struct User {
     /// Unique record identifier.
     pub id: Uuid,
 
     /// Name of the user.
+    #[optional_in(Request)]
     pub name: String,
 
     /// Email of the user.
+    #[optional_in(Request)]
     pub email: String,
 
     /// Date of record's creation.
@@ -22,16 +26,6 @@ pub struct User {
 
     /// Date of record's last update.
     pub updated_at: DateTime<Utc>,
-}
-
-/// Structure used in routes to create or update a record.
-#[derive(Debug, Deserialize)]
-pub struct UserRequest {
-    /// Name to be set.
-    pub name: String,
-
-    /// Email to be set.
-    pub email: String,
 }
 
 /// Structure that list all filters available for querying database.
