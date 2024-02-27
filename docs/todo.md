@@ -23,8 +23,6 @@
 ## Tests
 
 - unit tests for derive macro in test-utils
-- Dedicated database URL for tests
-- Script to initialize database for tests
 
 ## Sanity
 

@@ -71,12 +71,11 @@ pub async fn app(config: &Config) -> Res<Router> {
     log::trace!("{:#?}", cors);
 
     // Create Postgresql pool connection
-    // TODO: enable dedicated database
-    //#[cfg(not(test))]
+    #[cfg(not(test))]
     let db_url = std::env::var("DATABASE_URL").map_err(Error::Env)?;
 
-    //#[cfg(test)]
-    //let db_url = std::env::var("DATABASE_URL_TEST").map_err(Error::Env)?;
+    #[cfg(test)]
+    let db_url = std::env::var("DATABASE_URL_TEST").map_err(Error::Env)?;
 
     let pool = PgPoolOptions::new()
         .max_connections(8)
