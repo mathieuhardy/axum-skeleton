@@ -1,10 +1,9 @@
 mod config;
 mod cors;
 mod error;
+mod routes;
 mod state;
 
-use axum::response::Html;
-use axum::routing::get;
 use axum::Router;
 use tokio::signal;
 //use sqlx::postgres::PgPoolOptions;
@@ -44,7 +43,7 @@ pub async fn start() -> Result<(), Error> {
         .map_err(Error::Socket)?;
 
     // Prepare application
-    let cors = cors::create(&config);
+    let cors = cors::build(&config);
 
     log::info!("🔒 CORS configured");
     log::trace!("{:#?}", cors);
@@ -53,7 +52,7 @@ pub async fn start() -> Result<(), Error> {
     log::info!("📦 State configured");
 
     let app = Router::new()
-        .route("/", get(handler))
+        .nest("/", routes::build().await)
         .with_state(state)
         .layer(cors);
 
@@ -97,8 +96,4 @@ async fn shutdown_signal() {
 
 fn bye() {
     log::info!("👋 Bye bye");
-}
-
-async fn handler() -> Html<&'static str> {
-    Html("<h1>Hello, World!</h1>")
 }
