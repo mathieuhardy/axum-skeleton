@@ -18,6 +18,7 @@ members = [
 
 [dependencies]
 dotenv = "0.15.0"
+env_logger = "0.10.2"
 tokio = { version = "1.35.1", features = ["full"] }
 
 server = { path = "crates/server" }

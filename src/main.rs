@@ -1,10 +1,12 @@
 use std::error::Error;
 
 #[tokio::main]
-// TODO: Custom error
 async fn main() -> Result<(), Box<dyn Error>> {
     // Load `.env` file
-    dotenv::dotenv().ok();
+    dotenv::dotenv()?;
+
+    // Initialize logging system
+    env_logger::try_init()?;
 
     // Start Web server
     server::start().await?;

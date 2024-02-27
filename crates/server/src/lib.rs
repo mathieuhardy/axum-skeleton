@@ -6,7 +6,6 @@ use axum::routing::get;
 
 use axum::Router;
 use sqlx::postgres::PgPoolOptions;
-//use std::error::Error;
 
 use database::models::users::User;
 
@@ -32,13 +31,13 @@ pub async fn start() -> Result<(), Error> {
         .await
         .unwrap();
 
-    println!("{:#?}", user);
+    log::debug!("{:#?}", user);
 
     // run it
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
         .await
         .unwrap();
-    println!("listening on {}", listener.local_addr().unwrap());
+    log::info!("🚀 Listening on {}", listener.local_addr().unwrap());
     axum::serve(listener, app).await.unwrap();
 
     Ok(())
