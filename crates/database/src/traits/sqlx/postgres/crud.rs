@@ -36,13 +36,43 @@ where
     /// # Examples
     ///
     /// ```rust
-    /// struct Foo {}
+    ///#[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    ///   use database::traits::sqlx::postgres::crud::*;
     ///
-    /// impl CRUD for Foo {}
+    ///   #[derive(sqlx::FromRow)]
+    ///   struct Foo { id: uuid::Uuid }
     ///
-    /// let foo = Foo {};
+    ///   #[derive(database_derives::SqlxPgInsertable)]
+    ///   struct FooData {}
     ///
-    /// println!("id={:?}", foo.id());
+    ///   #[derive(Debug, thiserror::Error)]
+    ///   enum Error {
+    ///     #[error("{0}")]
+    ///     SQLx(#[from] sqlx::Error),
+    ///   }
+    ///
+    ///   impl CRUD for Foo {
+    ///     type Data = FooData;
+    ///     type Error = Error;
+    ///     type Id = uuid::Uuid;
+    ///     type Struct = Self;
+    ///
+    ///     fn id(&self) -> &Self::Id {
+    ///       &self.id
+    ///     }
+    ///
+    ///     fn table_name() -> &'static str {
+    ///       "foo"
+    ///     }
+    ///   }
+    ///
+    ///   let foo = Foo { id: uuid::Uuid::default() };
+    ///
+    ///   println!("id={:?}", foo.id());
+    ///
+    ///   Ok(())
+    /// }
     /// ```
     fn id(&self) -> &Self::Id;
 
@@ -54,13 +84,43 @@ where
     /// # Examples
     ///
     /// ```rust
-    /// struct Foo {}
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    ///   use database::traits::sqlx::postgres::crud::*;
     ///
-    /// impl CRUD for Foo {}
+    ///   #[derive(sqlx::FromRow)]
+    ///   struct Foo { id: uuid::Uuid }
     ///
-    /// let foo = Foo {};
+    ///   #[derive(database_derives::SqlxPgInsertable)]
+    ///   struct FooData {}
     ///
-    /// println!("id={}", foo.table_name());
+    ///   #[derive(Debug, thiserror::Error)]
+    ///   enum Error {
+    ///     #[error("{0}")]
+    ///     SQLx(#[from] sqlx::Error),
+    ///   }
+    ///
+    ///   impl CRUD for Foo {
+    ///     type Data = FooData;
+    ///     type Error = Error;
+    ///     type Id = uuid::Uuid;
+    ///     type Struct = Self;
+    ///
+    ///     fn id(&self) -> &Self::Id {
+    ///       &self.id
+    ///     }
+    ///
+    ///     fn table_name() -> &'static str {
+    ///       "foo"
+    ///     }
+    ///   }
+    ///
+    ///   let foo = Foo { id: uuid::Uuid::default() };
+    ///
+    ///   println!("id={}", foo.id());
+    ///
+    ///   Ok(())
+    /// }
     /// ```
     fn table_name() -> &'static str;
 
@@ -75,15 +135,51 @@ where
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// struct Foo {}
+    /// ```no_run
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    ///   use database::traits::sqlx::postgres::crud::*;
+    ///   use sqlx::postgres::*;
     ///
-    /// impl CRUD for Foo {}
+    ///   #[derive(sqlx::FromRow)]
+    ///   struct Foo { id: uuid::Uuid }
     ///
-    /// let uuid_1 = uuid::Uuid::default();
-    /// let uuid_2 = uuid::Uuid::default();
+    ///   #[derive(database_derives::SqlxPgInsertable)]
+    ///   struct FooData {}
     ///
-    /// Foo::batch_delete(&[uuid_1, uuid_2], &db).await?;
+    ///   #[derive(Debug, thiserror::Error)]
+    ///   enum Error {
+    ///     #[error("{0}")]
+    ///     SQLx(#[from] sqlx::Error),
+    ///   }
+    ///
+    ///   impl CRUD for Foo {
+    ///     type Data = FooData;
+    ///     type Error = Error;
+    ///     type Id = uuid::Uuid;
+    ///     type Struct = Self;
+    ///
+    ///     fn id(&self) -> &Self::Id {
+    ///       &self.id
+    ///     }
+    ///
+    ///     fn table_name() -> &'static str {
+    ///       "foo"
+    ///     }
+    ///   }
+    ///
+    ///   let uuid_1 = uuid::Uuid::default();
+    ///   let uuid_2 = uuid::Uuid::default();
+    ///
+    ///   let db = PgPoolOptions::new()
+    ///     .max_connections(8)
+    ///     .connect("database_url")
+    ///     .await?;
+    ///
+    ///   Foo::batch_delete(&[uuid_1, uuid_2], &db).await?;
+    ///
+    ///   Ok(())
+    /// }
     /// ```
     async fn batch_delete(ids: &[Self::Id], db: &sqlx::PgPool) -> Result<(), Self::Error> {
         let _ = sqlx::query(&format!(
@@ -108,15 +204,52 @@ where
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// struct Foo {}
+    /// ```no_run
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    ///   use database::traits::sqlx::postgres::crud::*;
+    ///   use sqlx::postgres::*;
     ///
-    /// impl CRUD for Foo {}
+    ///   #[derive(sqlx::FromRow)]
+    ///   struct Foo { id: uuid::Uuid }
     ///
-    /// let uuid_1 = uuid::Uuid::default();
-    /// let uuid_2 = uuid::Uuid::default();
+    ///   #[derive(database_derives::SqlxPgInsertable)]
+    ///   struct FooData {}
     ///
-    /// Foo::batch_get(&[uuid_1, uuid_2], &db).await?;
+    ///   #[derive(Debug, thiserror::Error)]
+    ///   enum Error {
+    ///     #[error("{0}")]
+    ///     SQLx(#[from] sqlx::Error),
+    ///   }
+    ///
+    ///   impl CRUD for Foo {
+    ///     type Data = FooData;
+    ///     type Error = Error;
+    ///     type Id = uuid::Uuid;
+    ///     type Struct = Self;
+    ///
+    ///     fn id(&self) -> &Self::Id {
+    ///       &self.id
+    ///     }
+    ///
+    ///     fn table_name() -> &'static str {
+    ///       "foo"
+    ///     }
+    ///   }
+    ///
+    ///   let uuid_1 = uuid::Uuid::default();
+    ///   let uuid_2 = uuid::Uuid::default();
+    ///
+    ///   let db = PgPoolOptions::new()
+    ///     .max_connections(8)
+    ///     .connect("database_url")
+    ///     .await?;
+    ///
+    ///   Foo::batch_get(&[uuid_1, uuid_2], &db).await?;
+    ///
+    ///   use sqlx::postgres::*;
+    ///   Ok(())
+    /// }
     /// ```
     async fn batch_get(
         ids: &[Self::Id],
@@ -143,17 +276,53 @@ where
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// struct Foo {}
+    /// ```no_run
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    ///   use database::traits::sqlx::postgres::crud::*;
+    ///   use sqlx::postgres::*;
     ///
-    /// impl CRUD for Foo {}
+    ///   #[derive(sqlx::FromRow)]
+    ///   struct Foo { id: uuid::Uuid }
     ///
-    /// let foos = vec![
-    ///   Foo {},
-    ///   Foo {},
-    /// ];
+    ///   #[derive(database_derives::SqlxPgInsertable)]
+    ///   struct FooData {}
     ///
-    /// Foo::batch_insert(&foos, &db).await?;
+    ///   #[derive(Debug, thiserror::Error)]
+    ///   enum Error {
+    ///     #[error("{0}")]
+    ///     SQLx(#[from] sqlx::Error),
+    ///   }
+    ///
+    ///   impl CRUD for Foo {
+    ///     type Data = FooData;
+    ///     type Error = Error;
+    ///     type Id = uuid::Uuid;
+    ///     type Struct = Self;
+    ///
+    ///     fn id(&self) -> &Self::Id {
+    ///       &self.id
+    ///     }
+    ///
+    ///     fn table_name() -> &'static str {
+    ///       "foo"
+    ///     }
+    ///   }
+    ///
+    ///   let data = vec![
+    ///     FooData {},
+    ///     FooData {},
+    ///   ];
+    ///
+    ///   let db = PgPoolOptions::new()
+    ///     .max_connections(8)
+    ///     .connect("database_url")
+    ///     .await?;
+    ///
+    ///   Foo::batch_insert(&data, &db).await?;
+    ///
+    ///   Ok(())
+    /// }
     /// ```
     async fn batch_insert(
         list: &[Self::Data],
@@ -207,22 +376,58 @@ where
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// struct Foo {}
+    /// ```no_run
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    ///   use database::traits::sqlx::postgres::crud::*;
+    ///   use sqlx::postgres::*;
     ///
-    /// impl CRUD for Foo {}
+    ///   #[derive(sqlx::FromRow)]
+    ///   struct Foo { id: uuid::Uuid }
     ///
-    /// let uuids = vec![
-    ///     uuid::Uuid::default(),
-    ///     uuid::Uuid::default()
-    /// ];
+    ///   #[derive(database_derives::SqlxPgInsertable)]
+    ///   struct FooData {}
     ///
-    /// let foos = vec![
-    ///   Foo {},
-    ///   Foo {},
-    /// ];
+    ///   #[derive(Debug, thiserror::Error)]
+    ///   enum Error {
+    ///     #[error("{0}")]
+    ///     SQLx(#[from] sqlx::Error),
+    ///   }
     ///
-    /// Foo::batch_update(&uuids, &foos, &db).await?;
+    ///   impl CRUD for Foo {
+    ///     type Data = FooData;
+    ///     type Error = Error;
+    ///     type Id = uuid::Uuid;
+    ///     type Struct = Self;
+    ///
+    ///     fn id(&self) -> &Self::Id {
+    ///       &self.id
+    ///     }
+    ///
+    ///     fn table_name() -> &'static str {
+    ///       "foo"
+    ///     }
+    ///   }
+    ///
+    ///   let uuids = vec![
+    ///       uuid::Uuid::default(),
+    ///       uuid::Uuid::default()
+    ///   ];
+    ///
+    ///   let data = vec![
+    ///     FooData {},
+    ///     FooData {},
+    ///   ];
+    ///
+    ///   let db = PgPoolOptions::new()
+    ///     .max_connections(8)
+    ///     .connect("database_url")
+    ///     .await?;
+    ///
+    ///   Foo::batch_update(&uuids, &data, &db).await?;
+    ///
+    ///   Ok(())
+    /// }
     /// ```
     async fn batch_update(
         ids: &[Self::Id],
@@ -280,22 +485,58 @@ where
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// struct Foo {}
+    /// ```no_run
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    ///   use database::traits::sqlx::postgres::crud::*;
+    ///   use sqlx::postgres::*;
     ///
-    /// impl CRUD for Foo {}
+    ///   #[derive(sqlx::FromRow)]
+    ///   struct Foo { id: uuid::Uuid }
     ///
-    /// let uuids = vec![
-    ///     uuid::Uuid::default(),
-    ///     uuid::Uuid::default()
-    /// ];
+    ///   #[derive(database_derives::SqlxPgInsertable)]
+    ///   struct FooData {}
     ///
-    /// let foos = vec![
-    ///   Foo {},
-    ///   Foo {},
-    /// ];
+    ///   #[derive(Debug, thiserror::Error)]
+    ///   enum Error {
+    ///     #[error("{0}")]
+    ///     SQLx(#[from] sqlx::Error),
+    ///   }
     ///
-    /// Foo::batch_upsert(&uuids, &foos, &db).await?;
+    ///   impl CRUD for Foo {
+    ///     type Data = FooData;
+    ///     type Error = Error;
+    ///     type Id = uuid::Uuid;
+    ///     type Struct = Self;
+    ///
+    ///     fn id(&self) -> &Self::Id {
+    ///       &self.id
+    ///     }
+    ///
+    ///     fn table_name() -> &'static str {
+    ///       "foo"
+    ///     }
+    ///   }
+    ///
+    ///   let uuids = vec![
+    ///       uuid::Uuid::default(),
+    ///       uuid::Uuid::default()
+    ///   ];
+    ///
+    ///   let data = vec![
+    ///     FooData {},
+    ///     FooData {},
+    ///   ];
+    ///
+    ///   let db = PgPoolOptions::new()
+    ///     .max_connections(8)
+    ///     .connect("database_url")
+    ///     .await?;
+    ///
+    ///   Foo::batch_upsert(&uuids, &data, &db).await?;
+    ///
+    ///   Ok(())
+    /// }
     /// ```
     async fn batch_upsert(
         ids: &[Self::Id],
@@ -356,14 +597,50 @@ where
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// struct Foo {}
+    /// ```no_run
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    ///   use database::traits::sqlx::postgres::crud::*;
+    ///   use sqlx::postgres::*;
     ///
-    /// impl CRUD for Foo {}
+    ///   #[derive(sqlx::FromRow)]
+    ///   struct Foo { id: uuid::Uuid }
     ///
-    /// let foo = Foo {};
+    ///   #[derive(database_derives::SqlxPgInsertable)]
+    ///   struct FooData {}
     ///
-    /// foo.delete(&db).await?;
+    ///   #[derive(Debug, thiserror::Error)]
+    ///   enum Error {
+    ///     #[error("{0}")]
+    ///     SQLx(#[from] sqlx::Error),
+    ///   }
+    ///
+    ///   impl CRUD for Foo {
+    ///     type Data = FooData;
+    ///     type Error = Error;
+    ///     type Id = uuid::Uuid;
+    ///     type Struct = Self;
+    ///
+    ///     fn id(&self) -> &Self::Id {
+    ///       &self.id
+    ///     }
+    ///
+    ///     fn table_name() -> &'static str {
+    ///       "foo"
+    ///     }
+    ///   }
+    ///
+    ///   let foo = Foo { id: uuid::Uuid::default() };
+    ///
+    ///   let db = PgPoolOptions::new()
+    ///     .max_connections(8)
+    ///     .connect("database_url")
+    ///     .await?;
+    ///
+    ///   foo.delete(&db).await?;
+    ///
+    ///   Ok(())
+    /// }
     /// ```
     async fn delete(&self, db: &sqlx::PgPool) -> Result<(), Self::Error> {
         Self::delete_by_id(self.id(), db).await
@@ -380,14 +657,50 @@ where
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// struct Foo {}
+    /// ```no_run
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    ///   use database::traits::sqlx::postgres::crud::*;
+    ///   use sqlx::postgres::*;
     ///
-    /// impl CRUD for Foo {}
+    ///   #[derive(sqlx::FromRow)]
+    ///   struct Foo { id: uuid::Uuid }
     ///
-    /// let uuid = uuid::Uuid::default();
+    ///   #[derive(database_derives::SqlxPgInsertable)]
+    ///   struct FooData {}
     ///
-    /// Foo::delete_by_id(&uuid, &db).await?;
+    ///   #[derive(Debug, thiserror::Error)]
+    ///   enum Error {
+    ///     #[error("{0}")]
+    ///     SQLx(#[from] sqlx::Error),
+    ///   }
+    ///
+    ///   impl CRUD for Foo {
+    ///     type Data = FooData;
+    ///     type Error = Error;
+    ///     type Id = uuid::Uuid;
+    ///     type Struct = Self;
+    ///
+    ///     fn id(&self) -> &Self::Id {
+    ///       &self.id
+    ///     }
+    ///
+    ///     fn table_name() -> &'static str {
+    ///       "foo"
+    ///     }
+    ///   }
+    ///
+    ///   let uuid = uuid::Uuid::default();
+    ///
+    ///   let db = PgPoolOptions::new()
+    ///     .max_connections(8)
+    ///     .connect("database_url")
+    ///     .await?;
+    ///
+    ///   Foo::delete_by_id(&uuid, &db).await?;
+    ///
+    ///   Ok(())
+    /// }
     /// ```
     async fn delete_by_id(id: &Self::Id, db: &sqlx::PgPool) -> Result<(), Self::Error> {
         let _ = sqlx::query(&format!("DELETE FROM {} WHERE id=$1", Self::table_name()))
@@ -409,14 +722,50 @@ where
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// struct Foo {}
+    /// ```no_run
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    ///   use database::traits::sqlx::postgres::crud::*;
+    ///   use sqlx::postgres::*;
     ///
-    /// impl CRUD for Foo {}
+    ///   #[derive(sqlx::FromRow)]
+    ///   struct Foo { id: uuid::Uuid }
     ///
-    /// let uuid = uuid::Uuid::default();
+    ///   #[derive(database_derives::SqlxPgInsertable)]
+    ///   struct FooData {}
     ///
-    /// Foo::get(&uuid, &db).await?;
+    ///   #[derive(Debug, thiserror::Error)]
+    ///   enum Error {
+    ///     #[error("{0}")]
+    ///     SQLx(#[from] sqlx::Error),
+    ///   }
+    ///
+    ///   impl CRUD for Foo {
+    ///     type Data = FooData;
+    ///     type Error = Error;
+    ///     type Id = uuid::Uuid;
+    ///     type Struct = Self;
+    ///
+    ///     fn id(&self) -> &Self::Id {
+    ///       &self.id
+    ///     }
+    ///
+    ///     fn table_name() -> &'static str {
+    ///       "foo"
+    ///     }
+    ///   }
+    ///
+    ///   let uuid = uuid::Uuid::default();
+    ///
+    ///   let db = PgPoolOptions::new()
+    ///     .max_connections(8)
+    ///     .connect("database_url")
+    ///     .await?;
+    ///
+    ///   Foo::get(&uuid, &db).await?;
+    ///
+    ///   Ok(())
+    /// }
     /// ```
     async fn get(id: &Self::Id, db: &sqlx::PgPool) -> Result<Self::Struct, Self::Error> {
         sqlx::query_as::<_, Self::Struct>(&format!(
@@ -440,15 +789,50 @@ where
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// struct Foo {}
-    /// struct FooRequest {}
+    /// ```no_run
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    ///   use database::traits::sqlx::postgres::crud::*;
+    ///   use sqlx::postgres::*;
     ///
-    /// impl CRUD for Foo {}
+    ///   #[derive(sqlx::FromRow)]
+    ///   struct Foo { id: uuid::Uuid }
     ///
-    /// let request = FooRequest {};
+    ///   #[derive(database_derives::SqlxPgInsertable)]
+    ///   struct FooData {}
     ///
-    /// Foo::insert(&request, &db).await?;
+    ///   #[derive(Debug, thiserror::Error)]
+    ///   enum Error {
+    ///     #[error("{0}")]
+    ///     SQLx(#[from] sqlx::Error),
+    ///   }
+    ///
+    ///   impl CRUD for Foo {
+    ///     type Data = FooData;
+    ///     type Error = Error;
+    ///     type Id = uuid::Uuid;
+    ///     type Struct = Self;
+    ///
+    ///     fn id(&self) -> &Self::Id {
+    ///       &self.id
+    ///     }
+    ///
+    ///     fn table_name() -> &'static str {
+    ///       "foo"
+    ///     }
+    ///   }
+    ///
+    ///   let data = FooData {};
+    ///
+    ///   let db = PgPoolOptions::new()
+    ///     .max_connections(8)
+    ///     .connect("database_url")
+    ///     .await?;
+    ///
+    ///   Foo::insert(&data, &db).await?;
+    ///
+    ///   Ok(())
+    /// }
     /// ```
     async fn insert(data: &Self::Data, db: &sqlx::PgPool) -> Result<Self::Struct, Self::Error> {
         // Prepare values to be bounded
@@ -484,16 +868,51 @@ where
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// struct Foo {}
-    /// struct FooRequest {}
+    /// ```no_run
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    ///   use database::traits::sqlx::postgres::crud::*;
+    ///   use sqlx::postgres::*;
     ///
-    /// impl CRUD for Foo {}
+    ///   #[derive(sqlx::FromRow)]
+    ///   struct Foo { id: uuid::Uuid }
     ///
-    /// let foo = Foo {};
-    /// let request = FooRequest {};
+    ///   #[derive(database_derives::SqlxPgInsertable)]
+    ///   struct FooData {}
     ///
-    /// foo.update(&request, &db).await?;
+    ///   #[derive(Debug, thiserror::Error)]
+    ///   enum Error {
+    ///     #[error("{0}")]
+    ///     SQLx(#[from] sqlx::Error),
+    ///   }
+    ///
+    ///   impl CRUD for Foo {
+    ///     type Data = FooData;
+    ///     type Error = Error;
+    ///     type Id = uuid::Uuid;
+    ///     type Struct = Self;
+    ///
+    ///     fn id(&self) -> &Self::Id {
+    ///       &self.id
+    ///     }
+    ///
+    ///     fn table_name() -> &'static str {
+    ///       "foo"
+    ///     }
+    ///   }
+    ///
+    ///   let foo = Foo { id: uuid::Uuid::default() };
+    ///   let data = FooData {};
+    ///
+    ///   let db = PgPoolOptions::new()
+    ///     .max_connections(8)
+    ///     .connect("database_url")
+    ///     .await?;
+    ///
+    ///   foo.update(&data, &db).await?;
+    ///
+    ///   Ok(())
+    /// }
     /// ```
     async fn update(
         &self,
@@ -515,16 +934,51 @@ where
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// struct Foo {}
-    /// struct FooRequest {}
+    /// ```no_run
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    ///   use database::traits::sqlx::postgres::crud::*;
+    ///   use sqlx::postgres::*;
     ///
-    /// impl CRUD for Foo {}
+    ///   #[derive(sqlx::FromRow)]
+    ///   struct Foo { id: uuid::Uuid }
     ///
-    /// let uuid = uuid::Uuid::default();
-    /// let request = FooRequest {};
+    ///   #[derive(database_derives::SqlxPgInsertable)]
+    ///   struct FooData {}
     ///
-    /// Foo::update(&uuid, &request, &db).await?;
+    ///   #[derive(Debug, thiserror::Error)]
+    ///   enum Error {
+    ///     #[error("{0}")]
+    ///     SQLx(#[from] sqlx::Error),
+    ///   }
+    ///
+    ///   impl CRUD for Foo {
+    ///     type Data = FooData;
+    ///     type Error = Error;
+    ///     type Id = uuid::Uuid;
+    ///     type Struct = Self;
+    ///
+    ///     fn id(&self) -> &Self::Id {
+    ///       &self.id
+    ///     }
+    ///
+    ///     fn table_name() -> &'static str {
+    ///       "foo"
+    ///     }
+    ///   }
+    ///
+    ///   let uuid = uuid::Uuid::default();
+    ///   let data = FooData {};
+    ///
+    ///   let db = PgPoolOptions::new()
+    ///     .max_connections(8)
+    ///     .connect("database_url")
+    ///     .await?;
+    ///
+    ///   Foo::update_by_id(&uuid, &data, &db).await?;
+    ///
+    ///   Ok(())
+    /// }
     /// ```
     async fn update_by_id(
         id: &Self::Id,
@@ -561,15 +1015,50 @@ where
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// struct Foo {}
-    /// struct FooRequest {}
+    /// ```no_run
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    ///   use database::traits::sqlx::postgres::crud::*;
+    ///   use sqlx::postgres::*;
     ///
-    /// impl CRUD for Foo {}
+    ///   #[derive(sqlx::FromRow)]
+    ///   struct Foo { id: uuid::Uuid }
     ///
-    /// let request = FooRequest {};
+    ///   #[derive(database_derives::SqlxPgInsertable)]
+    ///   struct FooData {}
     ///
-    /// Foo::upsert(&request, &db).await?;
+    ///   #[derive(Debug, thiserror::Error)]
+    ///   enum Error {
+    ///     #[error("{0}")]
+    ///     SQLx(#[from] sqlx::Error),
+    ///   }
+    ///
+    ///   impl CRUD for Foo {
+    ///     type Data = FooData;
+    ///     type Error = Error;
+    ///     type Id = uuid::Uuid;
+    ///     type Struct = Self;
+    ///
+    ///     fn id(&self) -> &Self::Id {
+    ///       &self.id
+    ///     }
+    ///
+    ///     fn table_name() -> &'static str {
+    ///       "foo"
+    ///     }
+    ///   }
+    ///
+    ///   let data = FooData {};
+    ///
+    ///   let db = PgPoolOptions::new()
+    ///     .max_connections(8)
+    ///     .connect("database_url")
+    ///     .await?;
+    ///
+    ///   Foo::upsert(&data, &db).await?;
+    ///
+    ///   Ok(())
+    /// }
     /// ```
     async fn upsert(data: &Self::Data, db: &sqlx::PgPool) -> Result<Self::Struct, Self::Error> {
         // Prepare values to be bounded
@@ -605,10 +1094,39 @@ pub trait SqlxPgInsertable {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```no_run
+    /// use database::traits::sqlx::postgres::crud::SqlxPgInsertable;
+    ///
     /// struct Foo {}
     ///
-    /// impl SqlxPgInsertable for Foo {}
+    /// impl SqlxPgInsertable for Foo {
+    ///   fn columns(&self) -> Vec<&'static str> {
+    ///     vec![""]
+    ///   }
+    ///
+    ///   fn bind_insert_values<'a>(
+    ///     &'a self,
+    ///     _: &mut sqlx::QueryBuilder<'a, sqlx::postgres::Postgres>,
+    ///   ) {
+    ///     // To be implemented
+    ///   }
+    ///
+    ///   fn bind_update_values<'a>(
+    ///     &'a self,
+    ///     _: &mut sqlx::QueryBuilder<'a, sqlx::postgres::Postgres>,
+    ///     _: Option<&str>
+    ///   ) {
+    ///     // To be implemented
+    ///   }
+    ///
+    ///   fn bind_unnest_values(
+    ///     _: &mut sqlx::QueryBuilder<sqlx::postgres::Postgres>,
+    ///     _: &[Self],
+    ///     _: bool,
+    ///   ) {
+    ///     // To be implemented
+    ///   }
+    /// }
     ///
     /// let foo = Foo {};
     ///
@@ -623,12 +1141,43 @@ pub trait SqlxPgInsertable {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```no_run
+    /// use database::traits::sqlx::postgres::crud::SqlxPgInsertable;
+    ///
     /// struct Foo {}
     ///
-    /// impl SqlxPgInsertable for Foo {}
+    /// impl SqlxPgInsertable for Foo {
+    ///   fn columns(&self) -> Vec<&'static str> {
+    ///     vec![""]
+    ///   }
+    ///
+    ///   fn bind_insert_values<'a>(
+    ///     &'a self,
+    ///     _: &mut sqlx::QueryBuilder<'a, sqlx::postgres::Postgres>,
+    ///   ) {
+    ///     // To be implemented
+    ///   }
+    ///
+    ///   fn bind_update_values<'a>(
+    ///     &'a self,
+    ///     _: &mut sqlx::QueryBuilder<'a, sqlx::postgres::Postgres>,
+    ///     _: Option<&str>
+    ///   ) {
+    ///     // To be implemented
+    ///   }
+    ///
+    ///   fn bind_unnest_values(
+    ///     _: &mut sqlx::QueryBuilder<sqlx::postgres::Postgres>,
+    ///     _: &[Self],
+    ///     _: bool,
+    ///   ) {
+    ///     // To be implemented
+    ///   }
+    /// }
     ///
     /// let foo = Foo {};
+    ///
+    /// let mut query_builder = sqlx::QueryBuilder::new("");
     ///
     /// foo.bind_insert_values(&mut query_builder);
     /// ```
@@ -644,12 +1193,43 @@ pub trait SqlxPgInsertable {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```no_run
+    /// use database::traits::sqlx::postgres::crud::SqlxPgInsertable;
+    ///
     /// struct Foo {}
     ///
-    /// impl SqlxPgInsertable for Foo {}
+    /// impl SqlxPgInsertable for Foo {
+    ///   fn columns(&self) -> Vec<&'static str> {
+    ///     vec![""]
+    ///   }
+    ///
+    ///   fn bind_insert_values<'a>(
+    ///     &'a self,
+    ///     _: &mut sqlx::QueryBuilder<'a, sqlx::postgres::Postgres>,
+    ///   ) {
+    ///     // To be implemented
+    ///   }
+    ///
+    ///   fn bind_update_values<'a>(
+    ///     &'a self,
+    ///     _: &mut sqlx::QueryBuilder<'a, sqlx::postgres::Postgres>,
+    ///     _: Option<&str>
+    ///   ) {
+    ///     // To be implemented
+    ///   }
+    ///
+    ///   fn bind_unnest_values(
+    ///     _: &mut sqlx::QueryBuilder<sqlx::postgres::Postgres>,
+    ///     _: &[Self],
+    ///     _: bool,
+    ///   ) {
+    ///     // To be implemented
+    ///   }
+    /// }
     ///
     /// let foo = Foo {};
+    ///
+    /// let mut query_builder = sqlx::QueryBuilder::new("");
     ///
     /// foo.bind_update_values(&mut query_builder, None);
     /// ```
@@ -668,17 +1248,48 @@ pub trait SqlxPgInsertable {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```no_run
+    /// use database::traits::sqlx::postgres::crud::SqlxPgInsertable;
+    ///
     /// struct Foo {}
     ///
-    /// impl SqlxPgInsertable for Foo {}
+    /// impl SqlxPgInsertable for Foo {
+    ///   fn columns(&self) -> Vec<&'static str> {
+    ///     vec![""]
+    ///   }
     ///
-    /// let foos = vec![
+    ///   fn bind_insert_values<'a>(
+    ///     &'a self,
+    ///     _: &mut sqlx::QueryBuilder<'a, sqlx::postgres::Postgres>,
+    ///   ) {
+    ///     // To be implemented
+    ///   }
+    ///
+    ///   fn bind_update_values<'a>(
+    ///     &'a self,
+    ///     _: &mut sqlx::QueryBuilder<'a, sqlx::postgres::Postgres>,
+    ///     _: Option<&str>
+    ///   ) {
+    ///     // To be implemented
+    ///   }
+    ///
+    ///   fn bind_unnest_values(
+    ///     _: &mut sqlx::QueryBuilder<sqlx::postgres::Postgres>,
+    ///     _: &[Self],
+    ///     _: bool,
+    ///   ) {
+    ///     // To be implemented
+    ///   }
+    /// }
+    ///
+    /// let data = vec![
     ///     Foo {},
     ///     Foo {},
     /// ];
     ///
-    /// Foo::bind_unnest_values(&mut query_builder, &foos, false);
+    /// let mut query_builder = sqlx::QueryBuilder::new("");
+    ///
+    /// Foo::bind_unnest_values(&mut query_builder, &data, false);
     /// ```
     fn bind_unnest_values(
         query_builder: &mut sqlx::QueryBuilder<sqlx::postgres::Postgres>,

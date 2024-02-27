@@ -48,7 +48,7 @@ impl CRUD for User {
     type Data = UserData;
     type Error = Error;
     type Id = Uuid;
-    type Struct = User;
+    type Struct = Self;
 
     fn id(&self) -> &Self::Id {
         &self.id
@@ -80,13 +80,26 @@ impl User {
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// let filters = Filters {
-    ///     name: Some("foo".to_string()),
-    ///     email: None
-    /// };
+    /// ```no_run
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    ///   use database::models::users::*;
+    ///   use sqlx::postgres::*;
     ///
-    /// let results = User::find_by_filters(&filters, &db).await?;
+    ///   let filters = Filters {
+    ///       name: Some("foo".to_string()),
+    ///       email: None
+    ///   };
+    ///
+    ///   let db = PgPoolOptions::new()
+    ///     .max_connections(8)
+    ///     .connect("database_url")
+    ///     .await?;
+    ///
+    ///   let results = User::find_by_filters(&filters, &db).await?;
+    ///
+    ///   Ok(())
+    /// }
     /// ```
     pub async fn find_by_filters(filters: &Filters, db: &PgPool) -> Res<Vec<Self>> {
         let users = sqlx::query_as::<_, User>(SQL_USERS_FIND_BY_FILTERS)
@@ -114,8 +127,21 @@ impl User {
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// let results = User::all(&db).await?;
+    /// ```no_run
+    /// #[tokio::main]
+    /// async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    ///   use database::models::users::*;
+    ///   use sqlx::postgres::*;
+    ///
+    ///   let db = PgPoolOptions::new()
+    ///     .max_connections(8)
+    ///     .connect("database_url")
+    ///     .await?;
+    ///
+    ///   let results = User::all(&db).await?;
+    ///
+    ///   Ok(())
+    /// }
     /// ```
     pub async fn all(db: &PgPool) -> Res<Vec<Self>> {
         Self::find_by_filters(&Filters::default(), db).await

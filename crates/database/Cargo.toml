@@ -17,3 +17,6 @@ tracing = { version = "0.1.40", default-features = false, features = ["attribute
 uuid = { version = "1.6.1", default-features = false, features = ["serde", "v4"] }
 
 database-derives = { path = "derives", default-features = false }
+
+[dev-dependencies]
+tokio = { version = "1.35.1", default-features = false, features = ["full"] }

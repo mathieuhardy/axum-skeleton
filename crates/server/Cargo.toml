@@ -20,8 +20,9 @@ utils = { path = "../utils", default-features = false, features = ["fs"] }
 
 [dev-dependencies]
 serial_test = { version = "3.0.0", default-features = false }
-test-utils = { path = "../test-utils", default-features = false, features = ["derives"] }
 urlencoding = { version = "2.1.3", default-features = false }
+
+test-utils = { path = "../test-utils", default-features = false, features = ["derives"] }
 
 [features]
 k8s = []
