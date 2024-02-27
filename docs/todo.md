@@ -10,13 +10,17 @@
 - Docs migration sqlx
 - URL overload ?
 
+# Docs
+
+- Documentation of macros, derives
+
 ## Devops
 
 - CircleCI DLC
 
 ## Tests
 
-- unit tests for derive macros
+- unit tests for derive macro in test-utils
 - Setup teardown
 - Dedicated database URL for tests
 - Script to initialize database for tests
