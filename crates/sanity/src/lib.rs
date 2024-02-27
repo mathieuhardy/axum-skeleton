@@ -1,10 +1,9 @@
 //! This file is the entry point for the sanity dashboard. It provides a
 //! function to insert it into the router.
 
+pub(crate) mod config;
 pub mod error;
-pub mod prelude;
-
-mod config;
+pub(crate) mod prelude;
 
 use axum::Router;
 use tower_http::services::ServeDir;

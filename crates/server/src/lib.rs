@@ -2,13 +2,14 @@
 //! function to start it and some default handlers.
 
 pub mod config;
-pub mod cors;
-pub mod error;
-pub mod prelude;
-pub mod routes;
-pub mod state;
-pub mod tracing;
-pub mod types;
+pub(crate) mod cors;
+pub(crate) mod error;
+pub(crate) mod prelude;
+pub(crate) mod routes;
+pub(crate) mod state;
+pub(crate) mod timeout;
+pub(crate) mod tracing;
+pub(crate) mod types;
 
 pub use axum;
 
@@ -74,6 +75,11 @@ pub async fn app(config: &Config) -> Res<Router> {
     event!(Level::INFO, "🔒 CORS configured");
     event!(Level::TRACE, "{:#?}", cors);
 
+    // Timeout
+    let timeout = timeout::timeout_layer(config);
+
+    event!(Level::INFO, "🕑 Timeout configured");
+
     // Sensitive layers
     let (sensitive_request_layer, sensitive_response_layer) = tracing::sensitive_headers_layers();
 
@@ -102,6 +108,7 @@ pub async fn app(config: &Config) -> Res<Router> {
         .nest("/", routes::build().await)
         .with_state(state)
         .layer(cors)
+        .layer(timeout)
         .layer(request_id_layer)
         .layer(sensitive_request_layer)
         .layer(tracing_layer())
