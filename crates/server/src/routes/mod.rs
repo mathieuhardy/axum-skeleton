@@ -1,8 +1,8 @@
 //! This file contains all routes of the application.
 
+mod api;
 #[cfg(feature = "k8s")]
 mod k8s;
-mod users;
 
 use axum::response::Html;
 use axum::routing::get;
@@ -17,7 +17,7 @@ use crate::state::State;
 pub async fn build() -> Router<State> {
     let router = Router::new()
         .route("/", get(hello().await))
-        .nest("/users", users::build());
+        .nest("/api", api::build());
 
     #[cfg(feature = "k8s")]
     let router = router.nest("/k8", k8s::build());
