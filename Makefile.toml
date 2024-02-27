@@ -90,7 +90,7 @@ workspace = false
 private = true
 env.RUSTDOCFLAGS = "-Zunstable-options --show-coverage"
 script.main = '''
-cargo doc -j 1 --no-deps --workspace 1>${DOCS_COV_RESULTS} 2>&1
+cargo doc -j 1 --no-deps --workspace --all-features --keep-going --locked 1>${DOCS_COV_RESULTS} 2>&1
 '''
 script.post = '''
 echo "🟢 ${B_WHITE}Results generated: ${DOCS_COV_RESULTS}${NC}"

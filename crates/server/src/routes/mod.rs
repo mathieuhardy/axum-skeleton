@@ -1,3 +1,4 @@
+#[cfg(feature = "k8s")]
 mod k8s;
 
 use axum::response::Html;
@@ -7,9 +8,12 @@ use axum::Router;
 use crate::state::State;
 
 pub async fn build() -> Router<State> {
-    Router::new()
-        .route("/", get(hello().await))
-        .nest("/k8", k8s::build())
+    let router = Router::new().route("/", get(hello().await));
+
+    #[cfg(feature = "k8s")]
+    let router = router.nest("/k8", k8s::build());
+
+    router
 }
 
 #[axum::debug_handler]
