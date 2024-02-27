@@ -36,7 +36,6 @@ cargo clippy --workspace --all-targets --all-features --color always --keep-goin
 - [Axum Postgres Skeleton](https://github.com/koskeller/axum-postgres-skeleton)
 - [Axum Postgres Skeleton (2)](https://github.com/Sirneij/cryptoflow)
 
-- [Axum testing](https://github.com/tokio-rs/axum/tree/main/examples/testing)
 - [Axum validator](https://github.com/tokio-rs/axum/tree/main/examples/validator)
 - [Axum SQLX Postgres](https://github.com/tokio-rs/axum/tree/main/examples/sqlx-postgres)
 - [Axum Prometheus Metrics](https://github.com/tokio-rs/axum/tree/main/examples/prometheus-metrics)

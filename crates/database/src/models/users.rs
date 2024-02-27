@@ -7,7 +7,7 @@ use crate::prelude::*;
 /// Mirrors the `users`'s' table.
 ///
 /// TODO: create a derive macro that implements create, update
-#[derive(Clone, Debug, Default, FromRow, Deserialize, Serialize, TryFromVec, Export)]
+#[derive(Clone, Debug, Default, PartialEq, FromRow, Deserialize, Serialize, TryFromVec, Export)]
 #[export(Data, Request)]
 #[export(derives(Data(Debug, SqlxPgInsertable)))]
 #[export(derives(Request(Debug, Deserialize)))]
@@ -68,6 +68,7 @@ impl From<UserRequest> for UserData {
     }
 }
 
+// TODO: add tests
 impl User {
     /// Finds some users matching some filters.
     ///

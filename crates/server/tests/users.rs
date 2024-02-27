@@ -33,6 +33,29 @@ mod get {
 
     #[tokio::test]
     #[serial]
+    async fn all() {
+        run_test(
+            setup,
+            |client| async move {
+                let client = client.lock().unwrap();
+
+                let response = client.get("/api/users").send().await.unwrap();
+                assert_eq!(response.status(), test_utils::StatusCode::OK);
+
+                let users = response.json::<Vec<User>>().await.unwrap();
+                assert_eq!(users.len(), 2);
+                assert!(users.iter().find(|e| e.name == "John Doe").is_some());
+                assert!(users.iter().find(|e| e.email == "john@doe.com").is_some());
+                assert!(users.iter().find(|e| e.name == "Jane Doe").is_some());
+                assert!(users.iter().find(|e| e.email == "jane@doe.com").is_some());
+            },
+            no_teardown,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    #[serial]
     async fn by_filters() {
         run_test(
             setup,
@@ -72,6 +95,36 @@ mod get {
                 // By email (not found)
                 let response = client.get("/api/users?email=404").send().await.unwrap();
                 assert_eq!(response.status(), test_utils::StatusCode::NOT_FOUND);
+            },
+            no_teardown,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn by_id() {
+        run_test(
+            setup,
+            |client| async move {
+                let client = client.lock().unwrap();
+
+                let response = client.get("/api/users").send().await.unwrap();
+                assert_eq!(response.status(), test_utils::StatusCode::OK);
+
+                let users = response.json::<Vec<User>>().await.unwrap();
+                assert_eq!(users.len(), 2);
+
+                let response = client
+                    .get(format!("/api/users/{}", users[0].id))
+                    .send()
+                    .await
+                    .unwrap();
+
+                assert_eq!(response.status(), test_utils::StatusCode::OK);
+
+                let user = response.json::<User>().await.unwrap();
+                assert_eq!(users[0], user);
             },
             no_teardown,
         )
@@ -119,6 +172,86 @@ mod post {
                 };
 
                 let response = client.post("/api/users").json(&user).send().await.unwrap();
+                assert_eq!(response.status(), test_utils::StatusCode::OK);
+
+                let user = response.json::<User>().await.unwrap();
+                assert_eq!(user.name, "New User");
+                assert_eq!(user.email, "new@user.com");
+            },
+            no_teardown,
+        )
+        .await;
+    }
+}
+
+mod put {
+    use super::*;
+
+    #[tokio::test]
+    #[serial]
+    async fn update_from_form() {
+        run_test(
+            setup,
+            |client| async move {
+                let client = client.lock().unwrap();
+
+                // Get the list of users
+                let response = client.get("/api/users").send().await.unwrap();
+                assert_eq!(response.status(), test_utils::StatusCode::OK);
+
+                let users = response.json::<Vec<User>>().await.unwrap();
+
+                // Create a request to be sent
+                let user = [("name", "New User"), ("email", "new@user.com")];
+
+                // Update
+                let response = client
+                    .put(format!("/api/users/{}", users[0].id))
+                    .form(&user)
+                    .send()
+                    .await
+                    .unwrap();
+
+                assert_eq!(response.status(), test_utils::StatusCode::OK);
+
+                let user = response.json::<User>().await.unwrap();
+                assert_eq!(user.name, "New User");
+                assert_eq!(user.email, "new@user.com");
+            },
+            no_teardown,
+        )
+        .await;
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn update_from_json() {
+        run_test(
+            setup,
+            |client| async move {
+                let client = client.lock().unwrap();
+
+                // Get the list of users
+                let response = client.get("/api/users").send().await.unwrap();
+                assert_eq!(response.status(), test_utils::StatusCode::OK);
+
+                let users = response.json::<Vec<User>>().await.unwrap();
+
+                // Create a request to be sent
+                let user = User {
+                    name: "New User".to_string(),
+                    email: "new@user.com".to_string(),
+                    ..User::default()
+                };
+
+                // Update
+                let response = client
+                    .put(format!("/api/users/{}", users[0].id))
+                    .json(&user)
+                    .send()
+                    .await
+                    .unwrap();
+
                 assert_eq!(response.status(), test_utils::StatusCode::OK);
 
                 let user = response.json::<User>().await.unwrap();
