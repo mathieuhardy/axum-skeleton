@@ -41,9 +41,9 @@ pub enum Error {
     #[error("{0}")]
     Socket(#[source] std::io::Error),
 
-    /// Generic Sqlx error.
+    /// Generic SQLx error.
     #[error("{0}")]
-    Sqlx(#[from] sqlx::Error),
+    SQLx(#[from] sqlx::Error),
 
     /// Unexpected error that should never happen.
     #[error("Unexpected server error")]

@@ -1,19 +1,19 @@
 # Development
 
-## Coding style
-
-> **Note**
-> TODO
+- [📄 SQLx usage](sqlx.md)
+- [📄 Logging system](logging.md)
+- [💯 Testing](testing.md)
+- [🖊 Coding style](coding-style.md)
 
 ## Database
 
 In the crate `database`, in the folder `scripts/sql` are stored some SQL
-scripts. They intend to be used by Sqlx as plain text request. These requests
+scripts. They intend to be used by SQLx as plain text request. These requests
 can receive parameters by placing identifiers like this: `$1`, `$2`, etc.
 
 The file `build.rs` is called before running compilation and will take all
 scripts in this directory and create a `src/requests.rs` file that contains all
-requests stored in Rust constants available for Sqlx usage.
+requests stored in Rust constants available for SQLx usage.
 
 ## Routes
 

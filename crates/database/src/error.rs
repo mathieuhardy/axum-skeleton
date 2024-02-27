@@ -13,7 +13,7 @@ pub enum Error {
     #[error("No record found in database")]
     NotFound,
 
-    /// Generic Sqlx error.
+    /// Generic SQLx error.
     #[error("{0}")]
-    Sqlx(#[source] sqlx::Error),
+    SQLx(#[source] sqlx::Error),
 }
