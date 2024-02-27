@@ -7,6 +7,7 @@ skeleton can be used as starter kit.
 
 ## Documentations
 
+- [💻 Commands](docs/commands.md)
 - [⚙️ Backend configuration](docs/configuration.md)
 - [📄 Logging system](docs/logging.md)
 
@@ -17,11 +18,14 @@ skeleton can be used as starter kit.
 - routes
 - shutdown signal
 - tower_http::trace::TraceLayer
-- script to check upgradable dependencies
 - [tracing](https://docs.rs/tracing/latest/tracing/)
-- generate report for test coverage
+- graphQL
+- job queue
 
 ## Sanity
+
+- generate report for test coverage
+- dashboard server with all results
 
 ```shell
 cargo clippy --workspace --all-targets --all-features --color always --keep-going -Z unstable-options --locked --offline 2>&1 | egrep "generated \d+ warning"
