@@ -27,6 +27,7 @@ echo ""
 echo "  ${BV}cov-docs${NC}            Generate documentation coverage results"
 echo "  ${BV}cov-docs-show${NC}       Show the HTML results of the documentation coverage"
 echo ""
+echo "  ${BV}crates-bloats${NC}       Show the list of crates inside the binary with their size"
 echo "  ${BV}crates-duplicates${NC}   Show the list of duplicated crates"
 echo "  ${BV}crates-upgradables${NC}  Show the list of upgradable crates"
 '''
@@ -49,6 +50,15 @@ args = [
   "-Z", "unstable-options",
   "--offline"
 ]
+
+# ------------------------------------------------------------------------------
+# Show crates bloats
+# ------------------------------------------------------------------------------
+
+[tasks.crates-bloats]
+workspace = false
+command = "cargo"
+args = ["bloat"]
 
 # ------------------------------------------------------------------------------
 # Show duplicated crates
