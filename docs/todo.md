@@ -18,6 +18,7 @@
 
 ## Tests
 
+- use hook in unit tests of server
 - unit tests for derive macro in test-utils
 
 ## Sanity

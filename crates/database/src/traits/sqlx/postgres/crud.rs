@@ -1065,8 +1065,11 @@ where
         let columns = data.columns().join(", ");
 
         // Prepare query
-        let mut query_builder: QueryBuilder<Postgres> =
-            QueryBuilder::new(format!("INSERT INTO {} ({}) ", Self::table_name(), columns));
+        let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(format!(
+            "INSERT INTO {} ({}) VALUES ",
+            Self::table_name(),
+            columns
+        ));
 
         data.bind_insert_values(&mut query_builder);
 

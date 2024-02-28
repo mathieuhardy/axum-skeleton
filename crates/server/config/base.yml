@@ -10,5 +10,6 @@ cors:
   methods:
     - delete
     - get
+    - patch
     - post
     - put

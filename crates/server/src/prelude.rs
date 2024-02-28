@@ -2,7 +2,7 @@
 
 pub use axum::extract::{Path, Query, State};
 pub use axum::http::StatusCode;
-pub use axum::routing::{delete, get, post, put};
+pub use axum::routing::{delete, get, patch, post, put};
 pub use axum::{Json, Router};
 pub use serde::{Deserialize, Serialize};
 pub use sqlx::PgPool;

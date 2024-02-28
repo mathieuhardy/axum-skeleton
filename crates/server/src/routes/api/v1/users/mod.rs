@@ -12,11 +12,16 @@ use crate::state::AppState;
 /// An Axum router.
 pub fn build() -> Router<AppState> {
     Router::new()
-        .route("/me", get(get_me))
+        // GET
         .route("/", get(get_filtered))
+        .route("/me", get(get_me))
         .route("/:id", get(get_by_id))
+        // PATCH
+        .route("/:id", patch(patch_user))
+        // POST
         .route("/", post(post_user))
-        .route("/:id", put(put_user))
+        // PUT
+        .route("/", put(put_user))
 }
 
 /// Handler used to get information about the currently logged user.
@@ -72,12 +77,28 @@ async fn post_user(
 /// Handler used to update an existing user by providing its ID.
 #[axum::debug_handler]
 #[instrument]
-async fn put_user(
+async fn patch_user(
     Path(id): Path<Uuid>,
     State(state): State<AppState>,
     FormOrJson(user): FormOrJson<UserRequest>,
 ) -> Res<Json<User>> {
     let user = User::update_by_id(&id, &user.into(), &state.db).await?;
+
+    Ok(Json(user))
+}
+
+/// Handler used to upsert a user.
+#[axum::debug_handler]
+#[instrument]
+async fn put_user(
+    State(state): State<AppState>,
+    FormOrJson(user): FormOrJson<UserRequest>,
+) -> Res<Json<User>> {
+    let user = if let Some(id) = user.id {
+        User::update_by_id(&id, &user.into(), &state.db).await
+    } else {
+        User::insert(&user.into(), &state.db).await
+    }?;
 
     Ok(Json(user))
 }

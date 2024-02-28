@@ -10,7 +10,7 @@ use crate::prelude::*;
 #[derive(Clone, Debug, Default, PartialEq, FromRow, Deserialize, Serialize, TryFromVec, Export)]
 #[export(Data, Request)]
 #[export(derives(Data(Debug, SqlxPgInsertable)))]
-#[export(derives(Request(Debug, Deserialize)))]
+#[export(derives(Request(Default, Debug, Deserialize, Serialize)))]
 pub struct User {
     /// Unique record identifier.
     #[optional_in(Request)]
