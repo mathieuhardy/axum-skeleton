@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+# Executed before the creation of the commit.
+# 
+# Checks:
+#   - Checks that .env is not commited.
+#   - Runs the formater to check the code syntax.
+
+# Check that .env file is not commited
+DOTENV_PATTERN="^.env$"
+
+for entry in $(git status --porcelain)
+do
+    if [[ "${entry}" =~ ${DOTENV_PATTERN} ]]
+    then
+        echo "Commit aborted as it's forbidden to version your .env"
+        exit 1
+    fi
+done
+
+# Run rustfmt and check code formating
+cargo fmt --all -- --check
+
+if [[ ${?} -ne 0 ]]
+then
+    exit 1
+fi

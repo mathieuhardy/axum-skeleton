@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+# Executed after the commit message has been written.
+#
+# Checks:
+#   - Checks the commit message against the conventional commits message specification.
+# 
+# Inputs:
+#   - $1: The name of the file that contains the commit message to check.
+
+MSG=$(cat ${1}) 
+PATTERN="^(fixup! )?(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)!?(\([a-z ]+\))?(: )([^\n]+)(\n{1}?((\n{1}[^\n]+)+)?)?(\n{1}(\n{1}[^\n]+)+)?$"
+
+if ! [[ "${MSG}" =~ ${PATTERN} ]]
+then
+    echo "Your commit was rejected due to the commit message."
+    echo ""
+    echo "Examples:"
+    echo "  build: commit related to build of the project"
+    echo "  chore: commit without production code changes"
+    echo "  ci: commit related to CI stuff only"
+    echo "  docs: commit with documentation modifications"
+    echo "  feat: new feature added"
+    echo "  fix: bug fixing"
+    echo "  perf: commit related to performance of the application"
+    echo "  refactor: refactorization of production code"
+    echo "  revert: revert of a previous modification"
+    echo "  style: formating changes"
+    echo "  test: commit related to tests only"
+    echo ""
+    echo "Breaking changes:"
+    echo "  feat!: this change is breaking"
+    echo ""
+    echo "More information here: https://www.conventionalcommits.org/en/v1.0.0"
+
+    exit 1
+fi
