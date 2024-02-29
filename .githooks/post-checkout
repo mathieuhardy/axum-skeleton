@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# Executed after a git checkout or git switch has been done.
+# 
+# Checks:
+#   - Updates submodules.
+#
+# Inputs:
+#   - $1: The source reference.
+#   - $2: The destination reference.
+#   - $3: 1 if it's a branch checkout, 0 if it's a file checkout.
+
+from_hash=${1}
+to_hash=${2}
+branch_checkout=${3}
+
+branch_name=$(git rev-parse --abbrev-ref HEAD)
+from_branch_name=$(git name-rev --name-only ${from_hash})
+
+if [ ${branch_checkout} -ne 1 ]
+then
+    # Not a branch checkout
+    exit 0
+fi
+
+git submodule update
+
+if [ ${from_hash} != ${to_hash} ]
+then
+    # Not checking out a new branch
+    exit 0
+fi
+
+if [ ${branch_name} == ${from_branch_name} ]
+then
+    # Not checking out a new branch
+    exit 0
+fi
