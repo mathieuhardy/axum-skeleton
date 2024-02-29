@@ -1,5 +1,6 @@
 # Development
 
+- [🪝 Git Hooks](git-hooks.md)
 - [📄 SQLx usage](sqlx.md)
 - [📄 Logging system](logging.md)
 - [💯 Testing](testing.md)
