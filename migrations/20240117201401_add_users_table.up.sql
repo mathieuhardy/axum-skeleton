@@ -33,11 +33,12 @@ $$ LANGUAGE plpgsql;
 -- Create tables
 
 CREATE TABLE users (
-    id         UUID primary KEY DEFAULT uuid_generate_v4(),
-    name       VARCHAR not null,
-    email      VARCHAR not null,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    id            UUID primary KEY DEFAULT uuid_generate_v4(),
+    first_name    VARCHAR not null,
+    last_name     VARCHAR not null,
+    email         VARCHAR not null,
+    created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+    updated_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
 
     UNIQUE(email)
 );

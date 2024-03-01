@@ -34,8 +34,6 @@ cargo clippy --workspace --all-targets --all-features --color always --keep-goin
 
 ### Axum
 
-- [Axum validator](https://github.com/tokio-rs/axum/tree/main/examples/validator)
-- [Validator](https://crates.io/crates/validator)
 - [Axum Prometheus Metrics](https://github.com/tokio-rs/axum/tree/main/examples/prometheus-metrics)
 
 ### Various

@@ -7,21 +7,30 @@ use crate::prelude::*;
 /// Mirrors the `users`'s' table.
 ///
 /// TODO: create a derive macro that implements create, update
-#[derive(Clone, Debug, Default, PartialEq, FromRow, Deserialize, Serialize, TryFromVec, Export)]
+#[derive(
+    Clone, Debug, Default, PartialEq, FromRow, Deserialize, Serialize, TryFromVec, Export, Validate,
+)]
 #[export(Data, Request)]
-#[export(derives(Data(Debug, SqlxPgInsertable)))]
-#[export(derives(Request(Default, Debug, Deserialize, Serialize)))]
+#[export(derives(Data(Debug, SqlxPgInsertable, Validate)))]
+#[export(derives(Request(Default, Debug, Deserialize, Serialize, Validate)))]
 pub struct User {
     /// Unique record identifier.
     #[optional_in(Request)]
     pub id: Uuid,
 
-    /// Name of the user.
+    /// First name of the user.
     #[optional_in(Data, Request)]
-    pub name: String,
+    #[validate(length(min = 1))]
+    pub first_name: String,
+
+    /// Last name of the user.
+    #[optional_in(Data, Request)]
+    #[validate(length(min = 1))]
+    pub last_name: String,
 
     /// Email of the user.
     #[optional_in(Data, Request)]
+    #[validate(email)]
     pub email: String,
 
     /// Date of record's creation.
@@ -35,9 +44,13 @@ pub struct User {
 #[derive(Debug, Default, Deserialize)]
 #[serde_as]
 pub struct Filters {
-    /// Name of the user (or None).
+    /// First name of the user (or None).
     #[serde_as(as = "NoneAsEmptyString")]
-    pub name: Option<String>,
+    pub first_name: Option<String>,
+
+    /// Last name of the user (or None).
+    #[serde_as(as = "NoneAsEmptyString")]
+    pub last_name: Option<String>,
 
     /// Email of the user (or None).
     #[serde_as(as = "NoneAsEmptyString")]
@@ -62,7 +75,8 @@ impl CRUD for User {
 impl From<UserRequest> for UserData {
     fn from(request: UserRequest) -> Self {
         Self {
-            name: request.name.clone(),
+            first_name: request.first_name.clone(),
+            last_name: request.last_name.clone(),
             email: request.email.clone(),
         }
     }
@@ -88,7 +102,8 @@ impl User {
     ///   use sqlx::postgres::*;
     ///
     ///   let filters = Filters {
-    ///       name: Some("foo".to_string()),
+    ///       first_name: Some("foo".to_string()),
+    ///       last_name: Some("foo".to_string()),
     ///       email: None
     ///   };
     ///
@@ -104,7 +119,8 @@ impl User {
     /// ```
     pub async fn find_by_filters(filters: &Filters, db: &PgPool) -> Res<Vec<Self>> {
         let users = sqlx::query_as::<_, User>(SQL_USERS_FIND_BY_FILTERS)
-            .bind(&filters.name)
+            .bind(&filters.first_name)
+            .bind(&filters.last_name)
             .bind(&filters.email)
             .fetch_all(db)
             .await

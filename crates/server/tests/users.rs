@@ -22,7 +22,8 @@ mod get {
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
             let user = response.json::<User>().await.unwrap();
-            assert_eq!(user.name, "John Doe");
+            assert_eq!(user.first_name, "John");
+            assert_eq!(user.last_name, "Doe");
             assert_eq!(user.email, "john@doe.com");
         }
     }
@@ -39,10 +40,12 @@ mod get {
 
             let users = response.json::<Vec<User>>().await.unwrap();
             assert_eq!(users.len(), 2);
-            assert!(users.iter().any(|e| e.name == "John Doe"));
-            assert!(users.iter().any(|e| e.email == "john@doe.com"));
-            assert!(users.iter().any(|e| e.name == "Jane Doe"));
-            assert!(users.iter().any(|e| e.email == "jane@doe.com"));
+            assert!(users.iter().any(|e| e.first_name == "John"
+                && e.last_name == "Doe"
+                && e.email == "john@doe.com"));
+            assert!(users.iter().any(|e| e.first_name == "Jane"
+                && e.last_name == "Doe"
+                && e.email == "jane@doe.com"));
         }
     }
 
@@ -55,7 +58,7 @@ mod get {
 
             // By name
             let response = client
-                .get(format!("/api/users?name={}", encode("John Doe")))
+                .get(format!("/api/users?first_name={}", encode("John")))
                 .send()
                 .await
                 .unwrap();
@@ -63,11 +66,16 @@ mod get {
 
             let users = response.json::<Vec<User>>().await.unwrap();
             assert_eq!(users.len(), 1);
-            assert_eq!(users[0].name, "John Doe");
+            assert_eq!(users[0].first_name, "John");
+            assert_eq!(users[0].last_name, "Doe");
             assert_eq!(users[0].email, "john@doe.com");
 
             // By name (not found)
-            let response = client.get("/api/users?name=404").send().await.unwrap();
+            let response = client
+                .get("/api/users?first_name=404")
+                .send()
+                .await
+                .unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::NOT_FOUND);
 
             // By email
@@ -80,7 +88,8 @@ mod get {
 
             let users = response.json::<Vec<User>>().await.unwrap();
             assert_eq!(users.len(), 1);
-            assert_eq!(users[0].name, "John Doe");
+            assert_eq!(users[0].first_name, "John");
+            assert_eq!(users[0].last_name, "Doe");
             assert_eq!(users[0].email, "john@doe.com");
 
             // By email (not found)
@@ -133,7 +142,11 @@ mod patch {
             let users = response.json::<Vec<User>>().await.unwrap();
 
             // Create a request to be sent
-            let user = [("name", "New User"), ("email", "new@user.com")];
+            let user = [
+                ("first_name", "New"),
+                ("last_name", "User"),
+                ("email", "new@user.com"),
+            ];
 
             // Update
             let response = client
@@ -146,7 +159,8 @@ mod patch {
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
             let user = response.json::<User>().await.unwrap();
-            assert_eq!(user.name, "New User");
+            assert_eq!(user.first_name, "New");
+            assert_eq!(user.last_name, "User");
             assert_eq!(user.email, "new@user.com");
         }
     }
@@ -166,7 +180,8 @@ mod patch {
 
             // Create a request to be sent
             let user = User {
-                name: "New User".to_string(),
+                first_name: "New".to_string(),
+                last_name: "User".to_string(),
                 email: "new@user.com".to_string(),
                 ..User::default()
             };
@@ -182,8 +197,117 @@ mod patch {
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
             let user = response.json::<User>().await.unwrap();
-            assert_eq!(user.name, "New User");
+            assert_eq!(user.first_name, "New");
+            assert_eq!(user.last_name, "User");
             assert_eq!(user.email, "new@user.com");
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    async fn invalid_email() {
+        |client| async move {
+            let client = client.lock().unwrap();
+
+            // Get the list of users
+            let response = client.get("/api/users").send().await.unwrap();
+            assert_eq!(response.status(), test_utils::StatusCode::OK);
+
+            let users = response.json::<Vec<User>>().await.unwrap();
+
+            // Create a request to be sent
+            let user = User {
+                first_name: "New".to_string(),
+                last_name: "User".to_string(),
+                email: "newuser.com".to_string(),
+                ..User::default()
+            };
+
+            // Update
+            let response = client
+                .patch(format!("/api/users/{}", users[0].id))
+                .json(&user)
+                .send()
+                .await
+                .unwrap();
+
+            assert_eq!(
+                response.status(),
+                test_utils::StatusCode::UNPROCESSABLE_ENTITY
+            );
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    async fn invalid_first_name() {
+        |client| async move {
+            let client = client.lock().unwrap();
+
+            // Get the list of users
+            let response = client.get("/api/users").send().await.unwrap();
+            assert_eq!(response.status(), test_utils::StatusCode::OK);
+
+            let users = response.json::<Vec<User>>().await.unwrap();
+
+            // Create a request to be sent
+            let user = User {
+                first_name: "".to_string(),
+                last_name: "User".to_string(),
+                email: "new@user.com".to_string(),
+                ..User::default()
+            };
+
+            // Update
+            let response = client
+                .patch(format!("/api/users/{}", users[0].id))
+                .json(&user)
+                .send()
+                .await
+                .unwrap();
+
+            assert_eq!(
+                response.status(),
+                test_utils::StatusCode::UNPROCESSABLE_ENTITY
+            );
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    async fn invalid_last_name() {
+        |client| async move {
+            let client = client.lock().unwrap();
+
+            // Get the list of users
+            let response = client.get("/api/users").send().await.unwrap();
+            assert_eq!(response.status(), test_utils::StatusCode::OK);
+
+            let users = response.json::<Vec<User>>().await.unwrap();
+
+            // Create a request to be sent
+            let user = User {
+                first_name: "New".to_string(),
+                last_name: "".to_string(),
+                email: "new@user.com".to_string(),
+                ..User::default()
+            };
+
+            // Update
+            let response = client
+                .patch(format!("/api/users/{}", users[0].id))
+                .json(&user)
+                .send()
+                .await
+                .unwrap();
+
+            assert_eq!(
+                response.status(),
+                test_utils::StatusCode::UNPROCESSABLE_ENTITY
+            );
         }
     }
 }
@@ -198,13 +322,18 @@ mod post {
         |client| async move {
             let client = client.lock().unwrap();
 
-            let user = [("name", "New User"), ("email", "new@user.com")];
+            let user = [
+                ("first_name", "New"),
+                ("last_name", "User"),
+                ("email", "new@user.com"),
+            ];
 
             let response = client.post("/api/users").form(&user).send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
             let user = response.json::<User>().await.unwrap();
-            assert_eq!(user.name, "New User");
+            assert_eq!(user.first_name, "New");
+            assert_eq!(user.last_name, "User");
             assert_eq!(user.email, "new@user.com");
         }
     }
@@ -217,7 +346,8 @@ mod post {
             let client = client.lock().unwrap();
 
             let user = User {
-                name: "New User".to_string(),
+                first_name: "New".to_string(),
+                last_name: "User".to_string(),
                 email: "new@user.com".to_string(),
                 ..User::default()
             };
@@ -226,8 +356,75 @@ mod post {
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
             let user = response.json::<User>().await.unwrap();
-            assert_eq!(user.name, "New User");
+            assert_eq!(user.first_name, "New");
+            assert_eq!(user.last_name, "User");
             assert_eq!(user.email, "new@user.com");
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    async fn invalid_email() {
+        |client| async move {
+            let client = client.lock().unwrap();
+
+            let user = User {
+                first_name: "New".to_string(),
+                last_name: "User".to_string(),
+                email: "newuser.com".to_string(),
+                ..User::default()
+            };
+
+            let response = client.post("/api/users").json(&user).send().await.unwrap();
+            assert_eq!(
+                response.status(),
+                test_utils::StatusCode::UNPROCESSABLE_ENTITY
+            );
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    async fn invalid_first_name() {
+        |client| async move {
+            let client = client.lock().unwrap();
+
+            let user = User {
+                first_name: "".to_string(),
+                last_name: "User".to_string(),
+                email: "new@user.com".to_string(),
+                ..User::default()
+            };
+
+            let response = client.post("/api/users").json(&user).send().await.unwrap();
+            assert_eq!(
+                response.status(),
+                test_utils::StatusCode::UNPROCESSABLE_ENTITY
+            );
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    async fn invalid_last_name() {
+        |client| async move {
+            let client = client.lock().unwrap();
+
+            let user = User {
+                first_name: "New".to_string(),
+                last_name: "".to_string(),
+                email: "new@user.com".to_string(),
+                ..User::default()
+            };
+
+            let response = client.post("/api/users").json(&user).send().await.unwrap();
+            assert_eq!(
+                response.status(),
+                test_utils::StatusCode::UNPROCESSABLE_ENTITY
+            );
         }
     }
 }
@@ -243,19 +440,25 @@ mod put {
             let client = client.lock().unwrap();
 
             // Insert
-            let user = [("name", "New User"), ("email", "new@user.com")];
+            let user = [
+                ("first_name", "New"),
+                ("last_name", "User"),
+                ("email", "new@user.com"),
+            ];
 
             let response = client.put("/api/users").form(&user).send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
             let user = response.json::<User>().await.unwrap();
-            assert_eq!(user.name, "New User");
+            assert_eq!(user.first_name, "New");
+            assert_eq!(user.last_name, "User");
             assert_eq!(user.email, "new@user.com");
 
             // Update
             let user = [
                 ("id", user.id.to_string()),
-                ("name", "New User (2)".to_string()),
+                ("first_name", "New".to_string()),
+                ("last_name", "User (2)".to_string()),
                 ("email", "new@user2.com".to_string()),
             ];
 
@@ -263,7 +466,8 @@ mod put {
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
             let user = response.json::<User>().await.unwrap();
-            assert_eq!(user.name, "New User (2)");
+            assert_eq!(user.first_name, "New");
+            assert_eq!(user.last_name, "User (2)");
             assert_eq!(user.email, "new@user2.com");
         }
     }
@@ -277,7 +481,8 @@ mod put {
 
             // Insert
             let user = UserRequest {
-                name: Some("New User".to_string()),
+                first_name: Some("New".to_string()),
+                last_name: Some("User".to_string()),
                 email: Some("new@user.com".to_string()),
                 ..UserRequest::default()
             };
@@ -286,13 +491,15 @@ mod put {
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
             let user = response.json::<User>().await.unwrap();
-            assert_eq!(user.name, "New User");
+            assert_eq!(user.first_name, "New");
+            assert_eq!(user.last_name, "User");
             assert_eq!(user.email, "new@user.com");
 
             // Update
             let user = UserRequest {
                 id: Some(user.id),
-                name: Some("New User (2)".to_string()),
+                first_name: Some("New".to_string()),
+                last_name: Some("User (2)".to_string()),
                 email: Some("new@user2.com".to_string()),
             };
 
@@ -300,8 +507,78 @@ mod put {
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
             let user = response.json::<User>().await.unwrap();
-            assert_eq!(user.name, "New User (2)");
+            assert_eq!(user.first_name, "New");
+            assert_eq!(user.last_name, "User (2)");
             assert_eq!(user.email, "new@user2.com");
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    async fn invalid_email() {
+        |client| async move {
+            let client = client.lock().unwrap();
+
+            // Insert
+            let user = UserRequest {
+                first_name: Some("New".to_string()),
+                last_name: Some("User".to_string()),
+                email: Some("newuser.com".to_string()),
+                ..UserRequest::default()
+            };
+
+            let response = client.put("/api/users").json(&user).send().await.unwrap();
+            assert_eq!(
+                response.status(),
+                test_utils::StatusCode::UNPROCESSABLE_ENTITY
+            );
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    async fn invalid_first_name() {
+        |client| async move {
+            let client = client.lock().unwrap();
+
+            // Insert
+            let user = UserRequest {
+                first_name: Some("".to_string()),
+                last_name: Some("User".to_string()),
+                email: Some("new@user.com".to_string()),
+                ..UserRequest::default()
+            };
+
+            let response = client.put("/api/users").json(&user).send().await.unwrap();
+            assert_eq!(
+                response.status(),
+                test_utils::StatusCode::UNPROCESSABLE_ENTITY
+            );
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    async fn invalid_last_name() {
+        |client| async move {
+            let client = client.lock().unwrap();
+
+            // Insert
+            let user = UserRequest {
+                first_name: Some("New".to_string()),
+                last_name: Some("".to_string()),
+                email: Some("new@user.com".to_string()),
+                ..UserRequest::default()
+            };
+
+            let response = client.put("/api/users").json(&user).send().await.unwrap();
+            assert_eq!(
+                response.status(),
+                test_utils::StatusCode::UNPROCESSABLE_ENTITY
+            );
         }
     }
 }

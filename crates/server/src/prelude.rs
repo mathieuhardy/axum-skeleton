@@ -7,6 +7,7 @@ pub(crate) use axum::routing::{get, patch, post, put};
 pub(crate) use axum::{Json, Router};
 pub(crate) use tracing::{event, instrument, Level};
 pub(crate) use uuid::Uuid;
+pub(crate) use validator::Validate;
 
 // Local crates
 pub use database::error::Error as DatabaseError;

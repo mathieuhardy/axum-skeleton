@@ -1,12 +1,20 @@
 //! This file contains all SQL requests as variables.
 
 /// Undocumented.
-pub const SQL_USERS_FIND_BY_FILTERS: &str = "select
+pub const SQL_USERS_FIND_BY_FILTERS: &str = "-- Fetch some users providing filters:
+--
+-- Arguments:
+--   $1: First name of the user.
+--   $2: Last name of the user.
+--   $3: Email of the user.
+
+SELECT
     *
-from
+FROM
     users
-where
-    ($1 is null or $1 = name) and
-    ($2 is null or $2 = email)
-order by
-    name asc;";
+WHERE
+    ($1 IS NULL OR $1 = first_name) AND
+    ($2 IS NULL OR $2 = last_name) AND
+    ($3 IS NULL OR $3 = email)
+ORDER BY
+    (first_name, last_name) ASC;";

@@ -30,7 +30,8 @@ pub fn build() -> Router<AppState> {
 async fn get_me(State(state): State<AppState>) -> Res<Json<User>> {
     let user = User::find_by_filters(
         &Filters {
-            name: Some("John Doe".to_string()),
+            first_name: Some("John".to_string()),
+            last_name: Some("Doe".to_string()),
             ..Filters::default()
         },
         &state.db,
@@ -69,6 +70,8 @@ async fn post_user(
     State(state): State<AppState>,
     FormOrJson(user): FormOrJson<UserRequest>,
 ) -> Res<Json<User>> {
+    user.validate()?;
+
     let user = User::insert(&user.into(), &state.db).await?;
 
     Ok(Json(user))
@@ -82,6 +85,8 @@ async fn patch_user(
     State(state): State<AppState>,
     FormOrJson(user): FormOrJson<UserRequest>,
 ) -> Res<Json<User>> {
+    user.validate()?;
+
     let user = User::update_by_id(&id, &user.into(), &state.db).await?;
 
     Ok(Json(user))
@@ -94,6 +99,8 @@ async fn put_user(
     State(state): State<AppState>,
     FormOrJson(user): FormOrJson<UserRequest>,
 ) -> Res<Json<User>> {
+    user.validate()?;
+
     let user = if let Some(id) = user.id {
         User::update_by_id(&id, &user.into(), &state.db).await
     } else {

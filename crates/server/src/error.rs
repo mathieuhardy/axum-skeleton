@@ -57,12 +57,17 @@ pub enum Error {
     /// Unknown error (should be avoided).
     #[error("Unknown server error")]
     Unknown,
+
+    /// Validation error.
+    #[error("Unprocessable entity")]
+    Validation(#[from] validator::ValidationErrors),
 }
 
 impl axum::response::IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         match self {
             Self::Database(DatabaseError::NotFound) => StatusCode::NOT_FOUND.into_response(),
+            Self::Validation(_) => StatusCode::UNPROCESSABLE_ENTITY.into_response(),
             _ => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
         }
     }

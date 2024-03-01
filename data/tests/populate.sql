@@ -10,9 +10,9 @@ BEGIN
 	END LOOP;
 
     -- Insert test data
-    INSERT INTO users (name, email)
+    INSERT INTO users (first_name, last_name, email)
     VALUES
-        ('John Doe', 'john@doe.com'),
-        ('Jane Doe', 'jane@doe.com');
+        ('John', 'Doe', 'john@doe.com'),
+        ('Jane', 'Doe', 'jane@doe.com');
 END
 $$;
