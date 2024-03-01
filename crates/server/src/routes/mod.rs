@@ -13,14 +13,14 @@ use crate::prelude::*;
 /// # Returns
 /// An Axum router.
 pub async fn build() -> Router<AppState> {
-    let router = Router::new()
-        .route("/", get(hello().await))
-        .nest("/api", api::build());
+    let router = Router::new();
 
     #[cfg(feature = "k8s")]
     let router = router.nest("/k8", k8s::build());
 
     router
+        .route("/", get(hello().await))
+        .nest("/api", api::build())
 }
 
 /// Demo handler.
