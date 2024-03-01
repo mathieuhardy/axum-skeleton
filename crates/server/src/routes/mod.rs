@@ -3,8 +3,7 @@
 mod api;
 #[cfg(feature = "k8s")]
 mod k8s;
-
-use axum::response::Html;
+mod openapi;
 
 use crate::prelude::*;
 
@@ -12,19 +11,13 @@ use crate::prelude::*;
 ///
 /// # Returns
 /// An Axum router.
-pub async fn build() -> Router<AppState> {
-    let router = Router::new()
-        .route("/", get(hello().await))
-        .nest("/api", api::build());
+pub fn build() -> ApiRouter<AppState> {
+    let router = ApiRouter::new();
 
     #[cfg(feature = "k8s")]
     let router = router.nest("/k8", k8s::build());
 
     router
-}
-
-/// Demo handler.
-#[axum::debug_handler]
-async fn hello() -> Html<&'static str> {
-    Html("<h1>Hello, World!</h1>")
+        .nest("/openapi", openapi::build())
+        .nest("/api", api::build())
 }

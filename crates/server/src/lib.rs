@@ -1,9 +1,12 @@
 //! This file is the entry point for the server application. It provides a
 //! function to start it and some default handlers.
 
+// Modules
 pub mod config;
+
 pub(crate) mod cors;
 pub(crate) mod error;
+pub(crate) mod openapi;
 pub(crate) mod prelude;
 pub(crate) mod routes;
 pub(crate) mod state;
@@ -11,15 +14,16 @@ pub(crate) mod timeout;
 pub(crate) mod tracing;
 pub(crate) mod types;
 
+// External crates
 pub use axum;
 
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::Router;
 use sqlx::postgres::PgPoolOptions;
 use tokio::net::TcpListener;
 use tokio::signal;
 
+// Current crate
 use crate::config::Config;
 #[cfg(debug_assertions)]
 #[cfg(feature = "sanity")]
@@ -71,7 +75,7 @@ pub async fn start(config: Option<crate::config::Config>) -> Res<()> {
 ///
 /// # Returns
 /// An Axum router instance.
-pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> {
+pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<IntoMakeService<Router>> {
     // CORS layer
     let cors = cors::build(config);
 
@@ -102,9 +106,9 @@ pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> 
     let state = AppState::new(pool.clone());
     event!(Level::INFO, "📦 State configured");
 
-    let mut router = Router::new()
+    let mut router = ApiRouter::new()
         .fallback(handler_404)
-        .nest("/", routes::build().await)
+        .nest("/", routes::build())
         .with_state(state);
 
     router = router
@@ -123,6 +127,8 @@ pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> 
 
         event!(Level::INFO, "🩺 Sanity installed");
     }
+
+    let router = openapi::setup(router);
 
     Ok(router)
 }

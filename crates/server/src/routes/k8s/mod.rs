@@ -6,18 +6,18 @@ use crate::prelude::*;
 ///
 /// # Returns
 /// An Axum router.
-pub fn build() -> Router<AppState> {
-    Router::new()
-        .route("/liveness", get(liveness))
-        .route("/readiness", get(readiness))
-        .route("/startup", get(startup))
+pub fn build() -> ApiRouter<AppState> {
+    ApiRouter::new()
+        .api_route("/liveness", get(liveness))
+        .api_route("/readiness", get(readiness))
+        .api_route("/startup", get(startup))
 }
 
 /// Route for Kubernetes's liveness probe.
 ///
 /// # Returns
 /// HTTP status code.
-async fn liveness() -> StatusCode {
+async fn liveness() -> impl IntoApiResponse {
     StatusCode::OK
 }
 
@@ -25,7 +25,7 @@ async fn liveness() -> StatusCode {
 ///
 /// # Returns
 /// HTTP status code.
-async fn readiness() -> StatusCode {
+async fn readiness() -> impl IntoApiResponse {
     StatusCode::OK
 }
 
@@ -33,6 +33,6 @@ async fn readiness() -> StatusCode {
 ///
 /// # Returns
 /// HTTP status code.
-async fn startup() -> StatusCode {
+async fn startup() -> impl IntoApiResponse {
     StatusCode::OK
 }

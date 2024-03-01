@@ -8,6 +8,6 @@ use crate::prelude::*;
 ///
 /// # Returns
 /// An Axum router.
-pub fn build() -> Router<AppState> {
-    Router::new().nest("/users", v1::users::build())
+pub fn build() -> ApiRouter<AppState> {
+    ApiRouter::new().nest("/users", v1::users::build())
 }

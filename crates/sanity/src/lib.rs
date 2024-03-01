@@ -5,7 +5,7 @@ pub(crate) mod config;
 pub mod error;
 pub(crate) mod prelude;
 
-use axum::Router;
+use aide::axum::ApiRouter;
 use tower_http::services::ServeDir;
 
 use crate::prelude::*;
@@ -18,7 +18,7 @@ use utils::filesystem::{relative_path, root_relative_path};
 ///
 /// # Returns
 /// The new router instance or an error.
-pub fn initialize(router: Router) -> Res<Router> {
+pub fn initialize(router: ApiRouter) -> Res<ApiRouter> {
     let config = crate::config::Config::new()?;
 
     // TODO: don't fail if directory doesn't exists

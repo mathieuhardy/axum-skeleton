@@ -10,8 +10,8 @@ use crate::state::AppState;
 ///
 /// # Returns
 /// An Axum router.
-pub fn build() -> Router<AppState> {
-    Router::new()
+pub fn build() -> ApiRouter<AppState> {
+    ApiRouter::new()
         // GET
         .route("/", get(get_filtered))
         .route("/me", get(get_me))
