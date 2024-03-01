@@ -17,8 +17,6 @@
 
 ## Tests
 
-- use hook in unit tests of server
-
 ## Sanity
 
 - add test plan in markdown files
