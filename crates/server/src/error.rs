@@ -38,6 +38,7 @@ pub enum Error {
     InvalidEnvironment(String),
 
     /// Generic sanity error.
+    #[cfg(feature = "sanity")]
     #[error("{0}")]
     Sanity(#[source] sanity::error::Error),
 

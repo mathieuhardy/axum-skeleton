@@ -5,21 +5,19 @@
 - OpenApi
 - GraphQL
 - Job queue
+- Websockets
 
 ## Docs
 
-- Documentation of macros, derives
 - Sanity dashboard
 
 ## Devops
 
-- GitHub actions
 - Kubernetes, terraform, helm
 
 ## Tests
 
 - use hook in unit tests of server
-- unit tests for derive macro in test-utils
 
 ## Sanity
 

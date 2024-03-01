@@ -33,17 +33,17 @@ const ERROR_MSG: &str = "Attribute should be like: #[hook(setup, teardown)]";
 ///
 ///   #[hook(custom_setup, custom_teardown)]
 ///   fn test_1() {
-///       assert!(true);
+///       |_| async move {}
 ///   }
 ///
 ///   #[hook(custom_setup, _)]
 ///   fn test_2() {
-///       assert!(true);
+///       |_| async move {}
 ///   }
 ///
 ///   #[hook(_, custom_teardown)]
 ///   fn test_3() {
-///       assert!(true);
+///       |_| async move {}
 ///   }
 /// }
 /// ```
