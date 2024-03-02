@@ -7,6 +7,7 @@
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Breaking change
+- [ ] Other
 
 ## Tests
 

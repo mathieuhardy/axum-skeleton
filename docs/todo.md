@@ -15,10 +15,6 @@
 
 - Kubernetes, terraform, helm
 
-## Tests
-
-- Validation of inputs
-
 ## Sanity
 
 - add test plan in markdown files
