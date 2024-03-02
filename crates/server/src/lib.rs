@@ -75,13 +75,13 @@ pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> 
     // CORS layer
     let cors = cors::build(config);
 
-    event!(Level::INFO, "🔒 CORS configured");
+    event!(Level::INFO, "🔑 CORS configured");
     event!(Level::TRACE, "{:#?}", cors);
 
     // Timeout
     let timeout = timeout::timeout_layer(config);
 
-    event!(Level::INFO, "🕑 Timeout configured");
+    event!(Level::INFO, "⏰ Timeout configured");
 
     // Sensitive layers
     let (sensitive_request_layer, sensitive_response_layer) = tracing::sensitive_headers_layers();

@@ -1,9 +1,10 @@
-name: Pull request checks
+name: CI
 
 on:
-  pull_request:
+  push:
     branches:
       - main
+  pull_request:
 
 jobs:
   # Check that the project can be build in release mode
