@@ -40,6 +40,7 @@ cargo clippy --workspace --all-targets --all-features --color always --keep-goin
 - [OpenApi](https://docs.rs/okapi-operation/latest/okapi_operation/#example-using-axum-but-without-axum_integration-feature)
 - [Prometheus](https://docs.rs/axum-prometheus/latest/axum_prometheus/)
 - [Job queue](https://cetra3.github.io/blog/implementing-a-jobq)
+- [Easter egg](https://fr.wikipedia.org/wiki/Hyper_Text_Coffee_Pot_Control_Protocol)
 
 ### Websockets
 
@@ -53,3 +54,18 @@ cargo clippy --workspace --all-targets --all-features --color always --keep-goin
 - [Versio](https://crates.io/crates/versio)
 - [Cargo-edit](https://crates.io/crates/cargo-edit)
 - [Cargo-workspaces](https://crates.io/crates/cargo-workspaces)
+
+### HTTP codes
+
+- 201 (Created): for posts or upserts
+- 202 (Accepted): for jobs
+- 204 (No content): for deletes
+- 208 (Already reported): post the same file
+
+- 301 (Moved permanently): for GET, HEAD
+- 308 (Permanent redirect): for POST
+
+- 401 (Unauthorized): for user auth
+- 403 (Forbidden): for accesses
+- 423 (Locked): for anything that can be locked
+- 498 (Token expired): for sessions ?
