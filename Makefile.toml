@@ -57,11 +57,56 @@ echo "  ${BV}cov-tests-show${NC}      Show the HTML results of the tests coverag
 '''
 
 # ------------------------------------------------------------------------------
+# Bootstrap
+# ------------------------------------------------------------------------------
+
+[tasks.bootstrap]
+workspace = false
+private = true
+script = '''
+if ! command -v cargo-audit 1>/dev/null 2>&1
+then
+    cargo install cargo-audit
+fi
+
+if ! command -v cargo-bloat 1>/dev/null 2>&1
+then
+    cargo install cargo-bloat
+fi
+
+if ! command -v cargo-clippy 1>/dev/null 2>&1
+then
+    cargo install clippy
+fi
+
+if ! command -v cargo-license 1>/dev/null 2>&1
+then
+    cargo install cargo-license
+fi
+
+if ! command -v cargo-machete 1>/dev/null 2>&1
+then
+    cargo install cargo-machete
+fi
+
+if ! command -v cargo-outdated 1>/dev/null 2>&1
+then
+    cargo install cargo-outdated
+fi
+
+if ! command -v cargo-tarpaulin 1>/dev/null 2>&1
+then
+    cargo install cargo-tarpaulin
+fi
+'''
+
+# ------------------------------------------------------------------------------
 # Generate a report with build timings
 # ------------------------------------------------------------------------------
 
 [tasks.build-timings]
 workspace = false
+dependencies = ["bootstrap"]
 command = "cargo"
 args = ["build", "--timings"]
 
@@ -71,6 +116,7 @@ args = ["build", "--timings"]
 
 [tasks.clippy]
 workspace = false
+dependencies = ["bootstrap"]
 command = "cargo"
 args = [
   "clippy",
@@ -90,17 +136,14 @@ args = [
 
 [tasks.crates-audit]
 workspace = false
+dependencies = ["bootstrap"]
 command = "cargo"
 args = ["audit"]
 
 [tasks.crates-audit-json]
 workspace = false
+dependencies = ["bootstrap"]
 script = '''
-if ! command -v cargo-audit 1>/dev/null 2>&1
-then
-    cargo install cargo-audit 1>/dev/null 2>&1
-fi
-
 cargo audit --json > ${SAN_OUTPUT_DIR}/crates-audit.json || /bin/true
 
 echo "🟢 ${B_WHITE}Done: ${SAN_OUTPUT_DIR}/crates-audit.json${NC}"
@@ -112,17 +155,15 @@ echo "🟢 ${B_WHITE}Done: ${SAN_OUTPUT_DIR}/crates-audit.json${NC}"
 
 [tasks.crates-bloats]
 workspace = false
+dependencies = ["bootstrap"]
 script = '''
-cargo install cargo-bloat 1>/dev/null 2>&1
-
 ${SCRIPTS_DIR}/sanity/crates/bloats.py --text
 '''
 
 [tasks.crates-bloats-json]
 workspace = false
+dependencies = ["bootstrap"]
 script = '''
-cargo install cargo-bloat 1>/dev/null 2>&1
-
 ${SCRIPTS_DIR}/sanity/crates/bloats.py 1>${SAN_OUTPUT_DIR}/crates-bloats.json 2>/dev/null
 
 echo "🟢 ${B_WHITE}Done: ${SAN_OUTPUT_DIR}/crates-bloats.json${NC}"
@@ -134,14 +175,14 @@ echo "🟢 ${B_WHITE}Done: ${SAN_OUTPUT_DIR}/crates-bloats.json${NC}"
 
 [tasks.crates-licenses]
 workspace = false
+dependencies = ["bootstrap"]
 command = "cargo"
 args = ["license"]
 
 [tasks.crates-licenses-json]
 workspace = false
+dependencies = ["bootstrap"]
 script = '''
-cargo install cargo-license 1>/dev/null 2>&1
-
 cargo license --json > ${SAN_OUTPUT_DIR}/crates-licenses.json || /bin/true
 
 echo "🟢 ${B_WHITE}Done: ${SAN_OUTPUT_DIR}/crates-licenses.json${NC}"
@@ -153,12 +194,14 @@ echo "🟢 ${B_WHITE}Done: ${SAN_OUTPUT_DIR}/crates-licenses.json${NC}"
 
 [tasks.crates-duplicates]
 workspace = false
+dependencies = ["bootstrap"]
 script = '''
 ${SCRIPTS_DIR}/sanity/crates/duplicates.py --text
 '''
 
 [tasks.crates-duplicates-json]
 workspace = false
+dependencies = ["bootstrap"]
 script = '''
 ${SCRIPTS_DIR}/sanity/crates/duplicates.py > ${SAN_OUTPUT_DIR}/crates-duplicates.json
 
@@ -171,14 +214,14 @@ echo "🟢 ${B_WHITE}Done: ${SAN_OUTPUT_DIR}/crates-duplicates.json${NC}"
 
 [tasks.crates-unused]
 workspace = false
+dependencies = ["bootstrap"]
 command = "cargo"
 args = ["machete"]
 
 [tasks.crates-unused-json]
 workspace = false
+dependencies = ["bootstrap"]
 script = '''
-cargo install cargo-machete 1>/dev/null 2>&1
-
 cargo machete 1>${SAN_OUTPUT_DIR}/crates-unused.txt 2>/dev/null
 
 echo "🟢 ${B_WHITE}Done: ${SAN_OUTPUT_DIR}/crates-unused.txt${NC}"
@@ -190,15 +233,15 @@ echo "🟢 ${B_WHITE}Done: ${SAN_OUTPUT_DIR}/crates-unused.txt${NC}"
 
 [tasks.crates-upgradables]
 workspace = false
+dependencies = ["bootstrap"]
 script = '''
 ${SCRIPTS_DIR}/sanity/crates/upgradables.py --text
 '''
 
 [tasks.crates-upgradables-json]
 workspace = false
+dependencies = ["bootstrap"]
 script = '''
-cargo install cargo-outdated 1>/dev/null 2>&1
-
 ${SCRIPTS_DIR}/sanity/crates/upgradables.py > ${SAN_OUTPUT_DIR}/crates-upgradables.json
 
 echo "🟢 ${B_WHITE}Done: ${SAN_OUTPUT_DIR}/crates-upgradables.json${NC}"
@@ -319,10 +362,7 @@ open ${TESTS_COV_HTML}
 # Generate the tests coverage report
 [tasks.cov-tests]
 workspace = false
-private = true
-script.pre = '''
-cargo install cargo-tarpaulin 1>/dev/null 2>&1
-'''
+dependencies = ["bootstrap"]
 script.main = '''
 cargo tarpaulin ${CARGO_DEFAULT_OPTS} --all-targets -o html
 '''
