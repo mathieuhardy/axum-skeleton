@@ -47,3 +47,19 @@ pub fn root_relative_path(path: &str) -> Res<PathBuf> {
 
     Ok(path)
 }
+
+/// Creates a path relative to the root directory.
+///
+/// # Arguments
+/// * `path` - Path to create (relative to the root directory).
+///
+/// # Returns
+/// The relative path or an error.
+pub fn create_root_relative_path(path: &str) -> Res<PathBuf> {
+    let base_path = project_root::get_project_root().map_err(Error::Filesystem)?;
+    let path = base_path.join(path);
+
+    std::fs::create_dir(&path)?;
+
+    Ok(path)
+}

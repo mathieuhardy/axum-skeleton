@@ -9,7 +9,7 @@ use axum::Router;
 use tower_http::services::ServeDir;
 
 use crate::prelude::*;
-use utils::filesystem::{relative_path, root_relative_path};
+use utils::filesystem::{create_root_relative_path, relative_path, root_relative_path};
 
 /// Initialize the sanity module and insert the needed routes in the provided router.
 ///
@@ -21,8 +21,10 @@ use utils::filesystem::{relative_path, root_relative_path};
 pub fn initialize(router: Router) -> Res<Router> {
     let config = crate::config::Config::new()?;
 
-    // TODO: don't fail if directory doesn't exists
-    let inputs = root_relative_path(&config.paths.inputs).map_err(Error::Filesystem)?;
+    let inputs = match root_relative_path(&config.paths.inputs) {
+        Ok(path) => path,
+        Err(_) => create_root_relative_path(&config.paths.inputs)?,
+    };
 
     let dashboard_dir = relative_path(&config.paths.dashboard)
         .or(root_relative_path("crates/sanity/data/dashboard"))

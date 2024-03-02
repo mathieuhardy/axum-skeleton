@@ -15,7 +15,7 @@ pub enum Error {
 
     /// Generic filesystem error.
     #[error("{0}")]
-    Filesystem(#[source] std::io::Error),
+    Filesystem(#[from] std::io::Error),
 
     /// Unexpected error that should never happen.
     #[error("Unexpected server error")]
