@@ -12,6 +12,8 @@ use crate::state::AppState;
 /// An Axum router.
 pub fn build() -> Router<AppState> {
     Router::new()
+        // DELETE
+        .route("/:id", delete(delete_by_id))
         // GET
         .route("/", get(get_filtered))
         .route("/me", get(get_me))
@@ -22,6 +24,15 @@ pub fn build() -> Router<AppState> {
         .route("/", post(post_user))
         // PUT
         .route("/", put(put_user))
+}
+
+/// Handler used to delete a user giving its ID.
+#[axum::debug_handler]
+#[instrument]
+async fn delete_by_id(Path(id): Path<Uuid>, State(state): State<AppState>) -> Res<StatusCode> {
+    User::delete_by_id(&id, &state.db).await?;
+
+    Ok(StatusCode::NO_CONTENT)
 }
 
 /// Handler used to get information about the currently logged user.
@@ -69,12 +80,12 @@ async fn get_by_id(Path(id): Path<Uuid>, State(state): State<AppState>) -> Res<J
 async fn post_user(
     State(state): State<AppState>,
     FormOrJson(user): FormOrJson<UserRequest>,
-) -> Res<Json<User>> {
+) -> Res<(StatusCode, Json<User>)> {
     user.validate()?;
 
     let user = User::insert(&user.into(), &state.db).await?;
 
-    Ok(Json(user))
+    Ok((StatusCode::CREATED, Json(user)))
 }
 
 /// Handler used to update an existing user by providing its ID.
@@ -98,14 +109,20 @@ async fn patch_user(
 async fn put_user(
     State(state): State<AppState>,
     FormOrJson(user): FormOrJson<UserRequest>,
-) -> Res<Json<User>> {
+) -> Res<(StatusCode, Json<User>)> {
     user.validate()?;
 
-    let user = if let Some(id) = user.id {
-        User::update_by_id(&id, &user.into(), &state.db).await
+    let (rc, user) = if let Some(id) = user.id {
+        (
+            StatusCode::OK,
+            User::update_by_id(&id, &user.into(), &state.db).await?,
+        )
     } else {
-        User::insert(&user.into(), &state.db).await
-    }?;
+        (
+            StatusCode::CREATED,
+            User::insert(&user.into(), &state.db).await?,
+        )
+    };
 
-    Ok(Json(user))
+    Ok((rc, Json(user)))
 }

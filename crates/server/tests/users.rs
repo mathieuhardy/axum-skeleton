@@ -8,6 +8,33 @@ async fn setup() -> TestClient {
     init_server().await.unwrap()
 }
 
+mod delete {
+    use super::*;
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    async fn by_id() {
+        |client| async move {
+            let client = client.lock().unwrap();
+
+            let response = client.get("/api/users").send().await.unwrap();
+            assert_eq!(response.status(), test_utils::StatusCode::OK);
+
+            let users = response.json::<Vec<User>>().await.unwrap();
+            assert!(users.len() > 0);
+
+            let response = client
+                .delete(format!("/api/users/{}", users[0].id))
+                .send()
+                .await
+                .unwrap();
+
+            assert_eq!(response.status(), test_utils::StatusCode::NO_CONTENT);
+        }
+    }
+}
+
 mod get {
     use super::*;
 
@@ -329,7 +356,7 @@ mod post {
             ];
 
             let response = client.post("/api/users").form(&user).send().await.unwrap();
-            assert_eq!(response.status(), test_utils::StatusCode::OK);
+            assert_eq!(response.status(), test_utils::StatusCode::CREATED);
 
             let user = response.json::<User>().await.unwrap();
             assert_eq!(user.first_name, "New");
@@ -353,7 +380,7 @@ mod post {
             };
 
             let response = client.post("/api/users").json(&user).send().await.unwrap();
-            assert_eq!(response.status(), test_utils::StatusCode::OK);
+            assert_eq!(response.status(), test_utils::StatusCode::CREATED);
 
             let user = response.json::<User>().await.unwrap();
             assert_eq!(user.first_name, "New");
@@ -447,7 +474,7 @@ mod put {
             ];
 
             let response = client.put("/api/users").form(&user).send().await.unwrap();
-            assert_eq!(response.status(), test_utils::StatusCode::OK);
+            assert_eq!(response.status(), test_utils::StatusCode::CREATED);
 
             let user = response.json::<User>().await.unwrap();
             assert_eq!(user.first_name, "New");
@@ -488,7 +515,7 @@ mod put {
             };
 
             let response = client.put("/api/users").json(&user).send().await.unwrap();
-            assert_eq!(response.status(), test_utils::StatusCode::OK);
+            assert_eq!(response.status(), test_utils::StatusCode::CREATED);
 
             let user = response.json::<User>().await.unwrap();
             assert_eq!(user.first_name, "New");

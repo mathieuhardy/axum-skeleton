@@ -57,9 +57,7 @@ cargo clippy --workspace --all-targets --all-features --color always --keep-goin
 
 ### HTTP codes
 
-- 201 (Created): for posts or upserts
 - 202 (Accepted): for jobs
-- 204 (No content): for deletes
 - 208 (Already reported): post the same file
 
 - 301 (Moved permanently): for GET, HEAD
