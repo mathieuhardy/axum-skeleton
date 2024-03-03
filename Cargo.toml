@@ -8,6 +8,15 @@ readme = "README.md"
 homepage = "https://github.com/mathieuhardy/axum-skeleton"
 repository = "https://github.com/mathieuhardy/axum-skeleton"
 license-file = "LICENSE.txt"
+default-run = "axum-skeleton"
+
+[[bin]]
+name = "axum-skeleton"
+path = "src/main.rs"
+
+[[bin]]
+name = "axum-skeleton-worker"
+path = "src/worker.rs"
 
 [workspace]
 members = [
