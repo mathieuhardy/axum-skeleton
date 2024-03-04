@@ -33,10 +33,11 @@ $$ LANGUAGE plpgsql;
 -- Create tables
 
 CREATE TABLE users (
-    id            UUID primary KEY DEFAULT uuid_generate_v4(),
-    first_name    VARCHAR not null,
-    last_name     VARCHAR not null,
-    email         VARCHAR not null,
+    id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    first_name    VARCHAR NOT NULL,
+    last_name     VARCHAR NOT NULL,
+    email         VARCHAR NOT NULL,
+    password      VARCHAR NOT NULL,
     created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
 
@@ -44,3 +45,12 @@ CREATE TABLE users (
 );
 
 SELECT create_updated_at_trigger('users');
+
+-- Insert fake data (must not be done for production usage)
+INSERT INTO users (first_name, last_name, email, password)
+VALUES
+    -- Original password: johndoeisthebest
+    ('John', 'Doe', 'john@doe.com', '$argon2id$v=19$m=16,t=2,p=1$YWJjZGVmZ2hpamtsbW5vcA$zs3MjnjdDjde5NfooJ0f+g'),
+
+    -- Original password: nothisisjaneofcourse
+    ('Jane', 'Doe', 'jane@doe.com', '$argon2id$v=19$m=16,t=2,p=1$YWJjZGVmZ2hpamtsbW5vcA$4kRXsgWWfcwrxbN9NOkX0A');

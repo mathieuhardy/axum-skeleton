@@ -13,6 +13,10 @@ pub type Res<T> = Result<T, Error>;
 /// Enumerates the possible errors returned by this crate.
 #[derive(Debug, Error)]
 pub enum Error {
+    /// Actions error.
+    #[error("{0}")]
+    Actions(#[from] actions::error::Error),
+
     /// Generic Axum error.
     #[error("{0}")]
     Axum(#[source] std::io::Error),

@@ -2,7 +2,7 @@ use serial_test::serial;
 use test_utils::*;
 use urlencoding::encode;
 
-use database::models::users::{User, UserRequest};
+use database::models::users::*;
 
 async fn setup() -> TestClient {
     init_server().await.unwrap()
@@ -21,8 +21,8 @@ mod delete {
             let response = client.get("/api/users").send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
-            let users = response.json::<Vec<User>>().await.unwrap();
-            assert!(users.len() > 0);
+            let users = response.json::<Vec<UserResponse>>().await.unwrap();
+            assert!(!users.is_empty());
 
             let response = client
                 .delete(format!("/api/users/{}", users[0].id))
@@ -48,7 +48,7 @@ mod get {
             let response = client.get("/api/users/me").send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
-            let user = response.json::<User>().await.unwrap();
+            let user = response.json::<UserResponse>().await.unwrap();
             assert_eq!(user.first_name, "John");
             assert_eq!(user.last_name, "Doe");
             assert_eq!(user.email, "john@doe.com");
@@ -65,7 +65,7 @@ mod get {
             let response = client.get("/api/users").send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
-            let users = response.json::<Vec<User>>().await.unwrap();
+            let users = response.json::<Vec<UserResponse>>().await.unwrap();
             assert_eq!(users.len(), 2);
             assert!(users.iter().any(|e| e.first_name == "John"
                 && e.last_name == "Doe"
@@ -91,7 +91,7 @@ mod get {
                 .unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
-            let users = response.json::<Vec<User>>().await.unwrap();
+            let users = response.json::<Vec<UserResponse>>().await.unwrap();
             assert_eq!(users.len(), 1);
             assert_eq!(users[0].first_name, "John");
             assert_eq!(users[0].last_name, "Doe");
@@ -113,7 +113,7 @@ mod get {
                 .unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
-            let users = response.json::<Vec<User>>().await.unwrap();
+            let users = response.json::<Vec<UserResponse>>().await.unwrap();
             assert_eq!(users.len(), 1);
             assert_eq!(users[0].first_name, "John");
             assert_eq!(users[0].last_name, "Doe");
@@ -135,7 +135,7 @@ mod get {
             let response = client.get("/api/users").send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
-            let users = response.json::<Vec<User>>().await.unwrap();
+            let users = response.json::<Vec<UserResponse>>().await.unwrap();
             assert_eq!(users.len(), 2);
 
             let response = client
@@ -146,12 +146,14 @@ mod get {
 
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
-            let user = response.json::<User>().await.unwrap();
+            let user = response.json::<UserResponse>().await.unwrap();
             assert_eq!(users[0], user);
         }
     }
 }
 
+// TODO: test update with None values
+// TODO: test passwords
 mod patch {
     use super::*;
 
@@ -166,13 +168,14 @@ mod patch {
             let response = client.get("/api/users").send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
-            let users = response.json::<Vec<User>>().await.unwrap();
+            let users = response.json::<Vec<UserResponse>>().await.unwrap();
 
             // Create a request to be sent
             let user = [
                 ("first_name", "New"),
                 ("last_name", "User"),
                 ("email", "new@user.com"),
+                ("password", "blablabla"),
             ];
 
             // Update
@@ -185,7 +188,7 @@ mod patch {
 
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
-            let user = response.json::<User>().await.unwrap();
+            let user = response.json::<UserResponse>().await.unwrap();
             assert_eq!(user.first_name, "New");
             assert_eq!(user.last_name, "User");
             assert_eq!(user.email, "new@user.com");
@@ -203,14 +206,15 @@ mod patch {
             let response = client.get("/api/users").send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
-            let users = response.json::<Vec<User>>().await.unwrap();
+            let users = response.json::<Vec<UserResponse>>().await.unwrap();
 
             // Create a request to be sent
-            let user = User {
-                first_name: "New".to_string(),
-                last_name: "User".to_string(),
-                email: "new@user.com".to_string(),
-                ..User::default()
+            let user = UserRequest {
+                first_name: Some("New".to_string()),
+                last_name: Some("User".to_string()),
+                email: Some("new@user.com".to_string()),
+                password: Some("blablabla".to_string()),
+                ..UserRequest::default()
             };
 
             // Update
@@ -223,7 +227,7 @@ mod patch {
 
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
-            let user = response.json::<User>().await.unwrap();
+            let user = response.json::<UserResponse>().await.unwrap();
             assert_eq!(user.first_name, "New");
             assert_eq!(user.last_name, "User");
             assert_eq!(user.email, "new@user.com");
@@ -241,14 +245,15 @@ mod patch {
             let response = client.get("/api/users").send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
-            let users = response.json::<Vec<User>>().await.unwrap();
+            let users = response.json::<Vec<UserResponse>>().await.unwrap();
 
             // Create a request to be sent
-            let user = User {
-                first_name: "New".to_string(),
-                last_name: "User".to_string(),
-                email: "newuser.com".to_string(),
-                ..User::default()
+            let user = UserRequest {
+                first_name: Some("New".to_string()),
+                last_name: Some("User".to_string()),
+                email: Some("newuser.com".to_string()),
+                password: Some("blablabla".to_string()),
+                ..UserRequest::default()
             };
 
             // Update
@@ -277,14 +282,15 @@ mod patch {
             let response = client.get("/api/users").send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
-            let users = response.json::<Vec<User>>().await.unwrap();
+            let users = response.json::<Vec<UserResponse>>().await.unwrap();
 
             // Create a request to be sent
-            let user = User {
-                first_name: "".to_string(),
-                last_name: "User".to_string(),
-                email: "new@user.com".to_string(),
-                ..User::default()
+            let user = UserRequest {
+                first_name: Some("".to_string()),
+                last_name: Some("User".to_string()),
+                email: Some("new@user.com".to_string()),
+                password: Some("blablabla".to_string()),
+                ..UserRequest::default()
             };
 
             // Update
@@ -313,14 +319,15 @@ mod patch {
             let response = client.get("/api/users").send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
-            let users = response.json::<Vec<User>>().await.unwrap();
+            let users = response.json::<Vec<UserResponse>>().await.unwrap();
 
             // Create a request to be sent
-            let user = User {
-                first_name: "New".to_string(),
-                last_name: "".to_string(),
-                email: "new@user.com".to_string(),
-                ..User::default()
+            let user = UserRequest {
+                first_name: Some("New".to_string()),
+                last_name: Some("".to_string()),
+                email: Some("new@user.com".to_string()),
+                password: Some("blablabla".to_string()),
+                ..UserRequest::default()
             };
 
             // Update
@@ -339,6 +346,7 @@ mod patch {
     }
 }
 
+// TODO: test post with None values
 mod post {
     use super::*;
 
@@ -353,12 +361,13 @@ mod post {
                 ("first_name", "New"),
                 ("last_name", "User"),
                 ("email", "new@user.com"),
+                ("password", "blablabla"),
             ];
 
             let response = client.post("/api/users").form(&user).send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::CREATED);
 
-            let user = response.json::<User>().await.unwrap();
+            let user = response.json::<UserResponse>().await.unwrap();
             assert_eq!(user.first_name, "New");
             assert_eq!(user.last_name, "User");
             assert_eq!(user.email, "new@user.com");
@@ -372,20 +381,45 @@ mod post {
         |client| async move {
             let client = client.lock().unwrap();
 
-            let user = User {
-                first_name: "New".to_string(),
-                last_name: "User".to_string(),
-                email: "new@user.com".to_string(),
-                ..User::default()
+            let user = UserRequest {
+                first_name: Some("New".to_string()),
+                last_name: Some("User".to_string()),
+                email: Some("new@user.com".to_string()),
+                password: Some("blablabla".to_string()),
+                ..UserRequest::default()
             };
 
             let response = client.post("/api/users").json(&user).send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::CREATED);
 
-            let user = response.json::<User>().await.unwrap();
+            let user = response.json::<UserResponse>().await.unwrap();
             assert_eq!(user.first_name, "New");
             assert_eq!(user.last_name, "User");
             assert_eq!(user.email, "new@user.com");
+        }
+    }
+
+    // TODO: test patterns
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    async fn invalid_password() {
+        |client| async move {
+            let client = client.lock().unwrap();
+
+            let user = UserRequest {
+                first_name: Some("New".to_string()),
+                last_name: Some("User".to_string()),
+                email: Some("new@user.com".to_string()),
+                password: None,
+                ..UserRequest::default()
+            };
+
+            let response = client.post("/api/users").json(&user).send().await.unwrap();
+            assert_eq!(
+                response.status(),
+                test_utils::StatusCode::INTERNAL_SERVER_ERROR
+            );
         }
     }
 
@@ -396,11 +430,12 @@ mod post {
         |client| async move {
             let client = client.lock().unwrap();
 
-            let user = User {
-                first_name: "New".to_string(),
-                last_name: "User".to_string(),
-                email: "newuser.com".to_string(),
-                ..User::default()
+            let user = UserRequest {
+                first_name: Some("New".to_string()),
+                last_name: Some("User".to_string()),
+                email: Some("newuser.com".to_string()),
+                password: Some("blablabla".to_string()),
+                ..UserRequest::default()
             };
 
             let response = client.post("/api/users").json(&user).send().await.unwrap();
@@ -418,11 +453,12 @@ mod post {
         |client| async move {
             let client = client.lock().unwrap();
 
-            let user = User {
-                first_name: "".to_string(),
-                last_name: "User".to_string(),
-                email: "new@user.com".to_string(),
-                ..User::default()
+            let user = UserRequest {
+                first_name: Some("".to_string()),
+                last_name: Some("User".to_string()),
+                email: Some("new@user.com".to_string()),
+                password: Some("blablabla".to_string()),
+                ..UserRequest::default()
             };
 
             let response = client.post("/api/users").json(&user).send().await.unwrap();
@@ -440,11 +476,12 @@ mod post {
         |client| async move {
             let client = client.lock().unwrap();
 
-            let user = User {
-                first_name: "New".to_string(),
-                last_name: "".to_string(),
-                email: "new@user.com".to_string(),
-                ..User::default()
+            let user = UserRequest {
+                first_name: Some("New".to_string()),
+                last_name: Some("".to_string()),
+                email: Some("new@user.com".to_string()),
+                password: Some("blablabla".to_string()),
+                ..UserRequest::default()
             };
 
             let response = client.post("/api/users").json(&user).send().await.unwrap();
@@ -456,6 +493,8 @@ mod post {
     }
 }
 
+// TODO: test put with None values
+// TODO: test passwords
 mod put {
     use super::*;
 
@@ -471,12 +510,13 @@ mod put {
                 ("first_name", "New"),
                 ("last_name", "User"),
                 ("email", "new@user.com"),
+                ("password", "blablabla"),
             ];
 
             let response = client.put("/api/users").form(&user).send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::CREATED);
 
-            let user = response.json::<User>().await.unwrap();
+            let user = response.json::<UserResponse>().await.unwrap();
             assert_eq!(user.first_name, "New");
             assert_eq!(user.last_name, "User");
             assert_eq!(user.email, "new@user.com");
@@ -487,12 +527,13 @@ mod put {
                 ("first_name", "New".to_string()),
                 ("last_name", "User (2)".to_string()),
                 ("email", "new@user2.com".to_string()),
+                ("password", "new_password".to_string()),
             ];
 
             let response = client.put("/api/users").form(&user).send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
-            let user = response.json::<User>().await.unwrap();
+            let user = response.json::<UserResponse>().await.unwrap();
             assert_eq!(user.first_name, "New");
             assert_eq!(user.last_name, "User (2)");
             assert_eq!(user.email, "new@user2.com");
@@ -511,13 +552,14 @@ mod put {
                 first_name: Some("New".to_string()),
                 last_name: Some("User".to_string()),
                 email: Some("new@user.com".to_string()),
+                password: Some("blablabla".to_string()),
                 ..UserRequest::default()
             };
 
             let response = client.put("/api/users").json(&user).send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::CREATED);
 
-            let user = response.json::<User>().await.unwrap();
+            let user = response.json::<UserResponse>().await.unwrap();
             assert_eq!(user.first_name, "New");
             assert_eq!(user.last_name, "User");
             assert_eq!(user.email, "new@user.com");
@@ -528,12 +570,13 @@ mod put {
                 first_name: Some("New".to_string()),
                 last_name: Some("User (2)".to_string()),
                 email: Some("new@user2.com".to_string()),
+                password: Some("new_password".to_string()),
             };
 
             let response = client.put("/api/users").form(&user).send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
 
-            let user = response.json::<User>().await.unwrap();
+            let user = response.json::<UserResponse>().await.unwrap();
             assert_eq!(user.first_name, "New");
             assert_eq!(user.last_name, "User (2)");
             assert_eq!(user.email, "new@user2.com");
@@ -552,6 +595,7 @@ mod put {
                 first_name: Some("New".to_string()),
                 last_name: Some("User".to_string()),
                 email: Some("newuser.com".to_string()),
+                password: Some("blablabla".to_string()),
                 ..UserRequest::default()
             };
 
@@ -575,6 +619,7 @@ mod put {
                 first_name: Some("".to_string()),
                 last_name: Some("User".to_string()),
                 email: Some("new@user.com".to_string()),
+                password: Some("blablabla".to_string()),
                 ..UserRequest::default()
             };
 
@@ -598,6 +643,7 @@ mod put {
                 first_name: Some("New".to_string()),
                 last_name: Some("".to_string()),
                 email: Some("new@user.com".to_string()),
+                password: Some("blablabla".to_string()),
                 ..UserRequest::default()
             };
 

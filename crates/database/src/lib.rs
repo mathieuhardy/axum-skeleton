@@ -11,5 +11,8 @@ pub mod error;
 pub mod models;
 pub mod traits;
 
+// External crates
+pub use {sqlx, uuid};
+
 pub(crate) mod prelude;
 pub(crate) mod requests;
