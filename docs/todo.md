@@ -67,3 +67,7 @@ cargo clippy --workspace --all-targets --all-features --color always --keep-goin
 - 403 (Forbidden): for accesses
 - 423 (Locked): for anything that can be locked
 - 498 (Token expired): for sessions ?
+
+### Hashing
+
+https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html

@@ -3,4 +3,7 @@
 pub mod error;
 #[cfg(feature = "fs")]
 pub mod filesystem;
-pub mod prelude;
+#[cfg(feature = "hashing")]
+pub mod hashing;
+
+pub(crate) mod prelude;

@@ -1,0 +1,10 @@
+[package]
+name = "actions"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+thiserror = { version = "1.0.56", default-features = false }
+
+database = { path = "../database", default-features = false }
+utils = { path = "../utils", default-features = false, features = ["hashing"] }

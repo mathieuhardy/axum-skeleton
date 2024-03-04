@@ -15,6 +15,7 @@ tracing = { version = "0.1.40", default-features = false, features = ["attribute
 uuid = { version = "1.7.0", default-features = false }
 validator = { version = "0.15", default-features = false }
 
+actions = { path = "../actions", default-features = false }
 database = { path = "../database", default-features = false }
 sanity = { path = "../sanity", default-features = false, optional = true }
 utils = { path = "../utils", default-features = false, features = ["fs"] }

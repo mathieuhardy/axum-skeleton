@@ -183,14 +183,18 @@ fn generate_export(input: &DeriveInput, ident: &Ident) -> TokenStream {
         if has_attribute(f, "is_in", ident) {
             let mut sanitized = f.clone();
 
-            sanitized.attrs.retain(|a| !attribute_is(a, "is_in"));
+            sanitized
+                .attrs
+                .retain(|a| !attribute_is(a, "is_in") && !attribute_is(a, "optional_in"));
 
             Some(sanitized)
         } else if has_attribute(f, "optional_in", ident) {
             let mut sanitized = f.clone();
 
             sanitized.ty = to_optional(&f.ty);
-            sanitized.attrs.retain(|a| !attribute_is(a, "optional_in"));
+            sanitized
+                .attrs
+                .retain(|a| !attribute_is(a, "is_in") && !attribute_is(a, "optional_in"));
 
             Some(sanitized)
         } else {

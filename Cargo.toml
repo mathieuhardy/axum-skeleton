@@ -20,8 +20,12 @@ path = "src/worker.rs"
 
 [workspace]
 members = [
+  "crates/actions",
   "crates/database",
+  "crates/sanity",
   "crates/server",
+  "crates/test-utils",
+  "crates/utils",
 ]
 
 [dependencies]

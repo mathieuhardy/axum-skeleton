@@ -4,8 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+argon2 = { version = "0.5.3", default-features = false, features = ["alloc", "password-hash"] }
 project-root = { version = "0.2.2", default-features = false }
 thiserror = { version = "1.0.56", default-features = false }
 
+# TODO: hashing
 [features]
 fs = []
+hashing = []

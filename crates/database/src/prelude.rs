@@ -7,7 +7,7 @@ pub(crate) use serde_with::serde_as;
 pub(crate) use sqlx::{FromRow, PgPool};
 pub(crate) use tracing::{event, Level};
 pub(crate) use uuid::Uuid;
-pub(crate) use validator::Validate;
+pub(crate) use validator::{Validate, ValidationError};
 
 // Current crate
 pub use crate::error::*;
