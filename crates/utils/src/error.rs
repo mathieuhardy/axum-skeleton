@@ -9,7 +9,7 @@ pub type Res<T> = Result<T, Error>;
 /// Enumerates the possible errors returned by this crate.
 #[derive(Debug, Error)]
 pub enum Error {
-    // Hashing error using Argon2
+    /// Hashing error using Argon2
     #[error("Cannot hash string: {0}")]
     Hashing(String),
 
