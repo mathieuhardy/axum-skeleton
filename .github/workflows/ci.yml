@@ -41,6 +41,7 @@ jobs:
         with:
           cache-target: release
           bins: cargo-make
+          components: clippy
       
       - name: Run clippy
         run: |
