@@ -203,6 +203,15 @@ impl User {
     }
 }
 
+/// Validate a password accoring to application rules.
+///
+/// TODO: To be implemented
+///
+/// # Arguments
+/// * `password` - Password to be checked.
+///
+/// # Returns
+/// No output if the password is correct, an error otherwise.
 fn validate_password(_password: &str) -> Result<(), ValidationError> {
     // TODO: check length and patterns
     Ok(())
