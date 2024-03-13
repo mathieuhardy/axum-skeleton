@@ -1,0 +1,25 @@
+.card {
+    height: 550px;
+    overflow: auto;
+}
+
+.card-actions {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+a {
+    cursor: pointer;
+}
+
+nav {
+    background-color: #c5d86d;
+}
+
+.nav-links a.active {
+  border-bottom: 4px solid #f05d23;
+}
+
+div.main {
+    background-color: #393e46;
+}

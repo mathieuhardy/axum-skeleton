@@ -1,4 +1,4 @@
-# Setup
+# 🔧 Setup
 
 Here the dependencies you'll need to use this skeleton:
 

@@ -1,4 +1,4 @@
-# SQLx
+# 🗃 SQLx
 
 > **Note**
 > SQLx relies on the environment variable `DATABASE_URL`. If you want to manage

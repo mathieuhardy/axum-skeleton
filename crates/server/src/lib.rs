@@ -19,6 +19,7 @@ use axum::Router;
 use sqlx::postgres::PgPoolOptions;
 use tokio::net::TcpListener;
 use tokio::signal;
+use tower_http::services::ServeFile;
 
 use crate::config::Config;
 #[cfg(debug_assertions)]
@@ -26,6 +27,7 @@ use crate::config::Config;
 use crate::config::Environment;
 use crate::prelude::*;
 use crate::tracing::tracing_layer;
+use utils::filesystem::{relative_path, root_relative_path};
 
 /// Starts the server application.
 ///
@@ -107,6 +109,8 @@ pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> 
         .nest("/", routes::build().await)
         .with_state(state);
 
+    router = setup_favicon(router)?;
+
     router = router
         .layer(cors)
         .layer(timeout)
@@ -165,4 +169,20 @@ async fn shutdown_signal() {
 /// Function called at the stopping of the server.
 fn bye() {
     event!(Level::INFO, "👋 Bye bye");
+}
+
+/// Configures the favicon.ico handler.
+///
+/// # Arguments
+/// * `router` - Router to be populated with new route(s).
+///
+/// # Returns
+/// New router handle.
+fn setup_favicon(router: Router) -> Res<Router> {
+    let icon_path = relative_path("data/images/favicon.ico")
+        .or(root_relative_path("crates/server/data/images/favicon.ico"))?;
+
+    event!(Level::INFO, "🟣 Favicon setup");
+
+    Ok(router.nest_service("/favicon.ico", ServeFile::new(icon_path)))
 }

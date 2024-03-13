@@ -5,8 +5,11 @@ pub(crate) mod config;
 pub mod error;
 pub(crate) mod prelude;
 
+use axum::http::Uri;
+use axum::response::Redirect;
+use axum::routing::get;
 use axum::Router;
-use tower_http::services::ServeDir;
+use tower_http::services::{Redirect as HttpRedirect, ServeDir};
 
 use crate::prelude::*;
 use utils::filesystem::{create_root_relative_path, relative_path, root_relative_path};
@@ -30,9 +33,30 @@ pub fn initialize(router: Router) -> Res<Router> {
         .or(root_relative_path("crates/sanity/data/dashboard"))
         .map_err(Error::Filesystem)?;
 
-    let router = router
-        .nest_service("/sanity/data", ServeDir::new(inputs))
-        .nest_service("/sanity", ServeDir::new(dashboard_dir));
+    let sanity_router = Router::new()
+        // Redirect index.html to crates.html
+        .route("/index.html", get(redirect))
+        // Serve all files under /sanity (other html files)
+        .nest_service(
+            "/",
+            ServeDir::new(dashboard_dir).fallback(HttpRedirect::<String>::permanent(
+                "/sanity/crates.html".parse::<Uri>().unwrap(),
+            )),
+        )
+        // Serve all resources files (css, js, ...)
+        .nest_service("/data", ServeDir::new(inputs))
+        // In case a not found is fired, redirect to crates.html
+        .fallback(redirect);
+
+    let router = router.nest("/sanity", sanity_router);
 
     Ok(router)
+}
+
+/// Redirects the call to a file.
+///
+/// # Returns
+/// An Axum redirect object.
+async fn redirect() -> Redirect {
+    Redirect::permanent("crates.html")
 }

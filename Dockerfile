@@ -74,5 +74,6 @@ COPY --from=builder /app/crates/server/config ./config/server
 
 # Data
 COPY --from=builder /app/crates/sanity/data/dashboard ./data/sanity/dashboard
+COPY --from=builder /app/crates/server/data/images ./data/images
 
 ENTRYPOINT ["./axum-skeleton"]

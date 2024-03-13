@@ -1,4 +1,4 @@
-# Logging
+# 📄 Logging
 
 Logging is performed using the [tracing][0] crate and these macros are available:
 
