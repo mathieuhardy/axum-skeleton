@@ -1,4 +1,4 @@
-# TODO
+# ✅ TODO
 
 - Reddis
 - Guards/fairing
@@ -6,10 +6,9 @@
 - GraphQL
 - Job queue
 - Websockets
-
-## Docs
-
-- Sanity dashboard
+- SQLx migrate in code
+- cp .env.sample .env
+- endpoint: /sanity -> redirect to crates.html
 
 ## Devops
 
@@ -18,7 +17,6 @@
 ## Sanity
 
 - add test plan in markdown files
-- dashboard with endpoints (/sanity/coverage/...)
 
 ```shell
 cargo clippy --workspace --all-targets --all-features --color always --keep-going -Z unstable-options --locked --offline 2>&1 | egrep "generated \d+ warning"

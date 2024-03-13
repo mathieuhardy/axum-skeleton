@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docs coverage</title>
+    <link rel="stylesheet" href="css/open-sans.css">
+    <link rel="stylesheet" href="css/normalize.min.css">
+    <link rel="stylesheet" href="css/fontawesome-solid.css">
+    <link rel="stylesheet" href="css/fontawesome.css">
+    <link rel="stylesheet" href="css/mustard-ui.min.css">
+    <link rel="stylesheet" href="css/sanity.css">
+
+    <script src="js/sanity.js"></script>
+
+    <script>
+    function resizeIframe(obj) {
+        obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
+    }
+    </script>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="/">AxumSkeleton</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="crates.html">Crates</a></li>
+                <li><a class="active" href="docs-coverage.html">Documentation</a></li>
+                <li><a href="build-timings.html">Build timings</a></li>
+            </ul>
+        </div>
+    </nav>
+
+     <iframe src="data/docs-coverage.html" title="Documentation coverage" frameborder="0" scrolling="no" onload="resizeIframe(this)"></iframe>
+</body>
+</html>

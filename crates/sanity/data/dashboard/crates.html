@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crates</title>
+    <link rel="stylesheet" href="css/open-sans.css">
+    <link rel="stylesheet" href="css/normalize.min.css">
+    <link rel="stylesheet" href="css/fontawesome-solid.css">
+    <link rel="stylesheet" href="css/fontawesome.css">
+    <link rel="stylesheet" href="css/mustard-ui.min.css">
+    <link rel="stylesheet" href="css/sanity.css">
+
+    <script src="js/sanity.js"></script>
+</head>
+<body>
+    <div class="main">
+        <nav>
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <a href="/">AxumSkeleton</a>
+                </div>
+                <ul class="nav-links">
+                    <li><a class="active" href="crates.html">Crates</a></li>
+                    <li><a href="docs-coverage.html">Documentation</a></li>
+                    <li><a href="build-timings.html">Build timings</a></li>
+                </ul>
+            </div>
+        </nav>
+ 
+        <div id="content" class="row"></div>
+    </div>
+
+    <script>
+        onload = (event) => {
+            let content = document.querySelector("#content");
+
+            create_unused(content);
+            create_duplicates(content);
+            create_upgradables(content);
+            create_audit(content);
+        };
+
+        function create_unused(container) {
+            let [cardContent, cardActions] = createCard(container, "crates-unused", "Unused");
+
+            fetch("data/crates-unused.txt", (err, data) => {
+                clearNode(cardContent);
+
+                if (err === null && data.search("Good job") === -1) {
+                    cardContent.textContent = data;
+                }
+                else {
+                    setAllGood(cardContent);
+                }
+            });
+        }
+
+        function create_duplicates(container) {
+            function __setData(container, data) {
+                clearNode(container);
+
+                for (const idx in data) {
+                    const crate = data[idx];
+
+                    const tr = document.createElement("tr");
+
+                    addTableCol(tr, crate[0]);
+                    addTableCol(tr, crate[1][0]);
+                    addTableCol(tr, crate[1][1]);
+
+                    container.appendChild(tr);
+                }
+
+                addEmptyTableRows(container, MAX_VISIBLE_ROWS_IN_TABLE - data.length, 3);
+            }
+
+            let [cardContent, cardActions] = createCard(container, "crates-duplicates", "Duplicates");
+
+            fetchJson("data/crates-duplicates.json", (err, json) => {
+                const data = Object.entries(json);
+
+                if (err === null) {
+                    let tbody = createTable(cardContent, ["Crate", "V1", "V2"]);
+
+                    createPagination(
+                        cardActions,
+                        data.length,
+                        0,
+                        (index) => {
+                            __setData(tbody, subset(data, index, MAX_VISIBLE_ROWS_IN_TABLE));
+                        });
+
+                    __setData(tbody, subset(data, 0, MAX_VISIBLE_ROWS_IN_TABLE));
+                }
+                else {
+                    setAllGood(cardContent);
+                }
+            });
+        }
+
+        function create_upgradables(container) {
+            function __setData(container, data) {
+                clearNode(container);
+
+                for (const idx in data) {
+                    const crate = data[idx];
+
+                    const tr = document.createElement("tr");
+
+                    addTableCol(tr, crate.crate);
+                    addTableCol(tr, crate.name);
+                    addTableCol(tr, crate.project);
+                    addTableCol(tr, crate.latest);
+
+                    container.appendChild(tr);
+                }
+
+                addEmptyTableRows(container, MAX_VISIBLE_ROWS_IN_TABLE - data.length, 4);
+            }
+
+            let [cardContent, cardActions] = createCard(container, "crates-upgradables", "Upgradables");
+
+            fetchJson("data/crates-upgradables.json", (err, json) => {
+                if (err === null) {
+                    let tbody = createTable(cardContent, ["Scope", "Crate", "Current", "Latest"]);
+
+                    createPagination(
+                        cardActions,
+                        json.length,
+                        0,
+                        (index) => {
+                            __setData(tbody, subset(json, index, MAX_VISIBLE_ROWS_IN_TABLE));
+                        });
+
+                    __setData(tbody, subset(json, 0, MAX_VISIBLE_ROWS_IN_TABLE));
+                }
+                else {
+                    setAllGood(cardContent);
+                }
+            });
+        }
+
+        function create_audit(container) {
+            function __setData(container, data) {
+                clearNode(container);
+
+                // Vulnerabilities
+                const vulnerabilities = data["vulnerabilities"]["list"];
+
+                for (const idx in vulnerabilities) {
+                    const entry = document.createElement("div");
+                    entry.classList.add("alert");
+                    entry.classList.add("alert-danger");
+
+                    const crate_name = vulnerabilities[idx]["package"]["name"];
+                    const crate_version = vulnerabilities[idx]["package"]["version"];
+                    const crate = document.createElement("strong");
+                    crate.textContent = `${crate_name} (${crate_version})`;
+                    entry.appendChild(crate);
+
+                    const title = document.createElement("p");
+                    title.textContent = vulnerabilities[idx]["advisory"]["title"];
+                    entry.appendChild(title);
+
+                    if (vulnerabilities[idx]["versions"]["patched"].length > 0) {
+                        const version = vulnerabilities[idx]["versions"]["patched"][0];
+
+                        const advise = document.createElement("ul");
+                        advise.classList.add("tags");
+
+                        const tag = document.createElement("li");
+                        tag.classList.add("tag");
+                        tag.classList.add("tag-blue");
+                        tag.textContent = `Upgrade to ${version}`;
+
+                        advise.appendChild(tag);
+                        entry.appendChild(advise);
+                    }
+
+                    const id = vulnerabilities[idx]["advisory"]["id"];
+                    const p_link = document.createElement("p");
+                    const link = document.createElement("a");
+                    link.textContent = id;
+                    link.href = `https://rustsec.org/advisories/${id}`;
+                    p_link.appendChild(link);
+                    entry.appendChild(p_link);
+
+                    const desc = document.createElement("blockquote");
+                    desc.textContent = vulnerabilities[idx]["advisory"]["description"];
+                    desc.style.display = "none";
+                    entry.appendChild(desc)
+
+                    const show_desc = document.createElement("a");
+                    show_desc.textContent = "Show more";
+                    show_desc.addEventListener("click", (e) => {
+                        if (desc.style.display === "none") {
+                            desc.style.display = "block";
+                            e.target.textContent = "Show less";
+                        }
+                        else {
+                            desc.style.display = "none";
+                            e.target.textContent = "Show more";
+                        }
+                        e.stopPropagation();
+                    });
+                    entry.appendChild(show_desc);
+
+                    container.appendChild(entry);
+                }
+
+                // Unmaintained
+                const unmaintained = data["warnings"]["unmaintained"];
+
+                for (const idx in unmaintained) {
+                    const entry = document.createElement("div");
+                    entry.classList.add("alert");
+                    entry.classList.add("alert-warning");
+
+                    const crate_name = unmaintained[idx]["package"]["name"];
+                    const crate_version = unmaintained[idx]["package"]["version"];
+                    const crate = document.createElement("strong");
+                    crate.textContent = `${crate_name} (${crate_version})`;
+                    entry.appendChild(crate);
+
+                    const title = document.createElement("p");
+                    title.textContent = "Unmaintained";
+                    entry.appendChild(title);
+
+                    const id = unmaintained[idx]["advisory"]["id"];
+                    const p_link = document.createElement("p");
+                    const link = document.createElement("a");
+                    link.textContent = id;
+                    link.href = `https://rustsec.org/advisories/${id}`;
+                    p_link.appendChild(link);
+                    entry.appendChild(p_link);
+
+                    const desc = document.createElement("blockquote");
+                    desc.textContent = unmaintained[idx]["advisory"]["description"];
+                    desc.style.display = "none";
+                    entry.appendChild(desc)
+
+                    const show_desc = document.createElement("a");
+                    show_desc.textContent = "Show more";
+                    show_desc.addEventListener("click", (e) => {
+                        if (desc.style.display === "none") {
+                            desc.style.display = "block";
+                            e.target.textContent = "Show less";
+                        }
+                        else {
+                            desc.style.display = "none";
+                            e.target.textContent = "Show more";
+                        }
+                        e.stopPropagation();
+                    });
+                    entry.appendChild(show_desc);
+
+                    container.appendChild(entry);
+                }
+                
+                // Yanked
+                const yanked = data["warnings"]["yanked"];
+
+                for (const idx in yanked) {
+                    const entry = document.createElement("div");
+                    entry.classList.add("alert");
+                    entry.classList.add("alert-warning");
+
+                    const crate_name = yanked[idx]["package"]["name"];
+                    const crate_version = yanked[idx]["package"]["version"];
+                    const crate = document.createElement("strong");
+                    crate.textContent = `${crate_name} (${crate_version})`;
+                    entry.appendChild(crate);
+
+                    const title = document.createElement("p");
+                    title.textContent = "Yanked";
+                    entry.appendChild(title);
+
+                    container.appendChild(entry);
+                }
+            }
+
+            let [cardContent, _] = createCard(container, "crates-audit", "Audit");
+
+            fetchJson("data/crates-audit.json", (err, json) => {
+                if (err === null) {
+                    __setData(cardContent, json);
+                }
+                else {
+                    setAllGood(cardContent);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

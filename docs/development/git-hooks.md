@@ -1,4 +1,4 @@
-# Git Hooks
+# 🪝 Git Hooks
 
 You must install the Git hooks provided by this repository and located in `.githooks`:
 

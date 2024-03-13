@@ -35,7 +35,7 @@ pub enum Error {
 
     /// Generic filesystem error.
     #[error("{0}")]
-    Filesystem(#[source] utils::error::Error),
+    Filesystem(#[from] utils::error::Error),
 
     /// Invalid environment configuration provided.
     #[error("Invalid environment: {0}")]

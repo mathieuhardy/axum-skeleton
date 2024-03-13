@@ -196,6 +196,8 @@ ${SCRIPTS_DIR}/sanity/crates/duplicates.py --text
 [tasks.crates-duplicates-json]
 workspace = false
 script = '''
+rm -f ${SAN_OUTPUT_DIR}/crates-duplicates.json
+
 ${SCRIPTS_DIR}/sanity/crates/duplicates.py > ${SAN_OUTPUT_DIR}/crates-duplicates.json
 
 echo "🟢 ${B_WHITE}Done: ${SAN_OUTPUT_DIR}/crates-duplicates.json${NC}"
@@ -225,7 +227,9 @@ args = ["machete"]
 workspace = false
 dependencies = ["crates-unused-bootstrap"]
 script = '''
-cargo machete 1>${SAN_OUTPUT_DIR}/crates-unused.txt 2>/dev/null
+rm -f ${SAN_OUTPUT_DIR}/crates-unused.txt
+
+cargo machete 1>${SAN_OUTPUT_DIR}/crates-unused.txt 2>/dev/null | true
 
 echo "🟢 ${B_WHITE}Done: ${SAN_OUTPUT_DIR}/crates-unused.txt${NC}"
 '''
@@ -255,6 +259,8 @@ ${SCRIPTS_DIR}/sanity/crates/upgradables.py --text
 workspace = false
 dependencies = ["crates-upgradables-bootstrap"]
 script = '''
+rm -f ${SAN_OUTPUT_DIR}/crates-upgradables.json
+
 ${SCRIPTS_DIR}/sanity/crates/upgradables.py > ${SAN_OUTPUT_DIR}/crates-upgradables.json
 
 echo "🟢 ${B_WHITE}Done: ${SAN_OUTPUT_DIR}/crates-upgradables.json${NC}"

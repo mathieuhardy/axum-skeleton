@@ -11,7 +11,7 @@ def main():
     args = parser.parse_args()
 
     # Fetch results
-    output = subprocess.check_output(["cargo", "outdated"]).decode('utf-8')
+    output = subprocess.check_output(["cargo", "outdated", "--workspace", "--root-deps-only"]).decode('utf-8')
 
     if args.text:
         print(output)
@@ -19,20 +19,35 @@ def main():
 
     # Convert to JSON
     results = []
-    pattern = "^([^ ]+) *([^ ]+) *([^ ]+) *([^ ]+) *([^ ]+) *(.*)$"
+    crate = ''
+    re_crate = "^([^ ]+)$"
+    re_scope_sep = "^(=+)$"
+    re_header = "^Name.*$"
+    re_header_sep = "^([- ]+)$"
+    re_entry = "^([^ ]+) *([^ ]+) *([^ ]+) *([^ ]+) *([^ ]+) *(.*)$"
     rows = output.splitlines()
 
-    for row in range(2, len(rows)):
-        (name, project, compat, latest, kind, platform) = re.findall(pattern, rows[row])[0]
+    for idx in range(0, len(rows)):
+        row = rows[idx]
 
-        results.append({
-            "name": name,
-            "project": project,
-            "compat": compat,
-            "latest": latest,
-            "kind": kind,
-            "platform": platform
-        })
+        if re.match(re_scope_sep, row) or re.match(re_header_sep, row):
+            continue
+        if re.match(re_header, row):
+            continue
+        elif re.match(re_crate, row):
+            crate = row
+        elif re.match(re_entry, row):
+            (name, project, compat, latest, kind, platform) = re.findall(re_entry, row)[0]
+
+            results.append({
+                "crate": crate,
+                "name": name,
+                "project": project,
+                "compat": compat,
+                "latest": latest,
+                "kind": kind,
+                "platform": platform
+            })
 
     print(json.dumps(results, indent=2))
 
