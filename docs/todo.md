@@ -7,8 +7,6 @@
 - Job queue
 - Websockets
 - SQLx migrate in code
-- cp .env.sample .env
-- endpoint: /sanity -> redirect to crates.html
 
 ## Devops
 
