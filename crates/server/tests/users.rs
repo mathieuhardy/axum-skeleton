@@ -16,7 +16,7 @@ mod delete {
     #[serial]
     async fn by_id() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             let response = client.get("/api/users").send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
@@ -43,7 +43,7 @@ mod get {
     #[serial]
     async fn me() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             let response = client.get("/api/users/me").send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
@@ -60,7 +60,7 @@ mod get {
     #[serial]
     async fn all() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             let response = client.get("/api/users").send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
@@ -81,7 +81,7 @@ mod get {
     #[serial]
     async fn by_filters() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             // By name
             let response = client
@@ -130,7 +130,7 @@ mod get {
     #[serial]
     async fn by_id() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             let response = client.get("/api/users").send().await.unwrap();
             assert_eq!(response.status(), test_utils::StatusCode::OK);
@@ -162,7 +162,7 @@ mod patch {
     #[serial]
     async fn update_from_form() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             // Get the list of users
             let response = client.get("/api/users").send().await.unwrap();
@@ -200,7 +200,7 @@ mod patch {
     #[serial]
     async fn update_from_json() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             // Get the list of users
             let response = client.get("/api/users").send().await.unwrap();
@@ -239,7 +239,7 @@ mod patch {
     #[serial]
     async fn invalid_email() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             // Get the list of users
             let response = client.get("/api/users").send().await.unwrap();
@@ -276,7 +276,7 @@ mod patch {
     #[serial]
     async fn invalid_first_name() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             // Get the list of users
             let response = client.get("/api/users").send().await.unwrap();
@@ -313,7 +313,7 @@ mod patch {
     #[serial]
     async fn invalid_last_name() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             // Get the list of users
             let response = client.get("/api/users").send().await.unwrap();
@@ -355,7 +355,7 @@ mod post {
     #[serial]
     async fn create_from_form() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             let user = [
                 ("first_name", "New"),
@@ -379,7 +379,7 @@ mod post {
     #[serial]
     async fn create_from_json() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             let user = UserRequest {
                 first_name: Some("New".to_string()),
@@ -405,7 +405,7 @@ mod post {
     #[serial]
     async fn invalid_password() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             let user = UserRequest {
                 first_name: Some("New".to_string()),
@@ -428,7 +428,7 @@ mod post {
     #[serial]
     async fn invalid_email() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             let user = UserRequest {
                 first_name: Some("New".to_string()),
@@ -451,7 +451,7 @@ mod post {
     #[serial]
     async fn invalid_first_name() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             let user = UserRequest {
                 first_name: Some("".to_string()),
@@ -474,7 +474,7 @@ mod post {
     #[serial]
     async fn invalid_last_name() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             let user = UserRequest {
                 first_name: Some("New".to_string()),
@@ -503,7 +503,7 @@ mod put {
     #[serial]
     async fn create_from_form() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             // Insert
             let user = [
@@ -545,7 +545,7 @@ mod put {
     #[serial]
     async fn create_from_json() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             // Insert
             let user = UserRequest {
@@ -588,7 +588,7 @@ mod put {
     #[serial]
     async fn invalid_email() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             // Insert
             let user = UserRequest {
@@ -612,7 +612,7 @@ mod put {
     #[serial]
     async fn invalid_first_name() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             // Insert
             let user = UserRequest {
@@ -636,7 +636,7 @@ mod put {
     #[serial]
     async fn invalid_last_name() {
         |client| async move {
-            let client = client.lock().unwrap();
+            let client = client.lock().await;
 
             // Insert
             let user = UserRequest {

@@ -12,9 +12,9 @@ use std::fmt::{Debug, Display};
 use std::future::Future;
 use std::net::SocketAddr;
 use std::panic::{catch_unwind, UnwindSafe};
-use std::string::ToString;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use tokio::net::TcpListener;
+use tokio::sync::Mutex;
 
 #[cfg(feature = "derives")]
 pub use test_utils_derives::*;
@@ -213,8 +213,11 @@ pub async fn run_test<Setup, Body, Teardown, Data, SetupReturn, BodyReturn, Tear
 
     // Call body and teardown without checking errors (we want to be sure the teardown is always
     // called)
-    let body_result = catch_unwind(async || body(body_data).await);
-    let teardown_result = catch_unwind(async || teardown(teardown_data).await);
+    let body_result = catch_unwind(std::panic::AssertUnwindSafe(async || body(body_data).await));
+
+    let teardown_result = catch_unwind(std::panic::AssertUnwindSafe(async || {
+        teardown(teardown_data).await
+    }));
 
     // Checks final results in order
     assert!(body_result.is_ok());

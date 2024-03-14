@@ -12,7 +12,6 @@ use tower_http::sensitive_headers::{
     SetSensitiveRequestHeadersLayer, SetSensitiveResponseHeadersLayer,
 };
 use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
-use uuid::Uuid;
 
 use crate::prelude::*;
 

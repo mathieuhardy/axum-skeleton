@@ -4,8 +4,6 @@
 //! - scripts: SQL raw scripts used in the crate for queries.
 
 #![feature(box_into_inner)]
-#![feature(async_fn_in_trait)]
-#![feature(result_option_inspect)]
 
 pub mod error;
 pub mod models;

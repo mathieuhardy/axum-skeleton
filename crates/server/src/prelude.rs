@@ -9,9 +9,6 @@ pub(crate) use tracing::{event, instrument, Level};
 pub(crate) use uuid::Uuid;
 pub(crate) use validator::Validate;
 
-// Local crates
-pub use database::error::Error as DatabaseError;
-
 // Current crate
 pub(crate) use crate::error::*;
 pub(crate) use crate::state::*;

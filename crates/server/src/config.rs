@@ -2,7 +2,6 @@
 //! configuration. The configuration structure may be passed along all routes.
 
 use serde::Deserialize;
-use std::convert::TryFrom;
 use std::fmt;
 
 use utils::filesystem::{relative_path, root_relative_path};

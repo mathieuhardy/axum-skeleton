@@ -5,7 +5,6 @@ use database::models::users::*;
 use database::traits::sqlx::postgres::crud::*;
 
 use crate::prelude::*;
-use crate::state::AppState;
 
 /// Builds a router for Kubernetes.
 ///

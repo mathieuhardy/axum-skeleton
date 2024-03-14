@@ -181,16 +181,21 @@ where
     ///   Ok(())
     /// }
     /// ```
-    async fn batch_delete(ids: &[Self::Id], db: &sqlx::PgPool) -> Result<(), Self::Error> {
-        let _ = sqlx::query(&format!(
-            "DELETE FROM {} WHERE id = ANY($1)",
-            Self::table_name()
-        ))
-        .bind(ids)
-        .execute(db)
-        .await?;
+    fn batch_delete(
+        ids: &[Self::Id],
+        db: &sqlx::PgPool,
+    ) -> impl std::future::Future<Output = Result<(), Self::Error>> {
+        async move {
+            let _ = sqlx::query(&format!(
+                "DELETE FROM {} WHERE id = ANY($1)",
+                Self::table_name()
+            ))
+            .bind(ids)
+            .execute(db)
+            .await?;
 
-        Ok(())
+            Ok(())
+        }
     }
 
     /// Gets a list of records from the database giving their IDs.
@@ -251,18 +256,20 @@ where
     ///   Ok(())
     /// }
     /// ```
-    async fn batch_get(
+    fn batch_get(
         ids: &[Self::Id],
         db: &sqlx::PgPool,
-    ) -> Result<Vec<Self::Struct>, Self::Error> {
-        sqlx::query_as::<_, Self::Struct>(&format!(
-            "SELECT * FROM {} WHERE id = ANY($1)",
-            Self::table_name()
-        ))
-        .bind(ids)
-        .fetch_all(db)
-        .await
-        .map_err(Into::into)
+    ) -> impl std::future::Future<Output = Result<Vec<Self::Struct>, Self::Error>> {
+        async move {
+            sqlx::query_as::<_, Self::Struct>(&format!(
+                "SELECT * FROM {} WHERE id = ANY($1)",
+                Self::table_name()
+            ))
+            .bind(ids)
+            .fetch_all(db)
+            .await
+            .map_err(Into::into)
+        }
     }
 
     /// Inserts a list of data into the database.
@@ -324,44 +331,46 @@ where
     ///   Ok(())
     /// }
     /// ```
-    async fn batch_insert(
+    fn batch_insert(
         list: &[Self::Data],
         db: &sqlx::PgPool,
-    ) -> Result<Vec<Self::Struct>, Self::Error> {
-        // Verify that all data contains the same columns
-        if list.is_empty() {
-            return Ok(vec![]);
-        }
-
-        let columns = list[0].columns();
-
-        for data in list {
-            if data.columns() != columns {
+    ) -> impl std::future::Future<Output = Result<Vec<Self::Struct>, Self::Error>> {
+        async move {
+            // Verify that all data contains the same columns
+            if list.is_empty() {
                 return Ok(vec![]);
             }
+
+            let columns = list[0].columns();
+
+            for data in list {
+                if data.columns() != columns {
+                    return Ok(vec![]);
+                }
+            }
+
+            // Prepare values to be bounded
+            let columns = columns.join(", ");
+
+            // Prepare query
+            let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(format!(
+                "INSERT INTO {} ({}) VALUES (",
+                Self::table_name(),
+                columns
+            ));
+
+            let as_suffix = false;
+            Self::Data::bind_unnest_values(&mut query_builder, list, as_suffix);
+
+            query_builder.push(") RETURNING *");
+
+            // Execute query
+            query_builder
+                .build_query_as::<Self::Struct>()
+                .fetch_all(db)
+                .await
+                .map_err(Into::into)
         }
-
-        // Prepare values to be bounded
-        let columns = columns.join(", ");
-
-        // Prepare query
-        let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(format!(
-            "INSERT INTO {} ({}) VALUES (",
-            Self::table_name(),
-            columns
-        ));
-
-        let as_suffix = false;
-        Self::Data::bind_unnest_values(&mut query_builder, list, as_suffix);
-
-        query_builder.push(") RETURNING *");
-
-        // Execute query
-        query_builder
-            .build_query_as::<Self::Struct>()
-            .fetch_all(db)
-            .await
-            .map_err(Into::into)
     }
 
     /// Updates a list of data into the database.
@@ -429,48 +438,50 @@ where
     ///   Ok(())
     /// }
     /// ```
-    async fn batch_update(
+    fn batch_update(
         ids: &[Self::Id],
         list: &[Self::Data],
         db: &sqlx::PgPool,
-    ) -> Result<Vec<Self::Struct>, Self::Error> {
-        // Verify that all data contains the same columns
-        if list.is_empty() {
-            return Ok(vec![]);
-        }
-
-        let columns = list[0].columns();
-
-        for data in list {
-            if data.columns() != columns {
+    ) -> impl std::future::Future<Output = Result<Vec<Self::Struct>, Self::Error>> {
+        async move {
+            // Verify that all data contains the same columns
+            if list.is_empty() {
                 return Ok(vec![]);
             }
+
+            let columns = list[0].columns();
+
+            for data in list {
+                if data.columns() != columns {
+                    return Ok(vec![]);
+                }
+            }
+
+            let mut query_builder: QueryBuilder<Postgres> =
+                QueryBuilder::new(format!("UPDATE {} SET ", Self::table_name(),));
+
+            list[0].bind_update_values(&mut query_builder, Some("tmp_table"));
+
+            query_builder.push("FROM (SELECT UNNEST(");
+            query_builder.push_bind(ids);
+            query_builder.push(") AS id, ");
+
+            let as_suffix = true;
+            Self::Data::bind_unnest_values(&mut query_builder, list, as_suffix);
+
+            query_builder.push(format!(
+                ") AS tmp_table WHERE {}.id = tmp_table.id",
+                Self::table_name()
+            ));
+
+            query_builder.push(" RETURNING *");
+
+            query_builder
+                .build_query_as::<Self::Struct>()
+                .fetch_all(db)
+                .await
+                .map_err(Into::into)
         }
-
-        let mut query_builder: QueryBuilder<Postgres> =
-            QueryBuilder::new(format!("UPDATE {} SET ", Self::table_name(),));
-
-        list[0].bind_update_values(&mut query_builder, Some("tmp_table"));
-
-        query_builder.push("FROM (SELECT UNNEST(");
-        query_builder.push_bind(ids);
-        query_builder.push(") AS id, ");
-
-        let as_suffix = true;
-        Self::Data::bind_unnest_values(&mut query_builder, list, as_suffix);
-
-        query_builder.push(format!(
-            ") AS tmp_table WHERE {}.id = tmp_table.id",
-            Self::table_name()
-        ));
-
-        query_builder.push(" RETURNING *");
-
-        query_builder
-            .build_query_as::<Self::Struct>()
-            .fetch_all(db)
-            .await
-            .map_err(Into::into)
     }
 
     /// Upserts a list of data to the database.
@@ -538,53 +549,55 @@ where
     ///   Ok(())
     /// }
     /// ```
-    async fn batch_upsert(
+    fn batch_upsert(
         ids: &[Self::Id],
         list: &[Self::Data],
         db: &sqlx::PgPool,
-    ) -> Result<Vec<Self::Struct>, Self::Error> {
-        // Verify that all data contains the same columns
-        if list.is_empty() {
-            return Ok(vec![]);
-        }
-
-        let mut data_columns = list[0].columns();
-
-        for data in list {
-            if data.columns() != data_columns {
+    ) -> impl std::future::Future<Output = Result<Vec<Self::Struct>, Self::Error>> {
+        async move {
+            // Verify that all data contains the same columns
+            if list.is_empty() {
                 return Ok(vec![]);
             }
+
+            let mut data_columns = list[0].columns();
+
+            for data in list {
+                if data.columns() != data_columns {
+                    return Ok(vec![]);
+                }
+            }
+
+            // Prepare query
+            let mut columns = vec!["id"];
+            columns.append(&mut data_columns);
+            let columns = columns.join(", ");
+
+            let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(format!(
+                "INSERT INTO {} ({}) SELECT ",
+                Self::table_name(),
+                columns
+            ));
+
+            query_builder.push("UNNEST(");
+            query_builder.push_bind(ids);
+            query_builder.push("), ");
+
+            let as_suffix = false;
+            Self::Data::bind_unnest_values(&mut query_builder, list, as_suffix);
+
+            query_builder.push(" ON CONFLICT(id) DO UPDATE SET ");
+
+            list[0].bind_update_values(&mut query_builder, Some("EXCLUDED"));
+
+            query_builder.push(" RETURNING *");
+
+            query_builder
+                .build_query_as::<Self::Struct>()
+                .fetch_all(db)
+                .await
+                .map_err(Into::into)
         }
-
-        // Prepare query
-        let mut columns = vec!["id"];
-        columns.append(&mut data_columns);
-        let columns = columns.join(", ");
-
-        let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(format!(
-            "INSERT INTO {} ({}) SELECT ",
-            Self::table_name(),
-            columns
-        ));
-
-        query_builder.push("UNNEST(");
-        query_builder.push_bind(ids);
-        query_builder.push("), ");
-
-        let as_suffix = false;
-        Self::Data::bind_unnest_values(&mut query_builder, list, as_suffix);
-
-        query_builder.push(" ON CONFLICT(id) DO UPDATE SET ");
-
-        list[0].bind_update_values(&mut query_builder, Some("EXCLUDED"));
-
-        query_builder.push(" RETURNING *");
-
-        query_builder
-            .build_query_as::<Self::Struct>()
-            .fetch_all(db)
-            .await
-            .map_err(Into::into)
     }
 
     /// Deletes an entry from the database.
@@ -642,8 +655,11 @@ where
     ///   Ok(())
     /// }
     /// ```
-    async fn delete(&self, db: &sqlx::PgPool) -> Result<(), Self::Error> {
-        Self::delete_by_id(self.id(), db).await
+    fn delete(
+        &self,
+        db: &sqlx::PgPool,
+    ) -> impl std::future::Future<Output = Result<(), Self::Error>> {
+        async move { Self::delete_by_id(self.id(), db).await }
     }
 
     /// Deletes an entry from the database giving its ID.
@@ -702,13 +718,18 @@ where
     ///   Ok(())
     /// }
     /// ```
-    async fn delete_by_id(id: &Self::Id, db: &sqlx::PgPool) -> Result<(), Self::Error> {
-        let _ = sqlx::query(&format!("DELETE FROM {} WHERE id=$1", Self::table_name()))
-            .bind(id)
-            .execute(db)
-            .await?;
+    fn delete_by_id(
+        id: &Self::Id,
+        db: &sqlx::PgPool,
+    ) -> impl std::future::Future<Output = Result<(), Self::Error>> {
+        async move {
+            let _ = sqlx::query(&format!("DELETE FROM {} WHERE id=$1", Self::table_name()))
+                .bind(id)
+                .execute(db)
+                .await?;
 
-        Ok(())
+            Ok(())
+        }
     }
 
     /// Gets a record from the database giving its ID.
@@ -767,15 +788,20 @@ where
     ///   Ok(())
     /// }
     /// ```
-    async fn get(id: &Self::Id, db: &sqlx::PgPool) -> Result<Self::Struct, Self::Error> {
-        sqlx::query_as::<_, Self::Struct>(&format!(
-            "SELECT * FROM {} WHERE id=$1",
-            Self::table_name()
-        ))
-        .bind(id)
-        .fetch_one(db)
-        .await
-        .map_err(Into::into)
+    fn get(
+        id: &Self::Id,
+        db: &sqlx::PgPool,
+    ) -> impl std::future::Future<Output = Result<Self::Struct, Self::Error>> {
+        async move {
+            sqlx::query_as::<_, Self::Struct>(&format!(
+                "SELECT * FROM {} WHERE id=$1",
+                Self::table_name()
+            ))
+            .bind(id)
+            .fetch_one(db)
+            .await
+            .map_err(Into::into)
+        }
     }
 
     /// Insert a new record in database.
@@ -834,27 +860,32 @@ where
     ///   Ok(())
     /// }
     /// ```
-    async fn insert(data: &Self::Data, db: &sqlx::PgPool) -> Result<Self::Struct, Self::Error> {
-        // Prepare values to be bounded
-        let columns = data.columns().join(", ");
+    fn insert(
+        data: &Self::Data,
+        db: &sqlx::PgPool,
+    ) -> impl std::future::Future<Output = Result<Self::Struct, Self::Error>> {
+        async move {
+            // Prepare values to be bounded
+            let columns = data.columns().join(", ");
 
-        // Prepare query
-        let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(format!(
-            "INSERT INTO {} ({}) VALUES ",
-            Self::table_name(),
-            columns
-        ));
+            // Prepare query
+            let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(format!(
+                "INSERT INTO {} ({}) VALUES ",
+                Self::table_name(),
+                columns
+            ));
 
-        data.bind_insert_values(&mut query_builder);
+            data.bind_insert_values(&mut query_builder);
 
-        query_builder.push(" RETURNING *");
+            query_builder.push(" RETURNING *");
 
-        // Execute query
-        query_builder
-            .build_query_as::<Self::Struct>()
-            .fetch_one(db)
-            .await
-            .map_err(Into::into)
+            // Execute query
+            query_builder
+                .build_query_as::<Self::Struct>()
+                .fetch_one(db)
+                .await
+                .map_err(Into::into)
+        }
     }
 
     /// Updates a record from the database.
@@ -914,12 +945,12 @@ where
     ///   Ok(())
     /// }
     /// ```
-    async fn update(
+    fn update(
         &self,
         data: &Self::Data,
         db: &sqlx::PgPool,
-    ) -> Result<Self::Struct, Self::Error> {
-        Self::update_by_id(self.id(), data, db).await
+    ) -> impl std::future::Future<Output = Result<Self::Struct, Self::Error>> {
+        async move { Self::update_by_id(self.id(), data, db).await }
     }
 
     /// Updates a record from the database giving its ID.
@@ -980,28 +1011,30 @@ where
     ///   Ok(())
     /// }
     /// ```
-    async fn update_by_id(
+    fn update_by_id(
         id: &Self::Id,
         data: &Self::Data,
         db: &sqlx::PgPool,
-    ) -> Result<Self::Struct, Self::Error> {
-        // Prepare query
-        let mut query_builder: QueryBuilder<Postgres> =
-            QueryBuilder::new(format!("UPDATE {} SET ", Self::table_name()));
+    ) -> impl std::future::Future<Output = Result<Self::Struct, Self::Error>> {
+        async move {
+            // Prepare query
+            let mut query_builder: QueryBuilder<Postgres> =
+                QueryBuilder::new(format!("UPDATE {} SET ", Self::table_name()));
 
-        data.bind_update_values(&mut query_builder, None);
+            data.bind_update_values(&mut query_builder, None);
 
-        query_builder.push(" WHERE id = ");
-        query_builder.push_bind(id);
+            query_builder.push(" WHERE id = ");
+            query_builder.push_bind(id);
 
-        query_builder.push(" RETURNING *");
+            query_builder.push(" RETURNING *");
 
-        // Execute query
-        query_builder
-            .build_query_as::<Self::Struct>()
-            .fetch_one(db)
-            .await
-            .map_err(Into::into)
+            // Execute query
+            query_builder
+                .build_query_as::<Self::Struct>()
+                .fetch_one(db)
+                .await
+                .map_err(Into::into)
+        }
     }
 
     /// Upsert a record in database.
@@ -1060,31 +1093,36 @@ where
     ///   Ok(())
     /// }
     /// ```
-    async fn upsert(data: &Self::Data, db: &sqlx::PgPool) -> Result<Self::Struct, Self::Error> {
-        // Prepare values to be bounded
-        let columns = data.columns().join(", ");
+    fn upsert(
+        data: &Self::Data,
+        db: &sqlx::PgPool,
+    ) -> impl std::future::Future<Output = Result<Self::Struct, Self::Error>> {
+        async move {
+            // Prepare values to be bounded
+            let columns = data.columns().join(", ");
 
-        // Prepare query
-        let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(format!(
-            "INSERT INTO {} ({}) VALUES ",
-            Self::table_name(),
-            columns
-        ));
+            // Prepare query
+            let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(format!(
+                "INSERT INTO {} ({}) VALUES ",
+                Self::table_name(),
+                columns
+            ));
 
-        data.bind_insert_values(&mut query_builder);
+            data.bind_insert_values(&mut query_builder);
 
-        query_builder.push(" ON CONFLICT(id) DO UPDATE SET ");
+            query_builder.push(" ON CONFLICT(id) DO UPDATE SET ");
 
-        data.bind_update_values(&mut query_builder, Some("EXCLUDED"));
+            data.bind_update_values(&mut query_builder, Some("EXCLUDED"));
 
-        query_builder.push(" RETURNING *");
+            query_builder.push(" RETURNING *");
 
-        // Execute query
-        query_builder
-            .build_query_as::<Self::Struct>()
-            .fetch_one(db)
-            .await
-            .map_err(Into::into)
+            // Execute query
+            query_builder
+                .build_query_as::<Self::Struct>()
+                .fetch_one(db)
+                .await
+                .map_err(Into::into)
+        }
     }
 }
 

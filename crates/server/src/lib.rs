@@ -13,9 +13,7 @@ pub(crate) mod types;
 
 pub use axum;
 
-use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use axum::Router;
 use tokio::net::TcpListener;
 use tokio::signal;
 use tower_http::services::ServeFile;
