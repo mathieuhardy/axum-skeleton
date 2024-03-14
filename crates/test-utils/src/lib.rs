@@ -135,9 +135,10 @@ pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
 
     let address = listener.local_addr()?;
 
+    let app = app(&config, Some(db_env_variable)).await.unwrap();
+
     // TODO: get logs from server
     tokio::spawn(async move {
-        let app = app(&config, Some(db_env_variable)).await.unwrap();
         axum::serve(listener, app).await.unwrap();
     });
 
@@ -165,7 +166,7 @@ async fn initialize_database(db_env_variable: &str) -> Result<PgPool, Box<dyn Er
         sqlx::Postgres::create_database(&db_url).await?;
 
         // Run migrations
-        let migrations_dir = root_relative_path("migrations")?;
+        let migrations_dir = root_relative_path("crates/database/migrations")?;
 
         sqlx::migrate::Migrator::new(migrations_dir)
             .await?

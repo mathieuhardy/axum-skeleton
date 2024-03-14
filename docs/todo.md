@@ -6,7 +6,6 @@
 - GraphQL
 - Job queue
 - Websockets
-- SQLx migrate in code
 
 ## Devops
 

@@ -16,7 +16,6 @@ pub use axum;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::Router;
-use sqlx::postgres::PgPoolOptions;
 use tokio::net::TcpListener;
 use tokio::signal;
 use tower_http::services::ServeFile;
@@ -92,13 +91,7 @@ pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> 
     let (request_id_layer, propagate_request_id_layer) = tracing::request_id_layers();
 
     // Create Postgresql pool connection
-    let db_url = std::env::var(db_env_variable.unwrap_or("DATABASE_URL")).map_err(Error::Env)?;
-
-    let pool = PgPoolOptions::new()
-        .max_connections(8)
-        .connect(&db_url)
-        .await?;
-
+    let pool = database::initialize(db_env_variable).await?;
     event!(Level::INFO, "🗃  Database initialized");
 
     let state = AppState::new(pool.clone());

@@ -11,8 +11,26 @@ pub mod error;
 pub mod models;
 pub mod traits;
 
-// External crates
-pub use {sqlx, uuid};
-
 pub(crate) mod prelude;
 pub(crate) mod requests;
+
+// Re-exports
+pub use {sqlx, uuid};
+
+// External crates
+use sqlx::postgres::PgPoolOptions;
+
+use prelude::*;
+
+pub async fn initialize(db_env_variable: Option<&str>) -> Res<PgPool> {
+    let db_url = std::env::var(db_env_variable.unwrap_or("DATABASE_URL")).map_err(Error::Env)?;
+
+    let pool = PgPoolOptions::new()
+        .max_connections(8)
+        .connect(&db_url)
+        .await?;
+
+    sqlx::migrate!().run(&pool).await?;
+
+    Ok(pool)
+}

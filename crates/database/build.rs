@@ -5,6 +5,7 @@ use walkdir::WalkDir;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
+    println!("cargo:rerun-if-changed=migrations");
     println!("cargo:rerun-if-changed=scripts");
 
     let mut output = "//! This file contains all SQL requests as variables.\n".to_string();

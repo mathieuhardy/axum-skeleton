@@ -2,7 +2,6 @@
 //! provides the conversions from other error types.
 
 use axum::http::StatusCode;
-use std::env::VarError;
 use thiserror::Error;
 
 use database::error::Error as DatabaseError;
@@ -28,10 +27,6 @@ pub enum Error {
     /// Database read/write error.
     #[error("{0}")]
     Database(#[from] DatabaseError),
-
-    /// Generic environment variable error.
-    #[error("{0}")]
-    Env(#[source] VarError),
 
     /// Generic filesystem error.
     #[error("{0}")]

@@ -65,9 +65,6 @@ WORKDIR axum
 # Binaries
 COPY --from=builder /app/target/release/axum-skeleton .
 
-# SQL
-COPY --from=builder /app/migrations ./migrations
-
 # Configurations
 COPY --from=builder /app/crates/sanity/config ./config/sanity
 COPY --from=builder /app/crates/server/config ./config/server
