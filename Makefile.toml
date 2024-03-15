@@ -297,7 +297,8 @@ dependencies = [
     "crates-duplicates-json",
     "crates-licenses-json",
     "crates-unused-json",
-    "crates-upgradables-json"
+    "crates-upgradables-json",
+    "doc-sanity"
 ]
 script.pre = '''
 mkdir -p ${SAN_OUTPUT_DIR}
@@ -318,6 +319,17 @@ args = [
     "--offline",
     "--no-deps"
 ]
+
+[tasks.doc-sanity]
+workspace = false
+dependencies = ["doc"]
+script = '''
+rm -rf ${SAN_OUTPUT_DIR}/doc
+
+cp -rf ${TARGET_DIR}/doc ${SAN_OUTPUT_DIR}/
+
+echo "${B}[cargo-make]${NC} ${BY}STEP${NC} - Generated: ${SAN_OUTPUT_DIR}/doc"
+'''
 
 # ------------------------------------------------------------------------------
 # Documentation coverage targets

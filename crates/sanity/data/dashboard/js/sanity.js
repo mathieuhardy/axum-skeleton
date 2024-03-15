@@ -2,6 +2,14 @@ const MAX_VISIBLE_ROWS_IN_TABLE = 5;
 const MAX_VISIBLE_PAGINATION_HANDLES = 5;
 const SIDE_PAGINATION_HANDLES = (MAX_VISIBLE_PAGINATION_HANDLES - 1) / 2;
 
+function resizeIframe(obj) {
+    const height = Math.max(
+        document.documentElement.clientHeight,
+        obj.contentWindow.document.documentElement.scrollHeight);
+
+    obj.style.height = height + 'px';
+}
+
 function range(start, end) {
   return Array.from({ length: end - start + 1 }, (_, i) => i)
 }
