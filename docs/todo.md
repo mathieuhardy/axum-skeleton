@@ -7,10 +7,11 @@
 - Job queue
 - Websockets
 - Dedicated endpoint for password update
+- Provide a connection to the database in unit tests
 
 ## Tests
 
-- passwords
+- set password endpoint
 
 ## Devops
 

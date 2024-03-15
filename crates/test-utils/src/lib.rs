@@ -162,22 +162,15 @@ async fn initialize_database(db_env_variable: &str) -> Result<PgPool, Box<dyn Er
     let db = PgPoolOptions::new().connect(&db_url).await?;
 
     if !sqlx::Postgres::database_exists(&db_url).await? {
-        // Create DB
         sqlx::Postgres::create_database(&db_url).await?;
-
-        // Run migrations
-        let migrations_dir = root_relative_path("crates/database/migrations")?;
-
-        sqlx::migrate::Migrator::new(migrations_dir)
-            .await?
-            .run(&db)
-            .await?;
     }
 
     // Run custom test script to populate
     let test_script = root_relative_path("data/tests/populate.sql")?;
 
+    println!("before");
     let sql = std::fs::read_to_string(test_script)?;
+    println!("after");
 
     sqlx::query(&sql).execute(&db).await?;
 

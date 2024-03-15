@@ -9,12 +9,12 @@ use sqlx::QueryBuilder;
 pub trait CRUD
 where
     Self::Data: SqlxPgInsertable,
-    Self::Error: From<sqlx::Error> + std::fmt::Debug,
-    Self::Id: sqlx::postgres::PgHasArrayType + std::fmt::Debug,
+    Self::Error: From<sqlx::Error>,
+    Self::Id: sqlx::postgres::PgHasArrayType,
     for<'a> &'a Self::Id:
         Send + Sync + sqlx::Encode<'a, sqlx::Postgres> + sqlx::Type<sqlx::Postgres>,
     for<'a> &'a [Self::Id]: Send + Sync + sqlx::Encode<'a, sqlx::Postgres>,
-    for<'a> Self::Struct: Send + Unpin + sqlx::FromRow<'a, sqlx::postgres::PgRow> + std::fmt::Debug,
+    for<'a> Self::Struct: Send + Unpin + sqlx::FromRow<'a, sqlx::postgres::PgRow>,
 {
     /// Structure used to insert or update records.
     type Data;
