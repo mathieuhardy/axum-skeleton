@@ -14,20 +14,24 @@ sqlx database drop
 ## List available/installed migrations
 
 ```shell
-sqlx migrate info
+sqlx migrate info --source crates/database/migrations/
 ```
 
 ## Add migration
 
 ```shell
-sqlx migrate add <name>
+sqlx migrate add --source crates/database/migrations/ <name>
 ```
 
 ## Run/revert
 
+> **Warning**
+> The migration should not be done manually as the application embeds the
+> migrations and will try to apply them on startup.
+
 ```shell
 # Run all non-installed migrations
-sqlx migrate run
+sqlx migrate run --source crates/database/migrations/ 
 
 # Revert last migration
 sqlx migrate revert

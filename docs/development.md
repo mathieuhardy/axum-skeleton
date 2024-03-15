@@ -4,7 +4,7 @@
 - [🗃  SQLx usage](development/sqlx.md)
 - [📄 Logging system](development/logging.md)
 - [💯 Testing](development/testing.md)
-- [🖊 Coding style](development/coding-style.md)
+- [🖊 Codin style](development/coding-style.md)
 - [🩺 Sanity](development/sanity.md)
 
 ## Database
@@ -19,7 +19,7 @@ requests stored in Rust constants available for SQLx usage.
 
 ## Routes
 
-Every POST/PUT route must allows to receive JSON or form data. This can be done
+Every PATCH/POST/PUT route must allows to receive JSON or form data. This can be done
 easily using the type `FormOrJson`:
 
 ```rust
