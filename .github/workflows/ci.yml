@@ -109,7 +109,6 @@ jobs:
           DATABASE_URL: postgres://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}
         run: |
           sqlx database create
-          sqlx migrate run --source ./crates/database/migrations
 
       - name: Run unit tests
         run: |
