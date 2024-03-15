@@ -6,6 +6,11 @@
 - GraphQL
 - Job queue
 - Websockets
+- Dedicated endpoint for password update
+
+## Tests
+
+- passwords
 
 ## Devops
 
@@ -35,7 +40,6 @@ cargo clippy --workspace --all-targets --all-features --color always --keep-goin
 - [OpenApi](https://docs.rs/okapi-operation/latest/okapi_operation/#example-using-axum-but-without-axum_integration-feature)
 - [Prometheus](https://docs.rs/axum-prometheus/latest/axum_prometheus/)
 - [Job queue](https://cetra3.github.io/blog/implementing-a-jobq)
-- [Easter egg](https://fr.wikipedia.org/wiki/Hyper_Text_Coffee_Pot_Control_Protocol)
 
 ### Websockets
 

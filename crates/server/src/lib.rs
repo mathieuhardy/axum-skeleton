@@ -71,6 +71,19 @@ pub async fn start(config: Option<crate::config::Config>) -> Res<()> {
 /// # Returns
 /// An Axum router instance.
 pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> {
+    // Database configuration
+    let password_pattern = utils::hashing::password_pattern(
+        config.password.pattern.digit,
+        config.password.pattern.lowercase,
+        config.password.pattern.uppercase,
+        config.password.pattern.special,
+        config.password.pattern.spaces,
+        config.password.pattern.min_length,
+        config.password.pattern.max_length,
+    );
+
+    database::password::set_pattern(password_pattern);
+
     // CORS layer
     let cors = cors::build(config);
 

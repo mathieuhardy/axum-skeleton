@@ -52,6 +52,38 @@ pub struct CorsSettings {
     pub allow_origins: Vec<String>,
 }
 
+/// Structure that contains all passwords settings.
+#[derive(Debug, Deserialize)]
+pub struct PasswordSettings {
+    /// Allowed methods.
+    pub pattern: PasswordPatternSettings,
+}
+
+/// Structure that contains all passwords's pattern settings.
+#[derive(Debug, Deserialize)]
+pub struct PasswordPatternSettings {
+    /// Must contains at least one digit.
+    pub digit: bool,
+
+    /// Must contains at least one lowercase letter.
+    pub lowercase: bool,
+
+    /// Must contains at least one uppercase letter.
+    pub uppercase: bool,
+
+    /// Must contains at least one special character.
+    pub special: bool,
+
+    /// Can contains some spaces.
+    pub spaces: bool,
+
+    /// Minimum length of the password.
+    pub min_length: u32,
+
+    /// Maximum length of the password (should never be set).
+    pub max_length: Option<u32>,
+}
+
 /// Global configuration structure.
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -63,6 +95,9 @@ pub struct Config {
 
     /// Environment value.
     pub environment: String,
+
+    /// Passwords configuration.
+    pub password: PasswordSettings,
 }
 
 /// Possible environment values.

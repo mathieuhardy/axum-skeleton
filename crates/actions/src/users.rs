@@ -1,6 +1,6 @@
 //! Actions to be performed regarding the users management.
 
-use database::models::users::{User, UserData, UserRequest};
+use database::models::users::*;
 use utils::hashing::hash_password;
 
 use crate::prelude::*;
@@ -45,4 +45,30 @@ pub async fn update_user(id: &Uuid, request: &UserRequest, db: &PgPool) -> Res<U
     };
 
     User::update_by_id(id, &data, db).await.map_err(Into::into)
+}
+
+/// Sets an existing user's password.
+///
+/// # Arguments
+/// * `id` - User ID to be updated.
+/// * `request` - Password request.
+/// * `db` - Database handle.
+///
+/// # Returns
+/// Empty result.
+pub async fn set_user_password(id: &Uuid, request: &PasswordUpdateRequest, db: &PgPool) -> Res<()> {
+    let user = User::get(id, db).await?;
+
+    if user.password != request.current {
+        //TODO
+    }
+
+    let data = UserData {
+        password: Some(hash_password(&request.new)?),
+        ..UserData::default()
+    };
+
+    User::update_by_id(id, &data, db).await?;
+
+    Ok(())
 }

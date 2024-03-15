@@ -2,6 +2,7 @@
 
 use database_derives::*;
 
+use crate::password::pattern;
 use crate::prelude::*;
 
 /// Mirrors the `users`'s' table.
@@ -55,6 +56,18 @@ pub struct User {
     /// Date of record's last update.
     #[is_in(Response)]
     pub updated_at: DateTime<Utc>,
+}
+
+/// Structure provided to update the user's password
+#[derive(Debug, Deserialize, Validate)]
+pub struct PasswordUpdateRequest {
+    /// Current password of the user. Not validated as it will be simply compared with the entry in
+    /// database before updating.
+    pub current: String,
+
+    /// New password to be set in database.
+    #[validate(custom = "validate_password")]
+    pub new: String,
 }
 
 /// Structure that list all filters available for querying database.
@@ -205,14 +218,19 @@ impl User {
 
 /// Validate a password accoring to application rules.
 ///
-/// TODO: To be implemented
-///
 /// # Arguments
 /// * `password` - Password to be checked.
 ///
 /// # Returns
 /// No output if the password is correct, an error otherwise.
-fn validate_password(_password: &str) -> Result<(), ValidationError> {
-    // TODO: check length and patterns
-    Ok(())
+fn validate_password(password: &str) -> Result<(), ValidationError> {
+    let pattern = pattern().map_err(|_| ValidationError::new("cannot_access_pattern"))?;
+
+    let re = fancy_regex::Regex::new(&pattern)
+        .map_err(|_| ValidationError::new("cannot_build_regex"))?;
+
+    re.is_match(password)
+        .map_err(|_| ValidationError::new("matching_error"))?
+        .then_some(())
+        .ok_or(ValidationError::new("invalid_password"))
 }

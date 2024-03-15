@@ -9,12 +9,12 @@ use sqlx::QueryBuilder;
 pub trait CRUD
 where
     Self::Data: SqlxPgInsertable,
-    Self::Error: From<sqlx::Error>,
-    Self::Id: sqlx::postgres::PgHasArrayType,
+    Self::Error: From<sqlx::Error> + std::fmt::Debug,
+    Self::Id: sqlx::postgres::PgHasArrayType + std::fmt::Debug,
     for<'a> &'a Self::Id:
         Send + Sync + sqlx::Encode<'a, sqlx::Postgres> + sqlx::Type<sqlx::Postgres>,
     for<'a> &'a [Self::Id]: Send + Sync + sqlx::Encode<'a, sqlx::Postgres>,
-    for<'a> Self::Struct: Send + Unpin + sqlx::FromRow<'a, sqlx::postgres::PgRow>,
+    for<'a> Self::Struct: Send + Unpin + sqlx::FromRow<'a, sqlx::postgres::PgRow> + std::fmt::Debug,
 {
     /// Structure used to insert or update records.
     type Data;
@@ -1029,11 +1029,12 @@ where
             query_builder.push(" RETURNING *");
 
             // Execute query
-            query_builder
+            let r = query_builder
                 .build_query_as::<Self::Struct>()
                 .fetch_one(db)
                 .await
-                .map_err(Into::into)
+                .map_err(Into::into);
+            r
         }
     }
 
