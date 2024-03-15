@@ -1,6 +1,8 @@
 //! This file contains all SQL requests as variables.
 
-/// Undocumented.
+#[rustfmt::skip]
+#[allow(clippy::all)]
+/// Auto-generated.
 pub const SQL_USERS_FIND_BY_FILTERS: &str = "-- Fetch some users providing filters:
 --
 -- Arguments:

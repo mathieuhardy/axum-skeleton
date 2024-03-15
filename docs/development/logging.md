@@ -1,6 +1,7 @@
 # 📄 Logging
 
-Logging is performed using the [tracing][0] crate and these macros are available:
+Logging is performed using the [tracing][0] crate and these macros are
+available:
 
 - `event!(Level::ERROR, ...)`
 - `event!(Level::WARN, ...)`

@@ -394,6 +394,8 @@ workspace = false
 dependencies = ["cov-tests-bootstrap"]
 script.main = '''
 cargo tarpaulin ${CARGO_DEFAULT_OPTS} --all-targets -o html
+
+cp ${TESTS_COV_HTML} ${SAN_OUTPUT_DIR}/cov-tests.html
 '''
 script.post = '''
 echo "🟢 ${B_WHITE}Results generated: ${TESTS_COV_HTML}${NC}"

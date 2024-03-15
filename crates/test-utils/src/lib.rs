@@ -168,9 +168,7 @@ async fn initialize_database(db_env_variable: &str) -> Result<PgPool, Box<dyn Er
     // Run custom test script to populate
     let test_script = root_relative_path("data/tests/populate.sql")?;
 
-    println!("before");
     let sql = std::fs::read_to_string(test_script)?;
-    println!("after");
 
     sqlx::query(&sql).execute(&db).await?;
 

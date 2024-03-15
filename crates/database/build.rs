@@ -40,7 +40,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             output += "\n";
         }
 
-        output += "/// Undocumented.\n";
+        output += "#[rustfmt::skip]\n";
+        output += "#[allow(clippy::all)]\n";
+        output += "/// Auto-generated.\n";
         output += &format!("pub const {var}: &str = \"{content}\";\n");
     }
 

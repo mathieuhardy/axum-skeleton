@@ -33,4 +33,5 @@ install the `cargo-make` tool:
 cargo install cargo-make
 ```
 
-Then you can call the command `makers` to get the list of available commands and run them.
+Then you can call the command `makers` to get the list of available commands and
+run them.
