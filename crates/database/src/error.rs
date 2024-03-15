@@ -22,6 +22,10 @@ pub enum Error {
     #[error("No record found in database")]
     NotFound,
 
+    /// Error during access of the password pattern
+    #[error("Cannot access password pattern")]
+    PasswordPatternAccess,
+
     /// Generic SQLx error.
     #[error("{0}")]
     SQLx(#[from] sqlx::Error),

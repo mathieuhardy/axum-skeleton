@@ -9,6 +9,8 @@ walkdir = "2.4.0"
 
 [dependencies]
 chrono = { version = "0.4.31", default-features = false, features = ["serde"] }
+fancy-regex = { version = "0.13.0", default-features = false, features = ["perf", "std", "unicode"] }
+lazy_static = { version = "1.4.0", default-features = false }
 serde = { version = "1.0.195", default-features = false, features = ["derive"] }
 serde_with = { version = "3.5.0", default-features = false, features = ["macros"] }
 sqlx = { version = "0.7.3", default-features = false, features = ["chrono", "migrate", "uuid", "runtime-tokio"] }

@@ -13,3 +13,13 @@ cors:
     - patch
     - post
     - put
+
+password:
+  pattern:
+    digit: true
+    lowercase: true
+    uppercase: true
+    special: true
+    spaces: false
+    min_length: 8
+    max_length: null

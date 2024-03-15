@@ -7,6 +7,7 @@
 
 pub mod error;
 pub mod models;
+pub mod password;
 pub mod traits;
 
 pub(crate) mod prelude;
@@ -18,7 +19,7 @@ pub use {sqlx, uuid};
 // External crates
 use sqlx::postgres::PgPoolOptions;
 
-use prelude::*;
+use crate::prelude::*;
 
 pub async fn initialize(db_env_variable: Option<&str>) -> Res<PgPool> {
     let db_url = std::env::var(db_env_variable.unwrap_or("DATABASE_URL")).map_err(Error::Env)?;

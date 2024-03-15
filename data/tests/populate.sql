@@ -7,6 +7,8 @@ BEGIN
 	FOR rec IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public' and tablename <> '_sqlx_migrations')
     LOOP
 	    EXECUTE 'TRUNCATE TABLE ' || rec.tablename || ' CASCADE';
+        -- TODO
+        -- EXECUTE 'ALTER SEQUENCE ' || rec.tablename || '_id_seq RESTART WITH 1';
 	END LOOP;
 
     -- Insert test data

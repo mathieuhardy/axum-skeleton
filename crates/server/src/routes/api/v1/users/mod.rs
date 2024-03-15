@@ -1,6 +1,6 @@
 //! This file contains all routes dedicated to the users management.
 
-use actions::users::{create_user, update_user};
+use actions::users::{create_user, set_user_password, update_user};
 use database::models::users::*;
 use database::traits::sqlx::postgres::crud::*;
 
@@ -22,6 +22,7 @@ pub fn build() -> Router<AppState> {
         .route("/:id", patch(patch_user))
         // POST
         .route("/", post(post_user))
+        .route("/:id/password", post(post_user_password))
         // PUT
         .route("/", put(put_user))
 }
@@ -86,6 +87,21 @@ async fn post_user(
     let user = create_user(&request, &state.db).await?;
 
     Ok((StatusCode::CREATED, Json(user.into())))
+}
+
+/// Handler used to update an existing user's password by providing its ID.
+#[axum::debug_handler]
+#[instrument]
+async fn post_user_password(
+    Path(id): Path<Uuid>,
+    State(state): State<AppState>,
+    FormOrJson(request): FormOrJson<PasswordUpdateRequest>,
+) -> Res<StatusCode> {
+    request.validate()?;
+
+    set_user_password(&id, &request, &state.db).await?;
+
+    Ok(StatusCode::OK)
 }
 
 /// Handler used to update an existing user by providing its ID.
