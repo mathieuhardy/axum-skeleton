@@ -5,6 +5,8 @@ import json
 import subprocess
 import sys
 
+import pprint
+
 from collections import defaultdict
 
 def main():
@@ -19,8 +21,9 @@ def main():
 
     color = "" if args.raw else "\033[1;32m"
 
-    for node in metadata["resolve"]["nodes"]:
-        name, version, _ = node["id"].split(" ")
+    for node in metadata["packages"]:
+        name = node["name"]
+        version = node["version"]
         deps[name].append(version)
 
     for name, versions in deps.items():
