@@ -36,3 +36,12 @@ sqlx migrate run --source crates/database/migrations/
 # Revert last migration
 sqlx migrate revert
 ```
+
+## Fake data
+
+You can insert fake data to start using the application more quickly by using
+the SQL script used to populate the database during unit testing:
+
+```shell
+psql -a -d axum -f ./data/tests/populate.sql
+```
