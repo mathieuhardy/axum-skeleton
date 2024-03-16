@@ -2,9 +2,11 @@
 
 - [🪝 Git Hooks](development/git-hooks.md)
 - [🗃  SQLx usage](development/sqlx.md)
+
+- [🧱 Architecture](development/architecture.md)
 - [📄 Logging system](development/logging.md)
 - [💯 Testing](development/testing.md)
-- [🖊 Codin style](development/coding-style.md)
+- [🖊 Coding style](development/coding-style.md)
 - [🩺 Sanity](development/sanity.md)
 
 ## Database
