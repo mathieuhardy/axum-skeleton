@@ -1,5 +1,7 @@
 //! This file contains derive macros used in database crate.
 
+#![forbid(unsafe_code)]
+
 mod export;
 mod sqlx_pg_insertable;
 mod try_from_vec;

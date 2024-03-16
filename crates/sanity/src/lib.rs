@@ -1,6 +1,8 @@
 //! This file is the entry point for the sanity dashboard. It provides a
 //! function to insert it into the router.
 
+#![forbid(unsafe_code)]
+
 pub(crate) mod config;
 pub mod error;
 pub(crate) mod prelude;

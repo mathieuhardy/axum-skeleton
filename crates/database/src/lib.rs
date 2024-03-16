@@ -3,6 +3,7 @@
 //! - models: structures that matches data returned from queries an matches the tables.
 //! - scripts: SQL raw scripts used in the crate for queries.
 
+#![forbid(unsafe_code)]
 #![feature(box_into_inner)]
 
 pub mod error;

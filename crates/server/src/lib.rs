@@ -1,6 +1,8 @@
 //! This file is the entry point for the server application. It provides a
 //! function to start it and some default handlers.
 
+#![forbid(unsafe_code)]
+
 pub mod config;
 pub(crate) mod cors;
 pub(crate) mod error;

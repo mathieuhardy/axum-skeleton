@@ -1,5 +1,7 @@
 //! This file contains derive macros used in test-utils crate.
 
+#![forbid(unsafe_code)]
+
 use proc_macro::{TokenStream, TokenTree};
 use proc_macro2::Span;
 use quote::ToTokens;

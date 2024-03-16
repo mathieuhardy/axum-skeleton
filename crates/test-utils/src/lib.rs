@@ -1,6 +1,7 @@
 //! This file contains everything needed for unit testing (i.e. creating a
 //! server instance, etc).
 
+#![forbid(unsafe_code)]
 #![feature(async_closure)]
 
 pub use reqwest::{Client, RequestBuilder, StatusCode};
