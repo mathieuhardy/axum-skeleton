@@ -94,14 +94,15 @@ dependencies = ["clippy-bootstrap"]
 command = "cargo"
 args = [
   "clippy",
+  "--color", "always",
+  "-Z", "unstable-options",
   "--workspace",
   "--all-targets",
   "--all-features",
   "--locked",
-  "--color", "always",
+  "--offline",
   "--keep-going",
-  "-Z", "unstable-options",
-  "--offline"
+  "--", "-D", "warnings"
 ]
 
 # ------------------------------------------------------------------------------

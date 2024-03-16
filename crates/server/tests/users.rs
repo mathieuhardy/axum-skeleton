@@ -222,7 +222,7 @@ mod patch {
         };
 
         let email = match email_validity {
-            EmailValidity::Invalid => format!("{uniq}"),
+            EmailValidity::Invalid => uniq,
             EmailValidity::Valid => format!("{uniq}@email.com"),
         };
 
@@ -394,7 +394,7 @@ mod post {
         };
 
         let email = match email_validity {
-            EmailValidity::Invalid => format!("{uniq}"),
+            EmailValidity::Invalid => uniq,
             EmailValidity::Valid => format!("{uniq}@email.com"),
         };
 
@@ -596,7 +596,7 @@ mod put {
         };
 
         let email = match email_validity {
-            EmailValidity::Invalid => format!("{uniq}"),
+            EmailValidity::Invalid => uniq,
             EmailValidity::Valid => format!("{uniq}@email.com"),
         };
 

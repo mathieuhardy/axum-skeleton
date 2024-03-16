@@ -52,7 +52,7 @@ pub fn password_pattern(
         lowercase.then_some("(?=.*[a-z])").unwrap_or_default(),
         uppercase.then_some("(?=.*[A-Z])").unwrap_or_default(),
         special.then_some("(?=.*[^a-zA-Z0-9])").unwrap_or_default(),
-        spaces.then_some("").unwrap_or("(?!.* )"),
+        if spaces { "" } else { "(?!.* )" },
         min_length,
         max_length
             .map(|value| format!("{}", value))

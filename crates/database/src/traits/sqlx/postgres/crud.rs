@@ -1029,12 +1029,11 @@ where
             query_builder.push(" RETURNING *");
 
             // Execute query
-            let r = query_builder
+            query_builder
                 .build_query_as::<Self::Struct>()
                 .fetch_one(db)
                 .await
-                .map_err(Into::into);
-            r
+                .map_err(Into::into)
         }
     }
 
