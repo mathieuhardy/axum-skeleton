@@ -155,6 +155,9 @@ pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
 
 /// Initialize the database use in the application.
 ///
+/// # Arguments
+/// * `db_env_variable` - Name of the environment variable to use to access database.
+///
 /// # Returns
 /// Postgres pool or an error.
 async fn initialize_database(db_env_variable: &str) -> Result<PgPool, Box<dyn Error>> {
@@ -167,13 +170,26 @@ async fn initialize_database(db_env_variable: &str) -> Result<PgPool, Box<dyn Er
     }
 
     // Run custom test script to populate
+    reset_fake_data(&db).await?;
+
+    Ok(db)
+}
+
+/// Sets/resets fake data in database
+///
+/// # Arguments
+/// * `db` - Database handle.
+///
+/// # Returns
+/// Empty result.
+pub async fn reset_fake_data(db: &PgPool) -> Result<(), Box<dyn Error>> {
     let test_script = root_relative_path("data/tests/populate.sql")?;
 
     let sql = std::fs::read_to_string(test_script)?;
 
-    sqlx::query(&sql).execute(&db).await?;
+    sqlx::query(&sql).execute(db).await?;
 
-    Ok(db)
+    Ok(())
 }
 
 /// Runs a test calling a setup function before the test and a teardown function
