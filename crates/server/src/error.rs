@@ -4,6 +4,7 @@
 use axum::http::StatusCode;
 use thiserror::Error;
 
+use actions::error::Error as ActionsError;
 use database::error::Error as DatabaseError;
 
 /// Helper for return types inside this crate.
@@ -14,7 +15,7 @@ pub type Res<T> = Result<T, Error>;
 pub enum Error {
     /// Actions error.
     #[error("{0}")]
-    Actions(#[from] actions::error::Error),
+    Actions(#[from] ActionsError),
 
     /// Generic Axum error.
     #[error("{0}")]
@@ -65,6 +66,7 @@ pub enum Error {
 impl axum::response::IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         match self {
+            Self::Actions(ActionsError::InvalidPassword) => StatusCode::FORBIDDEN.into_response(),
             Self::Database(DatabaseError::NotFound) => StatusCode::NOT_FOUND.into_response(),
             Self::Validation(_) => StatusCode::UNPROCESSABLE_ENTITY.into_response(),
             _ => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
