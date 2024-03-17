@@ -7,5 +7,7 @@ pub mod error;
 pub mod filesystem;
 #[cfg(feature = "hashing")]
 pub mod hashing;
+#[cfg(feature = "password")]
+pub mod password;
 
 pub(crate) mod prelude;
