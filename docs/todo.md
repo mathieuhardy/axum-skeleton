@@ -6,12 +6,6 @@
 - GraphQL
 - Job queue
 - Websockets
-- Dedicated endpoint for password update
-- Provide a connection to the database in unit tests
-
-## Tests
-
-- set password endpoint
 
 ## Devops
 

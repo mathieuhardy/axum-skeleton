@@ -22,6 +22,13 @@ use sqlx::postgres::PgPoolOptions;
 
 use crate::prelude::*;
 
+/// Initialize the database connection and run migrations.
+///
+/// # Arguments
+/// * `db_env_variable` - Environment variable used to get the URL of the database.
+///
+/// # Returns
+/// A result with the PostgresSQL pool.
 pub async fn initialize(db_env_variable: Option<&str>) -> Res<PgPool> {
     let db_url = std::env::var(db_env_variable.unwrap_or("DATABASE_URL")).map_err(Error::Env)?;
 

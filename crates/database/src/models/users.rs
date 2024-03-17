@@ -59,7 +59,7 @@ pub struct User {
 }
 
 /// Structure provided to update the user's password
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Serialize, Validate)]
 pub struct PasswordUpdateRequest {
     /// Current password of the user. Not validated as it will be simply compared with the entry in
     /// database before updating.

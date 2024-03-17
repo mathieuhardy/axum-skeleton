@@ -1,6 +1,7 @@
 use rand::distributions::{Alphanumeric, DistString};
 use serial_test::serial;
-use test_utils::*;
+use std::module_path;
+use test_utils::{StatusCode, *};
 use urlencoding::encode;
 use uuid::Uuid;
 
@@ -38,7 +39,7 @@ enum PasswordValidity {
 
 async fn first_user(client: &TestClient) -> UserResponse {
     let response = client.get("/api/users").send().await.unwrap();
-    assert_eq!(response.status(), test_utils::StatusCode::OK);
+    assert_eq!(response.status(), StatusCode::OK);
 
     let users = response.json::<Vec<UserResponse>>().await.unwrap();
     assert!(!users.is_empty());
@@ -64,6 +65,7 @@ async fn all() {
         post::invalid_first_name(&client).await;
         post::invalid_last_name(&client).await;
         post::invalid_password(&client).await;
+        post::set_password(&client).await;
 
         put::nominal(&client).await;
         put::invalid_email(&client).await;
@@ -83,8 +85,10 @@ mod delete {
     use super::*;
 
     pub async fn by_id(client: &TestClient) {
+        println!("{}::by_id", module_path!());
+
         let response = client.get("/api/users").send().await.unwrap();
-        assert_eq!(response.status(), test_utils::StatusCode::OK);
+        assert_eq!(response.status(), StatusCode::OK);
 
         let users = response.json::<Vec<UserResponse>>().await.unwrap();
         assert!(!users.is_empty());
@@ -95,7 +99,7 @@ mod delete {
             .await
             .unwrap();
 
-        assert_eq!(response.status(), test_utils::StatusCode::NO_CONTENT);
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 }
 
@@ -103,8 +107,10 @@ mod get {
     use super::*;
 
     pub async fn me(client: &TestClient) {
+        println!("{}::me", module_path!());
+
         let response = client.get("/api/users/me").send().await.unwrap();
-        assert_eq!(response.status(), test_utils::StatusCode::OK);
+        assert_eq!(response.status(), StatusCode::OK);
 
         let user = response.json::<UserResponse>().await.unwrap();
         assert_eq!(user.first_name, "John");
@@ -113,8 +119,10 @@ mod get {
     }
 
     pub async fn all(client: &TestClient) {
+        println!("{}::all", module_path!());
+
         let response = client.get("/api/users").send().await.unwrap();
-        assert_eq!(response.status(), test_utils::StatusCode::OK);
+        assert_eq!(response.status(), StatusCode::OK);
 
         let users = response.json::<Vec<UserResponse>>().await.unwrap();
         assert_eq!(users.len(), 2);
@@ -127,13 +135,15 @@ mod get {
     }
 
     pub async fn by_filters(client: &TestClient) {
+        println!("{}::by_filters", module_path!());
+
         // By name
         let response = client
             .get(format!("/api/users?first_name={}", encode("John")))
             .send()
             .await
             .unwrap();
-        assert_eq!(response.status(), test_utils::StatusCode::OK);
+        assert_eq!(response.status(), StatusCode::OK);
 
         let users = response.json::<Vec<UserResponse>>().await.unwrap();
         assert_eq!(users.len(), 1);
@@ -147,7 +157,7 @@ mod get {
             .send()
             .await
             .unwrap();
-        assert_eq!(response.status(), test_utils::StatusCode::NOT_FOUND);
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
 
         // By email
         let response = client
@@ -155,7 +165,7 @@ mod get {
             .send()
             .await
             .unwrap();
-        assert_eq!(response.status(), test_utils::StatusCode::OK);
+        assert_eq!(response.status(), StatusCode::OK);
 
         let users = response.json::<Vec<UserResponse>>().await.unwrap();
         assert_eq!(users.len(), 1);
@@ -165,12 +175,14 @@ mod get {
 
         // By email (not found)
         let response = client.get("/api/users?email=404").send().await.unwrap();
-        assert_eq!(response.status(), test_utils::StatusCode::NOT_FOUND);
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
     pub async fn by_id(client: &TestClient) {
+        println!("{}::by_id", module_path!());
+
         let response = client.get("/api/users").send().await.unwrap();
-        assert_eq!(response.status(), test_utils::StatusCode::OK);
+        assert_eq!(response.status(), StatusCode::OK);
 
         let users = response.json::<Vec<UserResponse>>().await.unwrap();
         assert_eq!(users.len(), 2);
@@ -181,7 +193,7 @@ mod get {
             .await
             .unwrap();
 
-        assert_eq!(response.status(), test_utils::StatusCode::OK);
+        assert_eq!(response.status(), StatusCode::OK);
 
         let user = response.json::<UserResponse>().await.unwrap();
         assert_eq!(users[0], user);
@@ -256,14 +268,14 @@ mod patch {
         let expected_status = match (first_name_validity, last_name_validity, email_validity) {
             (FirstNameValidity::Invalid, _, _)
             | (_, LastNameValidity::Invalid, _)
-            | (_, _, EmailValidity::Invalid) => test_utils::StatusCode::UNPROCESSABLE_ENTITY,
+            | (_, _, EmailValidity::Invalid) => StatusCode::UNPROCESSABLE_ENTITY,
 
-            _ => test_utils::StatusCode::OK,
+            _ => StatusCode::OK,
         };
 
         assert_eq!(response.status(), expected_status);
 
-        if expected_status == test_utils::StatusCode::OK {
+        if expected_status == StatusCode::OK {
             let user = response.json::<UserResponse>().await.unwrap();
             assert_eq!(user.first_name, first_name);
             assert_eq!(user.last_name, last_name);
@@ -272,6 +284,8 @@ mod patch {
     }
 
     pub async fn nominal(client: &TestClient) {
+        println!("{}::nominal", module_path!());
+
         let user = first_user(client).await;
 
         for data_type in [DataType::Form, DataType::Json] {
@@ -288,6 +302,8 @@ mod patch {
     }
 
     pub async fn invalid_email(client: &TestClient) {
+        println!("{}::invalid_email", module_path!());
+
         let user = first_user(client).await;
 
         for data_type in [DataType::Form, DataType::Json] {
@@ -304,6 +320,8 @@ mod patch {
     }
 
     pub async fn invalid_first_name(client: &TestClient) {
+        println!("{}::invalid_first_name", module_path!());
+
         let user = first_user(client).await;
 
         for data_type in [DataType::Form, DataType::Json] {
@@ -320,6 +338,8 @@ mod patch {
     }
 
     pub async fn invalid_last_name(client: &TestClient) {
+        println!("{}::invalid_last_name", module_path!());
+
         let user = first_user(client).await;
 
         for data_type in [DataType::Form, DataType::Json] {
@@ -337,7 +357,6 @@ mod patch {
 }
 
 // TODO: test post with None values
-// TODO: set_password => fetch database to get the actual password
 mod post {
     use super::*;
 
@@ -409,14 +428,14 @@ mod post {
             (FirstNameValidity::Invalid, _, _, _)
             | (_, LastNameValidity::Invalid, _, _)
             | (_, _, EmailValidity::Invalid, _)
-            | (_, _, _, PasswordValidity::Invalid) => test_utils::StatusCode::UNPROCESSABLE_ENTITY,
+            | (_, _, _, PasswordValidity::Invalid) => StatusCode::UNPROCESSABLE_ENTITY,
 
-            _ => test_utils::StatusCode::CREATED,
+            _ => StatusCode::CREATED,
         };
 
         assert_eq!(response.status(), expected_status);
 
-        if expected_status == test_utils::StatusCode::CREATED {
+        if expected_status == StatusCode::CREATED {
             let user = response.json::<UserResponse>().await.unwrap();
             assert_eq!(user.first_name, first_name);
             assert_eq!(user.last_name, last_name);
@@ -424,7 +443,64 @@ mod post {
         }
     }
 
+    async fn test_post_password(
+        client: &TestClient,
+        id: &Uuid,
+        data_type: DataType,
+        current_password_validity: PasswordValidity,
+        current_password: Option<&str>,
+        password_validity: PasswordValidity,
+        password: Option<&str>,
+    ) {
+        let current_password = current_password.unwrap_or("").to_string();
+
+        let password = match password_validity {
+            PasswordValidity::Invalid => password.unwrap_or("").to_string(),
+            PasswordValidity::Valid => "0#Abcdef".to_string(),
+        };
+
+        // Call endpoint and get response
+        let response = match data_type {
+            DataType::Json => {
+                let request = PasswordUpdateRequest {
+                    current: current_password,
+                    new: password,
+                };
+
+                client
+                    .post(format!("/api/users/{}/password", id))
+                    .json(&request)
+                    .send()
+                    .await
+                    .unwrap()
+            }
+
+            DataType::Form => {
+                let request = [("current", &current_password), ("new", &password)];
+
+                client
+                    .post(format!("/api/users/{}/password", id))
+                    .form(&request)
+                    .send()
+                    .await
+                    .unwrap()
+            }
+        };
+
+        // Check return code and values
+        let expected_status = match (current_password_validity, password_validity) {
+            (PasswordValidity::Invalid, _) => StatusCode::FORBIDDEN,
+            (_, PasswordValidity::Invalid) => StatusCode::UNPROCESSABLE_ENTITY,
+
+            _ => StatusCode::OK,
+        };
+
+        assert_eq!(response.status(), expected_status);
+    }
+
     pub async fn nominal(client: &TestClient) {
+        println!("{}::nominal", module_path!());
+
         for data_type in [DataType::Form, DataType::Json] {
             test_post(
                 client,
@@ -440,6 +516,8 @@ mod post {
     }
 
     pub async fn invalid_email(client: &TestClient) {
+        println!("{}::invalid_email", module_path!());
+
         for data_type in [DataType::Form, DataType::Json] {
             test_post(
                 client,
@@ -455,6 +533,8 @@ mod post {
     }
 
     pub async fn invalid_first_name(client: &TestClient) {
+        println!("{}::invalid_first_name", module_path!());
+
         for data_type in [DataType::Form, DataType::Json] {
             test_post(
                 client,
@@ -470,6 +550,8 @@ mod post {
     }
 
     pub async fn invalid_last_name(client: &TestClient) {
+        println!("{}::invalid_last_name", module_path!());
+
         for data_type in [DataType::Form, DataType::Json] {
             test_post(
                 client,
@@ -485,6 +567,8 @@ mod post {
     }
 
     pub async fn invalid_password(client: &TestClient) {
+        println!("{}::invalid_password", module_path!());
+
         let passwords = vec![
             ".#Abcdef",
             "0#ABCDEF",
@@ -509,6 +593,87 @@ mod post {
                 )
                 .await;
             }
+        }
+    }
+
+    pub async fn set_password(client: &TestClient) {
+        println!("{}::set_password", module_path!());
+
+        // Create a user to update
+        let uniq = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
+
+        let request = UserRequest {
+            first_name: Some(format!("{uniq}-first-name")),
+            last_name: Some(format!("{uniq}-last-name")),
+            email: Some(format!("{uniq}@email.com")),
+            password: Some("0#Abcdef".to_string()),
+            ..UserRequest::default()
+        };
+
+        let response = client
+            .post("/api/users")
+            .json(&request)
+            .send()
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::CREATED);
+
+        let user = response.json::<UserResponse>().await.unwrap();
+
+        let data_types = vec![DataType::Form, DataType::Json];
+
+        // Invalid current password
+        for data_type in &data_types {
+            test_post_password(
+                client,
+                &user.id,
+                data_type.clone(),
+                PasswordValidity::Invalid,
+                Some("INVALID_PASSWORD"),
+                PasswordValidity::Valid,
+                None,
+            )
+            .await;
+        }
+
+        // Invalid new passwords
+        let passwords = vec![
+            ".#Abcdef",
+            "0#ABCDEF",
+            "0#abcdef",
+            "0Abcdefg",
+            "0#Abcde f",
+            "0#Abcde",
+        ];
+
+        for data_type in &data_types {
+            for password in &passwords {
+                test_post_password(
+                    client,
+                    &user.id,
+                    data_type.clone(),
+                    PasswordValidity::Valid,
+                    None,
+                    PasswordValidity::Invalid,
+                    Some(password),
+                )
+                .await;
+            }
+        }
+
+        // Nominal
+        for data_type in data_types {
+            test_post_password(
+                client,
+                &user.id,
+                data_type.clone(),
+                PasswordValidity::Valid,
+                Some("0#Abcdef"),
+                PasswordValidity::Valid,
+                None,
+            )
+            .await;
         }
     }
 }
@@ -573,14 +738,14 @@ mod put {
         let expected_status = match (first_name_validity, last_name_validity, email_validity) {
             (FirstNameValidity::Invalid, _, _)
             | (_, LastNameValidity::Invalid, _)
-            | (_, _, EmailValidity::Invalid) => test_utils::StatusCode::UNPROCESSABLE_ENTITY,
+            | (_, _, EmailValidity::Invalid) => StatusCode::UNPROCESSABLE_ENTITY,
 
-            _ => test_utils::StatusCode::OK,
+            _ => StatusCode::OK,
         };
 
         assert_eq!(response.status(), expected_status);
 
-        if expected_status == test_utils::StatusCode::OK {
+        if expected_status == StatusCode::OK {
             let user = response.json::<UserResponse>().await.unwrap();
             assert_eq!(user.first_name, first_name);
             assert_eq!(user.last_name, last_name);
@@ -589,6 +754,8 @@ mod put {
     }
 
     pub async fn nominal(client: &TestClient) {
+        println!("{}::nominal", module_path!());
+
         let user = first_user(client).await;
 
         for data_type in [DataType::Form, DataType::Json] {
@@ -605,6 +772,8 @@ mod put {
     }
 
     pub async fn invalid_email(client: &TestClient) {
+        println!("{}::invalid_email", module_path!());
+
         let user = first_user(client).await;
 
         for data_type in [DataType::Form, DataType::Json] {
@@ -621,6 +790,8 @@ mod put {
     }
 
     pub async fn invalid_first_name(client: &TestClient) {
+        println!("{}::invalid_first_name", module_path!());
+
         let user = first_user(client).await;
 
         for data_type in [DataType::Form, DataType::Json] {
@@ -637,6 +808,8 @@ mod put {
     }
 
     pub async fn invalid_last_name(client: &TestClient) {
+        println!("{}::invalid_last_name", module_path!());
+
         let user = first_user(client).await;
 
         for data_type in [DataType::Form, DataType::Json] {

@@ -1,7 +1,7 @@
 //! Actions to be performed regarding the users management.
 
 use database::models::users::*;
-use utils::hashing::hash_password;
+use utils::hashing::{hash_password, verify};
 
 use crate::prelude::*;
 
@@ -59,8 +59,8 @@ pub async fn update_user(id: &Uuid, request: &UserRequest, db: &PgPool) -> Res<U
 pub async fn set_user_password(id: &Uuid, request: &PasswordUpdateRequest, db: &PgPool) -> Res<()> {
     let user = User::get(id, db).await?;
 
-    if user.password != request.current {
-        //TODO
+    if !verify(&request.current, user.password)? {
+        return Err(Error::InvalidPassword);
     }
 
     let data = UserData {
