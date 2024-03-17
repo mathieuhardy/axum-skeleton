@@ -2,7 +2,7 @@
 
 use database_derives::*;
 
-use crate::password::pattern;
+use crate::password::checks;
 use crate::prelude::*;
 
 /// Mirrors the `users`'s' table.
@@ -224,13 +224,11 @@ impl User {
 /// # Returns
 /// No output if the password is correct, an error otherwise.
 fn validate_password(password: &str) -> Result<(), ValidationError> {
-    let pattern = pattern().map_err(|_| ValidationError::new("cannot_access_pattern"))?;
+    let checks = checks().map_err(|_| ValidationError::new("cannot_access_checks"))?;
 
-    let re = fancy_regex::Regex::new(&pattern)
-        .map_err(|_| ValidationError::new("cannot_build_regex"))?;
-
-    re.is_match(password)
-        .map_err(|_| ValidationError::new("matching_error"))?
-        .then_some(())
-        .ok_or(ValidationError::new("invalid_password"))
+    if utils::password::verify(password, checks) {
+        Ok(())
+    } else {
+        Err(ValidationError::new("invalid_password"))
+    }
 }

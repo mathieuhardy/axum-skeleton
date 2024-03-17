@@ -11,3 +11,4 @@ thiserror = { version = "1.0.56", default-features = false }
 [features]
 fs = []
 hashing = []
+password = []

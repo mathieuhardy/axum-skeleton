@@ -9,7 +9,6 @@ walkdir = "2.4.0"
 
 [dependencies]
 chrono = { version = "0.4.31", default-features = false, features = ["serde"] }
-fancy-regex = { version = "0.13.0", default-features = false, features = ["perf", "std", "unicode"] }
 lazy_static = { version = "1.4.0", default-features = false }
 serde = { version = "1.0.195", default-features = false, features = ["derive"] }
 serde_with = { version = "3.5.0", default-features = false, features = ["macros"] }
@@ -20,6 +19,7 @@ uuid = { version = "1.6.1", default-features = false, features = ["serde", "v4"]
 validator = { version = "0.15", default-features = false, features = ["derive"] }
 
 database-derives = { path = "derives", default-features = false }
+utils = { path = "../utils", default-features = false, features = ["fs", "hashing", "password"] }
 
 [dev-dependencies]
 tokio = { version = "1.35.1", default-features = false, features = ["full"] }
