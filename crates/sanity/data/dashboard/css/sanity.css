@@ -23,3 +23,7 @@ nav {
 div.main {
     background-color: #393e46;
 }
+
+div.nav-container {
+    max-width: 100%;
+}

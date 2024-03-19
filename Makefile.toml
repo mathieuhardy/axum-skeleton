@@ -1,5 +1,3 @@
-# TODO: add output directories to isolate builds
-
 [env]
 
 # Common
@@ -16,8 +14,9 @@ CARGO_DEFAULT_OPTS="--workspace --all-features --locked"
 
 # Documentation specifics
 DOCS_OUTPUT_DIR = "${TARGET_DIR}/doc"
-DOCS_COV_RESULTS = "${DOCS_OUTPUT_DIR}/coverage.txt"
-DOCS_COV_HTML = "${DOCS_OUTPUT_DIR}/coverage.html"
+DOCS_COV_OUTPUT_DIR = "${TARGET_DIR}/cov-doc"
+DOCS_COV_RESULTS = "${DOCS_COV_OUTPUT_DIR}/coverage.txt"
+DOCS_COV_HTML = "${DOCS_COV_OUTPUT_DIR}/coverage.html"
 
 # Tests specifics
 TESTS_COV_HTML = "tarpaulin-report.html"
@@ -71,6 +70,7 @@ workspace = false
 dependencies = ["build-timings"]
 script = '''
 cp ${SAN_INPUT_BUILD_TIMINGS} ${SAN_OUTPUT_DIR}/build-timings.html
+
 echo "${B}[cargo-make]${NC} ${BY}STEP${NC} - Generated: ${SAN_OUTPUT_DIR}/build-timings.html"
 '''
 
@@ -125,7 +125,7 @@ dependencies = ["crates-audit-bootstrap"]
 command = "cargo"
 args = ["audit"]
 
-[tasks.crates-audit-json]
+[tasks.crates-audit-sanity]
 workspace = false
 dependencies = ["crates-audit-bootstrap"]
 script = '''
@@ -155,7 +155,7 @@ script = '''
 ${SCRIPTS_DIR}/sanity/crates/bloats.py --text
 '''
 
-[tasks.crates-bloats-json]
+[tasks.crates-bloats-sanity]
 workspace = false
 dependencies = ["crates-bloats-bootstrap"]
 script = '''
@@ -184,7 +184,7 @@ dependencies = ["crates-licenses-bootstrap"]
 command = "cargo"
 args = ["license"]
 
-[tasks.crates-licenses-json]
+[tasks.crates-licenses-sanity]
 workspace = false
 dependencies = ["crates-licenses-bootstrap"]
 script = '''
@@ -203,7 +203,7 @@ script = '''
 ${SCRIPTS_DIR}/sanity/crates/duplicates.py --text
 '''
 
-[tasks.crates-duplicates-json]
+[tasks.crates-duplicates-sanity]
 workspace = false
 script = '''
 rm -f ${SAN_OUTPUT_DIR}/crates-duplicates.json
@@ -233,7 +233,7 @@ dependencies = ["crates-unused-bootstrap"]
 command = "cargo"
 args = ["machete"]
 
-[tasks.crates-unused-json]
+[tasks.crates-unused-sanity]
 workspace = false
 dependencies = ["crates-unused-bootstrap"]
 script = '''
@@ -265,7 +265,7 @@ script = '''
 ${SCRIPTS_DIR}/sanity/crates/upgradables.py --text
 '''
 
-[tasks.crates-upgradables-json]
+[tasks.crates-upgradables-sanity]
 workspace = false
 dependencies = ["crates-upgradables-bootstrap"]
 script = '''
@@ -288,22 +288,20 @@ mkdir -p ${SAN_OUTPUT_DIR}
 
 [tasks.sanity]
 workspace = false
-dependencies = [
+run_task = { name = [
     "sanity-setup",
+    "doc-sanity",
     "build-timings-sanity",
     "cov-docs-sanity",
     "cov-tests-sanity",
-    "crates-audit-json",
-    "crates-bloats-json",
-    "crates-duplicates-json",
-    "crates-licenses-json",
-    "crates-unused-json",
-    "crates-upgradables-json",
-    "doc-sanity"
-]
-script.pre = '''
-mkdir -p ${SAN_OUTPUT_DIR}
-'''
+    "cov-test-plans-sanity",
+    "crates-audit-sanity",
+    "crates-bloats-sanity",
+    "crates-duplicates-sanity",
+    "crates-licenses-sanity",
+    "crates-unused-sanity",
+    "crates-upgradables-sanity"
+] }
 
 # ------------------------------------------------------------------------------
 # Documentations generation
@@ -311,15 +309,9 @@ mkdir -p ${SAN_OUTPUT_DIR}
 
 [tasks.doc]
 workspace = false
-command = "cargo"
-args = [
-    "doc",
-    "--workspace",
-    "--all-features",
-    "--locked",
-    "--offline",
-    "--no-deps"
-]
+script = '''
+cargo doc ${CARGO_DEFAULT_OPTS} --offline --no-deps
+'''
 
 [tasks.doc-sanity]
 workspace = false
@@ -327,7 +319,7 @@ dependencies = ["doc"]
 script = '''
 rm -rf ${SAN_OUTPUT_DIR}/doc
 
-cp -rf ${TARGET_DIR}/doc ${SAN_OUTPUT_DIR}/
+cp -rf ${DOCS_OUTPUT_DIR} ${SAN_OUTPUT_DIR}/
 
 echo "${B}[cargo-make]${NC} ${BY}STEP${NC} - Generated: ${SAN_OUTPUT_DIR}/doc"
 '''
@@ -341,13 +333,18 @@ echo "${B}[cargo-make]${NC} ${BY}STEP${NC} - Generated: ${SAN_OUTPUT_DIR}/doc"
 workspace = false
 private = true
 env.RUSTDOCFLAGS = "-Zunstable-options --show-coverage"
-script.pre = '''
-mkdir -p ${DOCS_OUTPUT_DIR}
-'''
-script.main = '''
-cargo doc -j 1 ${CARGO_DEFAULT_OPTS} --no-deps --document-private-items 1>${DOCS_COV_RESULTS} 2>&1
-'''
-script.post = '''
+script = '''
+mkdir -p ${DOCS_COV_OUTPUT_DIR}
+
+cargo doc \
+    -j 1 \
+    ${CARGO_DEFAULT_OPTS} \
+    --no-deps \
+    --document-private-items \
+    --target-dir \
+    ${DOCS_COV_OUTPUT_DIR} \
+    1>${DOCS_COV_RESULTS} 2>&1
+
 echo "${B}[cargo-make]${NC} ${BY}STEP${NC} - Generated: ${DOCS_COV_RESULTS}"
 '''
 
@@ -357,8 +354,7 @@ workspace = false
 private = true
 script.main = '''
 ${ROOT}/scripts/sanity/coverage/doc-coverage-2-html.py ${DOCS_COV_RESULTS} ${DOCS_COV_HTML}
-'''
-script.post = '''
+
 echo "${B}[cargo-make]${NC} ${BY}STEP${NC} - Generated: ${DOCS_COV_HTML}"
 '''
 
@@ -412,8 +408,7 @@ workspace = false
 dependencies = ["cov-tests-bootstrap"]
 script.main = '''
 cargo tarpaulin ${CARGO_DEFAULT_OPTS} --all-targets -o html
-'''
-script.post = '''
+
 echo "${B}[cargo-make]${NC} ${BY}STEP${NC} - Generated: ${TESTS_COV_HTML}"
 '''
 
@@ -423,4 +418,19 @@ dependencies = ["cov-tests"]
 script = '''
 cp ${TESTS_COV_HTML} ${SAN_OUTPUT_DIR}/tests-coverage.html
 echo "${B}[cargo-make]${NC} ${BY}STEP${NC} - Generated: ${SAN_OUTPUT_DIR}/tests-coverage.html"
+'''
+
+# ------------------------------------------------------------------------------
+# Test plans coverage targets
+# ------------------------------------------------------------------------------
+
+[tasks.cov-test-plans-sanity]
+workspace = false
+script.main = '''
+${SCRIPTS_DIR}/sanity/coverage/test-plan.py \
+    -p ${ROOT}/docs \
+    -s ${ROOT}/crates \
+    > ${SAN_OUTPUT_DIR}/cov-test-plans.json
+
+echo "${B}[cargo-make]${NC} ${BY}STEP${NC} - Generated: ${SAN_OUTPUT_DIR}/cov-test-plans.json"
 '''

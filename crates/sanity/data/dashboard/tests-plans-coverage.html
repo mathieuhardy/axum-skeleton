@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test plans coverage</title>
+    <link rel="stylesheet" href="css/open-sans.css">
+    <link rel="stylesheet" href="css/normalize.min.css">
+    <link rel="stylesheet" href="css/fontawesome-solid.css">
+    <link rel="stylesheet" href="css/fontawesome.css">
+    <link rel="stylesheet" href="css/mustard-ui.min.css">
+    <link rel="stylesheet" href="css/sanity.css">
+
+    <script src="js/sanity.js"></script>
+</head>
+<body>
+    <div class="main">
+        <nav>
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <a href="/">AxumSkeleton</a>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="crates.html">Crates</a></li>
+                    <li><a href="docs-coverage.html">Docs coverage</a></li>
+                    <li><a href="tests-coverage.html">Tests coverage</a></li>
+                    <li><a class="active" href="tests-plans-coverage.html">Tests plans coverage</a></li>
+                    <li><a href="build-timings.html">Build timings</a></li>
+                    <li><a href="documentation.html">Documentation</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <div id="content" class="row"></div>
+    </div>
+
+    <script>
+        onload = (event) => {
+            let content = document.querySelector("#content");
+
+            let [cardContent, cardActions] = createCard(content, "plans-summary", "Coverage");
+
+            fetchJson("data/cov-test-plans.json", (err, json) => {
+                if (err === null) {
+                    const percentage = json["percentage"];
+
+                    // Percentage
+                    const tag = document.createElement("li");
+                    tag.classList.add("tag");
+                    tag.classList.add("tag-rounded");
+                    tag.textContent = `${percentage}%`;
+
+                    if (percentage == 100) {
+                        tag.classList.add("tag-green");
+                    }
+                    else if (percentage >= 50) {
+                        tag.classList.add("tag-orange");
+                    }
+                    else {
+                        tag.classList.add("tag-red");
+                    }
+
+                    const tags = document.createElement("ul");
+                    tags.classList.add("tags");
+                    tags.appendChild(tag);
+
+                    cardContent.appendChild(tags);
+
+                    // List of tests not covered
+                    if (percentage < 100) {
+                        let tbody = createTable(cardContent, ["Tests cases not covered"]);
+
+                        for (let id in json["plans"]) {
+                            if (!json["plans"][id]) {
+                                const tr = document.createElement("tr");
+                                addTableCol(tr, id);
+                                tbody.appendChild(tr);
+                            }
+                        }
+                    }
+
+                }
+            });
+        };
+    </script>
+</body>
+</html>

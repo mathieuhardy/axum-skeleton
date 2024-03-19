@@ -11,14 +11,6 @@
 
 - Kubernetes, terraform, helm
 
-## Sanity
-
-- add test plan in markdown files
-
-```shell
-cargo clippy --workspace --all-targets --all-features --color always --keep-going -Z unstable-options --locked --offline 2>&1 | egrep "generated \d+ warning"
-```
-
 ## Links
 
 - [Template](https://github.com/janos-r/axum-template)
