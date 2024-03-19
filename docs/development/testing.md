@@ -1,11 +1,14 @@
 # 💯 Testing
 
-## Test plan
+## Tests plans
 
-> **Note**
-> TODO
+Tests plans describe the list of tests to be performed. Tests coverage are not
+sufficient as they don't ensure that all cases are correctly handled.
 
+Eatch tests plan contains tests cases that are identified by a unique identifier
+whose syntax is a path starting by `/TC/` (e.g. `/TC/MOD/SUB-MOD/TEST_01`);
 
+- 👥 [Users](testing/plans/users.md)
 
 ## End-to-end tests
 

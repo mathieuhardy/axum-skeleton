@@ -106,6 +106,7 @@ mod delete {
 mod get {
     use super::*;
 
+    /// TEST_PLAN: /TC/USERS/GET/ME
     pub async fn me(client: &TestClient) {
         println!("{}::me", module_path!());
 
@@ -118,6 +119,7 @@ mod get {
         assert_eq!(user.email, "john@doe.com");
     }
 
+    /// TEST_PLAN: /TC/USERS/GET/ALL
     pub async fn all(client: &TestClient) {
         println!("{}::all", module_path!());
 
@@ -134,6 +136,7 @@ mod get {
             .any(|e| e.first_name == "Jane" && e.last_name == "Doe" && e.email == "jane@doe.com"));
     }
 
+    /// TEST_PLAN: /TC/USERS/GET/FILTERED
     pub async fn by_filters(client: &TestClient) {
         println!("{}::by_filters", module_path!());
 
@@ -178,6 +181,7 @@ mod get {
         assert_eq!(response.status(), StatusCode::NOT_FOUND);
     }
 
+    /// TEST_PLAN: /TC/USERS/GET/ID
     pub async fn by_id(client: &TestClient) {
         println!("{}::by_id", module_path!());
 
