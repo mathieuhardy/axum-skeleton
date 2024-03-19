@@ -22,7 +22,7 @@ use std::error::Error;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync + 'static>> {
     // Load `.env` file
-    dotenv::dotenv()?;
+    dotenvy::dotenv()?;
 
     // Tracing configuration
     tracing_subscriber::fmt()

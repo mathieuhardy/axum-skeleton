@@ -29,8 +29,8 @@ members = [
 ]
 
 [dependencies]
-dotenv = "0.15.0"
-tokio = { version = "1.35.1", features = ["full"] }
+dotenvy = { version = "0.15.7", default-features = false }
+tokio = { version = "1.36.0", default-features = false, features = ["full"] }
 tracing-subscriber = { version = "0.3.18", default-features = false, features = ["ansi", "env-filter", "fmt"]}
 
 server = { path = "crates/server", features = ["k8s", "sanity"] }

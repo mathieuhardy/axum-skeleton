@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-dotenv = { version = "0.15.0", default-features = false }
-reqwest = { version = "0.11.23", default-features = false, features = ["json"] }
-sqlx = { version = "0.7.3", default-features = false, features = ["macros", "migrate", "postgres", "runtime-tokio", "tls-native-tls", "uuid"] }
+dotenvy = { version = "0.15.7", default-features = false }
+reqwest = { version = "0.11.27", default-features = false, features = ["json"] }
+sqlx = { version = "0.7.4", default-features = false, features = ["macros", "migrate", "postgres", "runtime-tokio", "tls-native-tls", "uuid"] }
 tokio = { version = "1.35.1", default-features = false, features = ["full"] }
 
 server = { path = "../server", default-features = false }

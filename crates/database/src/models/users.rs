@@ -5,6 +5,7 @@ use database_derives::*;
 use crate::password::checks;
 use crate::prelude::*;
 
+// TODO: remove usage of Export derive for this struct
 /// Mirrors the `users`'s' table.
 #[derive(Debug, FromRow, Deserialize, Serialize, Export, Validate)]
 #[export(Data, Request, Response)]
