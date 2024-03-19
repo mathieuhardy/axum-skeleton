@@ -121,7 +121,7 @@ impl TestClient {
 /// # Returns
 /// Result of TestClient.
 pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
-    dotenv::dotenv()?;
+    dotenvy::dotenv()?;
 
     let db_env_variable = "DATABASE_URL_TEST";
 

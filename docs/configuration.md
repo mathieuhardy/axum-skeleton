@@ -35,7 +35,7 @@ development process (i.e. not for productions environments).
 A sample file is provided and can be used as is: `.env.sample`.
 
 > **Note**
-> Get more information about [dotenv][1].
+> Get more information about [dotenv](dotenv.md).
 
 ## Dynamic overrides
 
@@ -54,4 +54,3 @@ application:
 ```
 
 [0]: https://yaml.org/spec
-[1]: dotenv.md--source crates/database/migrations
