@@ -69,6 +69,10 @@ stored in the `server` crate.
 This layer configures the timeout value for the HTTP endpoint. Value is read
 from configuration file in the `server` crate.
 
+**Compression**
+
+This layer enables the possibilty to compress responses before sending.
+
 **RequestId**
 
 This layer sets (if not provided) a request-id header value. It also propagates
