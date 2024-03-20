@@ -53,3 +53,35 @@ that can be fixed or improved.
 
 > **TODO**
 > worker/jobs
+
+## HTTP layers
+
+See the excellent documentation from Axum about [Middlewares][0] (called layers
+here).
+
+**Cors**
+
+This layer configures the CORS, getting values from YAML configuration files
+stored in the `server` crate.
+
+**Timeout**
+
+This layer configures the timeout value for the HTTP endpoint. Value is read
+from configuration file in the `server` crate.
+
+**RequestId**
+
+This layer sets (if not provided) a request-id header value. It also propagates
+the value to responses.
+
+This layer must be added before the tracing layer otherwise it won't be logged.
+
+**Sensitive**
+
+These layers mark the Authorization header as sensitive so it won't be logged.
+
+**Tracing**
+
+This layer enabled the tracing and logging feature for endpoints.
+
+[0]: https://docs.rs/axum/latest/axum/middleware/index.html
