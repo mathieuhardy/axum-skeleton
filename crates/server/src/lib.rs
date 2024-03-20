@@ -18,6 +18,7 @@ pub use axum;
 use axum::response::IntoResponse;
 use tokio::net::TcpListener;
 use tokio::signal;
+use tower_http::compression::CompressionLayer;
 use tower_http::services::ServeFile;
 
 use crate::config::Config;
@@ -118,6 +119,7 @@ pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> 
     router = router
         .layer(cors)
         .layer(timeout)
+        .layer(CompressionLayer::new())
         .layer(request_id_layer)
         .layer(sensitive_request_layer)
         .layer(tracing_layer())
