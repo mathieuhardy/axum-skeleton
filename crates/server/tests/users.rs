@@ -47,7 +47,6 @@ async fn first_user(client: &TestClient) -> UserResponse {
     users[0].clone()
 }
 
-// TODO: reset db between each test ?
 #[hook(setup, _)]
 #[tokio::test]
 #[serial]
@@ -65,7 +64,6 @@ async fn all() {
         post::invalid_first_name(&client).await;
         post::invalid_last_name(&client).await;
         post::invalid_password(&client).await;
-        post::set_password(&client).await;
 
         put::nominal(&client).await;
         put::invalid_email(&client).await;
@@ -76,6 +74,7 @@ async fn all() {
         patch::invalid_email(&client).await;
         patch::invalid_first_name(&client).await;
         patch::invalid_last_name(&client).await;
+        patch::set_password(&client).await;
 
         delete::by_id(&client).await;
     }
@@ -204,7 +203,6 @@ mod get {
     }
 }
 
-// TODO: test update with None values
 mod patch {
     use super::*;
 
@@ -287,6 +285,61 @@ mod patch {
         }
     }
 
+    async fn test_patch_password(
+        client: &TestClient,
+        id: &Uuid,
+        data_type: DataType,
+        current_password_validity: PasswordValidity,
+        current_password: Option<&str>,
+        password_validity: PasswordValidity,
+        password: Option<&str>,
+    ) {
+        let current_password = current_password.unwrap_or("").to_string();
+
+        let password = match password_validity {
+            PasswordValidity::Invalid => password.unwrap_or("").to_string(),
+            PasswordValidity::Valid => "0#Abcdef".to_string(),
+        };
+
+        // Call endpoint and get response
+        let response = match data_type {
+            DataType::Json => {
+                let request = PasswordUpdateRequest {
+                    current: current_password,
+                    new: password,
+                };
+
+                client
+                    .patch(format!("/api/users/{}/password", id))
+                    .json(&request)
+                    .send()
+                    .await
+                    .unwrap()
+            }
+
+            DataType::Form => {
+                let request = [("current", &current_password), ("new", &password)];
+
+                client
+                    .patch(format!("/api/users/{}/password", id))
+                    .form(&request)
+                    .send()
+                    .await
+                    .unwrap()
+            }
+        };
+
+        // Check return code and values
+        let expected_status = match (current_password_validity, password_validity) {
+            (PasswordValidity::Invalid, _) => StatusCode::FORBIDDEN,
+            (_, PasswordValidity::Invalid) => StatusCode::UNPROCESSABLE_ENTITY,
+
+            _ => StatusCode::OK,
+        };
+
+        assert_eq!(response.status(), expected_status);
+    }
+
     pub async fn nominal(client: &TestClient) {
         println!("{}::nominal", module_path!());
 
@@ -358,9 +411,89 @@ mod patch {
             .await;
         }
     }
+
+    pub async fn set_password(client: &TestClient) {
+        println!("{}::set_password", module_path!());
+
+        // Create a user to update
+        let uniq = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
+
+        let request = UserRequest {
+            first_name: Some(format!("{uniq}-first-name")),
+            last_name: Some(format!("{uniq}-last-name")),
+            email: Some(format!("{uniq}@email.com")),
+            password: Some("0#Abcdef".to_string()),
+            ..UserRequest::default()
+        };
+
+        let response = client
+            .post("/api/users")
+            .json(&request)
+            .send()
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::CREATED);
+
+        let user = response.json::<UserResponse>().await.unwrap();
+
+        let data_types = vec![DataType::Form, DataType::Json];
+
+        // Invalid current password
+        for data_type in &data_types {
+            test_patch_password(
+                client,
+                &user.id,
+                data_type.clone(),
+                PasswordValidity::Invalid,
+                Some("INVALID_PASSWORD"),
+                PasswordValidity::Valid,
+                None,
+            )
+            .await;
+        }
+
+        // Invalid new passwords
+        let passwords = vec![
+            ".#Abcdef",
+            "0#ABCDEF",
+            "0#abcdef",
+            "0Abcdefg",
+            "0#Abcde f",
+            "0#Abcde",
+        ];
+
+        for data_type in &data_types {
+            for password in &passwords {
+                test_patch_password(
+                    client,
+                    &user.id,
+                    data_type.clone(),
+                    PasswordValidity::Valid,
+                    None,
+                    PasswordValidity::Invalid,
+                    Some(password),
+                )
+                .await;
+            }
+        }
+
+        // Nominal
+        for data_type in data_types {
+            test_patch_password(
+                client,
+                &user.id,
+                data_type.clone(),
+                PasswordValidity::Valid,
+                Some("0#Abcdef"),
+                PasswordValidity::Valid,
+                None,
+            )
+            .await;
+        }
+    }
 }
 
-// TODO: test post with None values
 mod post {
     use super::*;
 
@@ -445,61 +578,6 @@ mod post {
             assert_eq!(user.last_name, last_name);
             assert_eq!(user.email, email);
         }
-    }
-
-    async fn test_post_password(
-        client: &TestClient,
-        id: &Uuid,
-        data_type: DataType,
-        current_password_validity: PasswordValidity,
-        current_password: Option<&str>,
-        password_validity: PasswordValidity,
-        password: Option<&str>,
-    ) {
-        let current_password = current_password.unwrap_or("").to_string();
-
-        let password = match password_validity {
-            PasswordValidity::Invalid => password.unwrap_or("").to_string(),
-            PasswordValidity::Valid => "0#Abcdef".to_string(),
-        };
-
-        // Call endpoint and get response
-        let response = match data_type {
-            DataType::Json => {
-                let request = PasswordUpdateRequest {
-                    current: current_password,
-                    new: password,
-                };
-
-                client
-                    .post(format!("/api/users/{}/password", id))
-                    .json(&request)
-                    .send()
-                    .await
-                    .unwrap()
-            }
-
-            DataType::Form => {
-                let request = [("current", &current_password), ("new", &password)];
-
-                client
-                    .post(format!("/api/users/{}/password", id))
-                    .form(&request)
-                    .send()
-                    .await
-                    .unwrap()
-            }
-        };
-
-        // Check return code and values
-        let expected_status = match (current_password_validity, password_validity) {
-            (PasswordValidity::Invalid, _) => StatusCode::FORBIDDEN,
-            (_, PasswordValidity::Invalid) => StatusCode::UNPROCESSABLE_ENTITY,
-
-            _ => StatusCode::OK,
-        };
-
-        assert_eq!(response.status(), expected_status);
     }
 
     pub async fn nominal(client: &TestClient) {
@@ -599,90 +677,8 @@ mod post {
             }
         }
     }
-
-    pub async fn set_password(client: &TestClient) {
-        println!("{}::set_password", module_path!());
-
-        // Create a user to update
-        let uniq = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
-
-        let request = UserRequest {
-            first_name: Some(format!("{uniq}-first-name")),
-            last_name: Some(format!("{uniq}-last-name")),
-            email: Some(format!("{uniq}@email.com")),
-            password: Some("0#Abcdef".to_string()),
-            ..UserRequest::default()
-        };
-
-        let response = client
-            .post("/api/users")
-            .json(&request)
-            .send()
-            .await
-            .unwrap();
-
-        assert_eq!(response.status(), StatusCode::CREATED);
-
-        let user = response.json::<UserResponse>().await.unwrap();
-
-        let data_types = vec![DataType::Form, DataType::Json];
-
-        // Invalid current password
-        for data_type in &data_types {
-            test_post_password(
-                client,
-                &user.id,
-                data_type.clone(),
-                PasswordValidity::Invalid,
-                Some("INVALID_PASSWORD"),
-                PasswordValidity::Valid,
-                None,
-            )
-            .await;
-        }
-
-        // Invalid new passwords
-        let passwords = vec![
-            ".#Abcdef",
-            "0#ABCDEF",
-            "0#abcdef",
-            "0Abcdefg",
-            "0#Abcde f",
-            "0#Abcde",
-        ];
-
-        for data_type in &data_types {
-            for password in &passwords {
-                test_post_password(
-                    client,
-                    &user.id,
-                    data_type.clone(),
-                    PasswordValidity::Valid,
-                    None,
-                    PasswordValidity::Invalid,
-                    Some(password),
-                )
-                .await;
-            }
-        }
-
-        // Nominal
-        for data_type in data_types {
-            test_post_password(
-                client,
-                &user.id,
-                data_type.clone(),
-                PasswordValidity::Valid,
-                Some("0#Abcdef"),
-                PasswordValidity::Valid,
-                None,
-            )
-            .await;
-        }
-    }
 }
 
-// TODO: test put with None values
 mod put {
     use super::*;
 
