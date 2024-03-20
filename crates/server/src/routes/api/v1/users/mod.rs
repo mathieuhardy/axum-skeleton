@@ -20,9 +20,9 @@ pub fn build() -> Router<AppState> {
         .route("/:id", get(get_by_id))
         // PATCH
         .route("/:id", patch(patch_user))
+        .route("/:id/password", patch(patch_user_password))
         // POST
         .route("/", post(post_user))
-        .route("/:id/password", post(post_user_password))
         // PUT
         .route("/", put(put_user))
 }
@@ -89,21 +89,6 @@ async fn post_user(
     Ok((StatusCode::CREATED, Json(user.into())))
 }
 
-/// Handler used to update an existing user's password by providing its ID.
-#[axum::debug_handler]
-#[instrument]
-async fn post_user_password(
-    Path(id): Path<Uuid>,
-    State(state): State<AppState>,
-    FormOrJson(request): FormOrJson<PasswordUpdateRequest>,
-) -> Res<StatusCode> {
-    request.validate()?;
-
-    set_user_password(&id, &request, &state.db).await?;
-
-    Ok(StatusCode::OK)
-}
-
 /// Handler used to update an existing user by providing its ID.
 #[axum::debug_handler]
 #[instrument]
@@ -117,6 +102,21 @@ async fn patch_user(
     let user = update_user(&id, &request, &state.db).await?;
 
     Ok(Json(user.into()))
+}
+
+/// Handler used to update an existing user's password by providing its ID.
+#[axum::debug_handler]
+#[instrument]
+async fn patch_user_password(
+    Path(id): Path<Uuid>,
+    State(state): State<AppState>,
+    FormOrJson(request): FormOrJson<PasswordUpdateRequest>,
+) -> Res<StatusCode> {
+    request.validate()?;
+
+    set_user_password(&id, &request, &state.db).await?;
+
+    Ok(StatusCode::OK)
 }
 
 /// Handler used to upsert a user.

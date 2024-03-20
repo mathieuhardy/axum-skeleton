@@ -34,7 +34,6 @@ def main():
         "percentage": 0.0
     }
 
-    # TODO: Use argparse for input directory
     plans = find_matches("/TC/", args.plans)
 
     for plan in plans:
