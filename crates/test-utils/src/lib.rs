@@ -136,7 +136,7 @@ pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
 
     let address = listener.local_addr()?;
 
-    let app = app(&config, Some(db_env_variable)).await.unwrap();
+    let app = app(&config, Some(db_env_variable), None).await.unwrap();
 
     // TODO: get logs from server
     tokio::spawn(async move {

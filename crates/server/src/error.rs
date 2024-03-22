@@ -48,7 +48,7 @@ pub enum Error {
 
     /// Generic SQLx error.
     #[error("{0}")]
-    SQLx(#[from] sqlx::Error),
+    SQLx(#[from] database::sqlx::Error),
 
     /// Unexpected error that should never happen.
     #[error("Unexpected server error")]
