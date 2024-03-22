@@ -55,7 +55,7 @@ pub async fn update_user(id: &Uuid, request: &UserRequest, db: &PgPool) -> Res<U
 pub async fn set_user_password(id: &Uuid, request: &PasswordUpdateRequest, db: &PgPool) -> Res<()> {
     let user = User::get(id, db).await?;
 
-    if !verify(&request.current, user.password)? {
+    if !verify(&request.current, &user.password).await? {
         return Err(Error::InvalidPassword);
     }
 

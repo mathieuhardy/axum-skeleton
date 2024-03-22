@@ -5,58 +5,70 @@ use database_derives::*;
 use crate::password::checks;
 use crate::prelude::*;
 
-// TODO: remove usage of Export derive for this struct
 /// Mirrors the `users`'s' table.
-#[derive(Debug, FromRow, Deserialize, Serialize, Export, Validate)]
-#[export(Data, Request, Response)]
-#[export(derives(Data(Debug, Default, Serialize, SqlxPgInsertable, Validate)))]
-#[export(derives(Request(Clone, Default, Debug, Deserialize, Serialize, Validate)))]
-#[export(derives(Response(
-    Clone,
-    Debug,
-    PartialEq,
-    FromRow,
-    Deserialize,
-    Serialize,
-    TryFromVec,
-    Validate
-)))]
+#[derive(Clone, Debug, PartialEq, FromRow, Deserialize, Serialize, TryFromVec, Validate)]
 pub struct User {
     /// Unique record identifier.
-    #[is_in(Response)]
-    #[optional_in(Request)]
     pub id: Uuid,
 
     /// First name of the user.
-    #[is_in(Response)]
-    #[optional_in(Data, Request)]
-    #[validate(length(min = 1))]
     pub first_name: String,
 
     /// Last name of the user.
-    #[is_in(Response)]
-    #[optional_in(Data, Request)]
-    #[validate(length(min = 1))]
     pub last_name: String,
 
     /// Email of the user.
-    #[is_in(Response)]
-    #[optional_in(Data, Request)]
-    #[validate(email)]
     pub email: String,
 
     /// Password of the user (hashed of course).
-    #[optional_in(Data, Request)]
-    #[validate(custom = "validate_password")]
     pub password: String,
 
     /// Date of record's creation.
-    #[is_in(Response)]
     pub created_at: DateTime<Utc>,
 
     /// Date of record's last update.
-    #[is_in(Response)]
     pub updated_at: DateTime<Utc>,
+}
+
+/// Structure used by HTTP endpoint to query a modification in  the database.
+/// This structure is not expected to be used directly in queries. It must be converted first to a
+/// `UserData`.
+#[derive(Clone, Default, Debug, Deserialize, Serialize, Validate)]
+pub struct UserRequest {
+    /// See `User::sid`.
+    pub id: Option<Uuid>,
+
+    /// See `User::first_name`.
+    #[validate(length(min = 1))]
+    pub first_name: Option<String>,
+
+    /// See `User::last_name`.
+    #[validate(length(min = 1))]
+    pub last_name: Option<String>,
+
+    /// See `User::email`.
+    #[validate(email)]
+    pub email: Option<String>,
+
+    /// See `User::password`.
+    #[validate(custom = "validate_password")]
+    pub password: Option<String>,
+}
+
+/// Data structure passed to database queries when inserting or updating entries.
+#[derive(Clone, Default, Debug, Serialize, SqlxPgInsertable)]
+pub struct UserData {
+    /// See `User::first_name`.
+    pub first_name: Option<String>,
+
+    /// See `User::last_name`.
+    pub last_name: Option<String>,
+
+    /// See `User::email`.
+    pub email: Option<String>,
+
+    /// See `User::password`.
+    pub password: Option<String>,
 }
 
 /// Structure provided to update the user's password
@@ -122,19 +134,6 @@ impl From<&UserRequest> for UserData {
     }
 }
 
-impl From<User> for UserResponse {
-    fn from(user: User) -> Self {
-        Self {
-            id: user.id,
-            first_name: user.first_name.clone(),
-            last_name: user.last_name.clone(),
-            email: user.email.clone(),
-            created_at: user.created_at,
-            updated_at: user.updated_at,
-        }
-    }
-}
-
 impl User {
     /// Finds some users matching some filters.
     ///
@@ -156,7 +155,7 @@ impl User {
     ///   let filters = Filters {
     ///       first_name: Some("foo".to_string()),
     ///       last_name: Some("foo".to_string()),
-    ///       email: None
+    ///       email: None,
     ///   };
     ///
     ///   let db = PgPoolOptions::new()
@@ -169,8 +168,8 @@ impl User {
     ///   Ok(())
     /// }
     /// ```
-    pub async fn find_by_filters(filters: &Filters, db: &PgPool) -> Res<Vec<UserResponse>> {
-        let users = sqlx::query_as::<_, UserResponse>(SQL_USERS_FIND_BY_FILTERS)
+    pub async fn find_by_filters(filters: &Filters, db: &PgPool) -> Res<Vec<User>> {
+        let users = sqlx::query_as::<_, User>(SQL_USERS_FIND_BY_FILTERS)
             .bind(&filters.first_name)
             .bind(&filters.last_name)
             .bind(&filters.email)
@@ -212,7 +211,7 @@ impl User {
     ///   Ok(())
     /// }
     /// ```
-    pub async fn all(db: &PgPool) -> Res<Vec<UserResponse>> {
+    pub async fn all(db: &PgPool) -> Res<Vec<User>> {
         Self::find_by_filters(&Filters::default(), db).await
     }
 }

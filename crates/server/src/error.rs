@@ -54,6 +54,10 @@ pub enum Error {
     #[error("Unexpected server error")]
     Unexpected(#[source] std::convert::Infallible),
 
+    /// Cannot authorize a user.
+    #[error("Unauthorized")]
+    Unauthorized,
+
     /// Unknown error (should be avoided).
     #[error("Unknown server error")]
     Unknown,
@@ -68,6 +72,7 @@ impl axum::response::IntoResponse for Error {
         match self {
             Self::Actions(ActionsError::InvalidPassword) => StatusCode::FORBIDDEN.into_response(),
             Self::Database(DatabaseError::NotFound) => StatusCode::NOT_FOUND.into_response(),
+            Self::Unauthorized => StatusCode::UNAUTHORIZED.into_response(),
             Self::Validation(_) => StatusCode::UNPROCESSABLE_ENTITY.into_response(),
             _ => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
         }

@@ -21,6 +21,10 @@ pub enum Error {
     #[error("{0}")]
     Filesystem(#[from] std::io::Error),
 
+    /// Generic tokio task joining error.
+    #[error("{0}")]
+    TaskJoin(#[from] tokio::task::JoinError),
+
     /// Unexpected error that should never happen.
     #[error("Unexpected server error")]
     Unexpected(#[source] std::convert::Infallible),

@@ -37,11 +37,11 @@ enum PasswordValidity {
     Valid,
 }
 
-async fn first_user(client: &TestClient) -> UserResponse {
+async fn first_user(client: &TestClient) -> User {
     let response = client.get("/api/users").send().await.unwrap();
     assert_eq!(response.status(), StatusCode::OK);
 
-    let users = response.json::<Vec<UserResponse>>().await.unwrap();
+    let users = response.json::<Vec<User>>().await.unwrap();
     assert!(!users.is_empty());
 
     users[0].clone()
@@ -89,7 +89,7 @@ mod delete {
         let response = client.get("/api/users").send().await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
 
-        let users = response.json::<Vec<UserResponse>>().await.unwrap();
+        let users = response.json::<Vec<User>>().await.unwrap();
         assert!(!users.is_empty());
 
         let response = client
@@ -112,7 +112,7 @@ mod get {
         let response = client.get("/api/users/me").send().await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
 
-        let user = response.json::<UserResponse>().await.unwrap();
+        let user = response.json::<User>().await.unwrap();
         assert_eq!(user.first_name, "John");
         assert_eq!(user.last_name, "Doe");
         assert_eq!(user.email, "john@doe.com");
@@ -125,7 +125,7 @@ mod get {
         let response = client.get("/api/users").send().await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
 
-        let users = response.json::<Vec<UserResponse>>().await.unwrap();
+        let users = response.json::<Vec<User>>().await.unwrap();
         assert_eq!(users.len(), 2);
         assert!(users
             .iter()
@@ -147,7 +147,7 @@ mod get {
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
 
-        let users = response.json::<Vec<UserResponse>>().await.unwrap();
+        let users = response.json::<Vec<User>>().await.unwrap();
         assert_eq!(users.len(), 1);
         assert_eq!(users[0].first_name, "John");
         assert_eq!(users[0].last_name, "Doe");
@@ -169,7 +169,7 @@ mod get {
             .unwrap();
         assert_eq!(response.status(), StatusCode::OK);
 
-        let users = response.json::<Vec<UserResponse>>().await.unwrap();
+        let users = response.json::<Vec<User>>().await.unwrap();
         assert_eq!(users.len(), 1);
         assert_eq!(users[0].first_name, "John");
         assert_eq!(users[0].last_name, "Doe");
@@ -187,7 +187,7 @@ mod get {
         let response = client.get("/api/users").send().await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
 
-        let users = response.json::<Vec<UserResponse>>().await.unwrap();
+        let users = response.json::<Vec<User>>().await.unwrap();
         assert_eq!(users.len(), 2);
 
         let response = client
@@ -198,7 +198,7 @@ mod get {
 
         assert_eq!(response.status(), StatusCode::OK);
 
-        let user = response.json::<UserResponse>().await.unwrap();
+        let user = response.json::<User>().await.unwrap();
         assert_eq!(users[0], user);
     }
 }
@@ -278,7 +278,7 @@ mod patch {
         assert_eq!(response.status(), expected_status);
 
         if expected_status == StatusCode::OK {
-            let user = response.json::<UserResponse>().await.unwrap();
+            let user = response.json::<User>().await.unwrap();
             assert_eq!(user.first_name, first_name);
             assert_eq!(user.last_name, last_name);
             assert_eq!(user.email, email);
@@ -435,7 +435,7 @@ mod patch {
 
         assert_eq!(response.status(), StatusCode::CREATED);
 
-        let user = response.json::<UserResponse>().await.unwrap();
+        let user = response.json::<User>().await.unwrap();
 
         let data_types = vec![DataType::Form, DataType::Json];
 
@@ -573,7 +573,7 @@ mod post {
         assert_eq!(response.status(), expected_status);
 
         if expected_status == StatusCode::CREATED {
-            let user = response.json::<UserResponse>().await.unwrap();
+            let user = response.json::<User>().await.unwrap();
             assert_eq!(user.first_name, first_name);
             assert_eq!(user.last_name, last_name);
             assert_eq!(user.email, email);
@@ -746,7 +746,7 @@ mod put {
         assert_eq!(response.status(), expected_status);
 
         if expected_status == StatusCode::OK {
-            let user = response.json::<UserResponse>().await.unwrap();
+            let user = response.json::<User>().await.unwrap();
             assert_eq!(user.first_name, first_name);
             assert_eq!(user.last_name, last_name);
             assert_eq!(user.email, email);

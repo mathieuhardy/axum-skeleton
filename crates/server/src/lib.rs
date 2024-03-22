@@ -4,6 +4,8 @@
 #![forbid(unsafe_code)]
 
 pub mod config;
+
+pub(crate) mod auth;
 pub(crate) mod cors;
 pub(crate) mod error;
 pub(crate) mod prelude;
@@ -85,6 +87,10 @@ pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> 
         max_length: config.password.pattern.max_length,
     });
 
+    // Create Postgresql pool connection
+    let pool = database::initialize(db_env_variable).await?;
+    event!(Level::INFO, "🗃  Database initialized");
+
     // CORS layer
     let cors = cors::build(config);
 
@@ -96,19 +102,20 @@ pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> 
 
     event!(Level::INFO, "⏰ Timeout configured");
 
+    // Authentication layer
+    let authentication = auth::authentication_layer(&pool);
+
     // Sensitive layers
     let (sensitive_request_layer, sensitive_response_layer) = tracing::sensitive_headers_layers();
 
     // Request ID layers
     let (request_id_layer, propagate_request_id_layer) = tracing::request_id_layers();
 
-    // Create Postgresql pool connection
-    let pool = database::initialize(db_env_variable).await?;
-    event!(Level::INFO, "🗃  Database initialized");
-
+    // State shared between handlers
     let state = AppState::new(pool.clone());
     event!(Level::INFO, "📦 State configured");
 
+    // Create router
     let mut router = Router::new()
         .fallback(handler_404)
         .nest("/", routes::build().await)
@@ -120,6 +127,7 @@ pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> 
         .layer(cors)
         .layer(timeout)
         .layer(CompressionLayer::new())
+        .layer(authentication)
         .layer(request_id_layer)
         .layer(sensitive_request_layer)
         .layer(tracing_layer())

@@ -32,10 +32,16 @@ pub fn hash_password(password: &str) -> Res<String> {
 ///
 /// # Returns
 /// A result containing the bool that tell if the passwords matches.
-pub fn verify(password: &str, hashed: String) -> Res<bool> {
-    let hash = PasswordHash::new(&hashed).map_err(|e| Error::Hashing(e.to_string()))?;
+pub async fn verify(password: &str, hashed: &str) -> Res<bool> {
+    let password = password.to_owned();
+    let hashed = hashed.to_owned();
 
-    Ok(Argon2::default()
-        .verify_password(password.as_bytes(), &hash)
-        .is_ok())
+    tokio::task::spawn_blocking(move || {
+        let hash = PasswordHash::new(&hashed).map_err(|e| Error::Hashing(e.to_string()))?;
+
+        Ok(Argon2::default()
+            .verify_password(password.as_bytes(), &hash)
+            .is_ok())
+    })
+    .await?
 }
