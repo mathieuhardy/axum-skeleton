@@ -7,6 +7,7 @@ use utils::password::Checks;
 
 use crate::prelude::*;
 
+/// Variable used to store all checcks to be performed on a password to ensure that it's valid.
 static PASSWORD_CHECKS: OnceLock<Checks> = OnceLock::new();
 
 /// Sets the checks to be done for the password verification.

@@ -39,7 +39,7 @@ async fn delete_by_id(Path(id): Path<Uuid>, State(state): State<AppState>) -> Re
 /// Handler used to get information about the currently logged user.
 #[axum::debug_handler]
 #[instrument]
-async fn get_me(State(state): State<AppState>) -> Res<Json<UserResponse>> {
+async fn get_me(State(state): State<AppState>) -> Res<Json<User>> {
     let user = User::find_by_filters(
         &Filters {
             first_name: Some("John".to_string()),
@@ -60,7 +60,7 @@ async fn get_me(State(state): State<AppState>) -> Res<Json<UserResponse>> {
 async fn get_filtered(
     Query(filters): Query<Filters>,
     State(state): State<AppState>,
-) -> Res<Json<Vec<UserResponse>>> {
+) -> Res<Json<Vec<User>>> {
     let users = User::find_by_filters(&filters, &state.db).await?;
 
     Ok(Json(users))
@@ -69,10 +69,10 @@ async fn get_filtered(
 /// Handler used to get a specify user by providing its ID.
 #[axum::debug_handler]
 #[instrument]
-async fn get_by_id(Path(id): Path<Uuid>, State(state): State<AppState>) -> Res<Json<UserResponse>> {
+async fn get_by_id(Path(id): Path<Uuid>, State(state): State<AppState>) -> Res<Json<User>> {
     let user = User::get(&id, &state.db).await?;
 
-    Ok(Json(user.into()))
+    Ok(Json(user))
 }
 
 /// Handler used to create a new user.
@@ -81,12 +81,12 @@ async fn get_by_id(Path(id): Path<Uuid>, State(state): State<AppState>) -> Res<J
 async fn post_user(
     State(state): State<AppState>,
     FormOrJson(request): FormOrJson<UserRequest>,
-) -> Res<(StatusCode, Json<UserResponse>)> {
+) -> Res<(StatusCode, Json<User>)> {
     request.validate()?;
 
     let user = create_user(&request, &state.db).await?;
 
-    Ok((StatusCode::CREATED, Json(user.into())))
+    Ok((StatusCode::CREATED, Json(user)))
 }
 
 /// Handler used to update an existing user by providing its ID.
@@ -96,12 +96,12 @@ async fn patch_user(
     Path(id): Path<Uuid>,
     State(state): State<AppState>,
     FormOrJson(request): FormOrJson<UserRequest>,
-) -> Res<Json<UserResponse>> {
+) -> Res<Json<User>> {
     request.validate()?;
 
     let user = update_user(&id, &request, &state.db).await?;
 
-    Ok(Json(user.into()))
+    Ok(Json(user))
 }
 
 /// Handler used to update an existing user's password by providing its ID.
@@ -125,7 +125,7 @@ async fn patch_user_password(
 async fn put_user(
     State(state): State<AppState>,
     FormOrJson(request): FormOrJson<UserRequest>,
-) -> Res<(StatusCode, Json<UserResponse>)> {
+) -> Res<(StatusCode, Json<User>)> {
     request.validate()?;
 
     let (rc, user) = if let Some(id) = request.id {
@@ -136,5 +136,5 @@ async fn put_user(
         (StatusCode::CREATED, user)
     };
 
-    Ok((rc, Json(user.into())))
+    Ok((rc, Json(user)))
 }
