@@ -8,11 +8,14 @@ async-trait = { version = "0.1.78", default-features = false }
 axum = { version = "0.7.4", default-features = false, features = ["form", "http2", "json", "macros", "query", "tokio"] }
 axum-login = { version = "0.15.0", default-features = false }
 config = { version = "0.14.0", default-features = false, features = ["yaml"] }
+cookie = { version = "0.18.0", default-features = false, features = ["signed"] }
 serde = { version = "1.0.197", default-features = false, features = ["derive"] }
 sqlx = { version = "0.7.4", default-features = false, features = ["macros", "postgres", "runtime-tokio", "tls-native-tls", "uuid"] }
 thiserror = { version = "1.0.58", default-features = false }
+time = { version = "0.3.34", default-features = false }
 tokio = { version = "1.36.0", default-features = false, features = ["full"] }
 tower-http = { version = "0.5.2", default-features = false, features = ["compression-full", "cors", "fs", "redirect", "request-id", "sensitive-headers","timeout" ,"trace"] }
+tower-sessions = { version = "0.12.0", default-features = false, features = ["signed"] }
 tracing = { version = "0.1.40", default-features = false, features = ["attributes", "log", "std"] }
 uuid = { version = "1.8.0", default-features = false }
 validator = { version = "0.15", default-features = false }

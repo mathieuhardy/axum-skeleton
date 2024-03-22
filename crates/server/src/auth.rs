@@ -3,9 +3,9 @@
 //! server.
 
 use async_trait::async_trait;
-use axum_login::tower_sessions::{MemoryStore, SessionManagerLayer};
 use axum_login::{AuthManagerLayer, AuthManagerLayerBuilder, AuthUser, AuthnBackend, UserId};
 use sqlx::PgPool;
+use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
 
 use database::models::users::*;
 use database::traits::sqlx::postgres::crud::CRUD;
@@ -108,10 +108,18 @@ impl Backend {
 /// # Returns
 /// The authentication layer.
 pub fn authentication_layer(db: &PgPool) -> AuthManagerLayer<Backend, MemoryStore> {
-    // Session layer
+    // Session storage backend
     // TODO: use reddis to store the values
     let session_store = MemoryStore::default();
-    let session_layer = SessionManagerLayer::new(session_store);
+
+    // Session layer
+    // TODO: with_secure ?
+    // TODO: get expiration date from configuration
+    // TODO: with_signed ?
+    let session_layer = SessionManagerLayer::new(session_store)
+        //.with_secure(false)
+        .with_expiry(Expiry::OnInactivity(time::Duration::days(1)));
+    //.with_signed(cookie::Key::generate());
 
     // Authentication backend
     let backend = Backend::new(db);
