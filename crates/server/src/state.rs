@@ -2,13 +2,17 @@
 //! an struct passed along routes that will be called in order to share common
 //! objects (e.g. the database handle).
 
-use sqlx::{Pool, Postgres};
+use database::sqlx::PgPool;
+use database::RedisPool;
 
 /// State structure passed along routes.
 #[derive(Clone, Debug)]
 pub struct AppState {
     /// PostgreSQL database handle.
-    pub db: Pool<Postgres>,
+    pub db: PgPool,
+
+    /// Redis database handle.
+    pub redis: RedisPool,
 }
 
 impl AppState {
@@ -16,7 +20,7 @@ impl AppState {
     ///
     /// # Returns
     /// New instance of AppState.
-    pub fn new(db: Pool<Postgres>) -> Self {
-        Self { db }
+    pub fn new(db: PgPool, redis: RedisPool) -> Self {
+        Self { db, redis }
     }
 }

@@ -4,10 +4,10 @@
 
 use async_trait::async_trait;
 use axum_login::{AuthManagerLayer, AuthManagerLayerBuilder, AuthUser, AuthnBackend, UserId};
-use sqlx::PgPool;
 use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
 
 use database::models::users::*;
+use database::sqlx::PgPool;
 use database::traits::sqlx::postgres::crud::CRUD;
 use utils::hashing;
 

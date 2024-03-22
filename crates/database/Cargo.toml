@@ -8,11 +8,20 @@ build = "build.rs"
 walkdir = "2.5.0"
 
 [dependencies]
+bb8 = { version = "0.8.3", default-features = false }
+bb8-redis = { version = "0.15.0", default-features = false }
 chrono = { version = "0.4.35", default-features = false, features = ["serde"] }
-lazy_static = { version = "1.4.0", default-features = false }
 serde = { version = "1.0.197", default-features = false, features = ["derive"] }
 serde_with = { version = "3.7.0", default-features = false, features = ["macros"] }
-sqlx = { version = "0.7.4", default-features = false, features = ["chrono", "migrate", "uuid", "runtime-tokio"] }
+sqlx = { version = "0.7.4", default-features = false, features = [
+    "chrono",
+    "macros",
+    "migrate",
+    "postgres",
+    "runtime-tokio",
+    "tls-native-tls",
+    "uuid"
+] }
 thiserror = { version = "1.0.58", default-features = false }
 tracing = { version = "0.1.40", default-features = false, features = ["attributes", "log", "std"] }
 uuid = { version = "1.6.1", default-features = false, features = ["serde", "v4"] }

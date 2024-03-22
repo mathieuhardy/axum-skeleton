@@ -26,6 +26,10 @@ pub enum Error {
     #[error("Cannot access password checks")]
     PasswordChecksAccess,
 
+    /// Generic Redis error.
+    #[error("{0}")]
+    Redis(#[from] bb8_redis::redis::RedisError),
+
     /// Generic SQLx error.
     #[error("{0}")]
     SQLx(#[from] sqlx::Error),

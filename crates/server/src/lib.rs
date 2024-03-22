@@ -8,6 +8,7 @@ pub mod config;
 pub(crate) mod auth;
 pub(crate) mod cors;
 pub(crate) mod error;
+pub(crate) mod extractors;
 pub(crate) mod prelude;
 pub(crate) mod routes;
 pub(crate) mod state;
@@ -46,7 +47,7 @@ pub async fn start(config: Option<crate::config::Config>) -> Res<()> {
     event!(Level::TRACE, "{:#?}", config);
 
     // Prepare application
-    let app = app(&config, None).await?;
+    let app = app(&config, None, None).await?;
 
     // Create TCP listener
     let address = format!("{}:{}", config.application.host, config.application.port);
@@ -72,10 +73,16 @@ pub async fn start(config: Option<crate::config::Config>) -> Res<()> {
 ///
 /// # Arguments
 /// * `config` - Configuration object.
+/// * `db_env_variable` - Environment variable used to get the URL of the SQL database.
+/// * `redis_env_variable` - Environment variable used to get the URL of the Redis database.
 ///
 /// # Returns
 /// An Axum router instance.
-pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> {
+pub async fn app(
+    config: &Config,
+    db_env_variable: Option<&str>,
+    redis_env_variable: Option<&str>,
+) -> Res<Router> {
     // Database configuration
     database::password::set_checks(utils::password::Checks {
         digit: config.password.pattern.digit,
@@ -88,7 +95,7 @@ pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> 
     });
 
     // Create Postgresql pool connection
-    let pool = database::initialize(db_env_variable).await?;
+    let (pg_pool, redis_pool) = database::initialize(db_env_variable, redis_env_variable).await?;
     event!(Level::INFO, "🗃  Database initialized");
 
     // CORS layer
@@ -103,7 +110,7 @@ pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> 
     event!(Level::INFO, "⏰ Timeout configured");
 
     // Authentication layer
-    let authentication = auth::authentication_layer(&pool);
+    let authentication = auth::authentication_layer(&pg_pool);
 
     // Sensitive layers
     let (sensitive_request_layer, sensitive_response_layer) = tracing::sensitive_headers_layers();
@@ -112,7 +119,7 @@ pub async fn app(config: &Config, db_env_variable: Option<&str>) -> Res<Router> 
     let (request_id_layer, propagate_request_id_layer) = tracing::request_id_layers();
 
     // State shared between handlers
-    let state = AppState::new(pool.clone());
+    let state = AppState::new(pg_pool, redis_pool);
     event!(Level::INFO, "📦 State configured");
 
     // Create router
