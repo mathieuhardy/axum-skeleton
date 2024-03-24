@@ -1,40 +1,21 @@
+// TODO: find a better solution
+#[allow(clippy::duplicate_mod)]
+#[path = "common/mod.rs"]
+mod common;
+
 use rand::distributions::{Alphanumeric, DistString};
 use serial_test::serial;
 use std::module_path;
-use test_utils::{StatusCode, *};
+use test_utils::*;
 use urlencoding::encode;
 use uuid::Uuid;
 
 use database::models::users::*;
 
+use common::*;
+
 async fn setup() -> TestClient {
     init_server().await.unwrap()
-}
-
-#[derive(Clone)]
-enum DataType {
-    Form,
-    Json,
-}
-
-enum EmailValidity {
-    Invalid,
-    Valid,
-}
-
-enum FirstNameValidity {
-    Invalid,
-    Valid,
-}
-
-enum LastNameValidity {
-    Invalid,
-    Valid,
-}
-
-enum PasswordValidity {
-    Invalid,
-    Valid,
 }
 
 async fn first_user(client: &TestClient) -> User {
@@ -126,7 +107,10 @@ mod get {
         assert_eq!(response.status(), StatusCode::OK);
 
         let users = response.json::<Vec<User>>().await.unwrap();
-        assert_eq!(users.len(), 2);
+        assert_eq!(users.len(), 3);
+        assert!(users.iter().any(|e| e.first_name == "Giga"
+            && e.last_name == "Chad"
+            && e.email == "giga@chad.com"));
         assert!(users
             .iter()
             .any(|e| e.first_name == "John" && e.last_name == "Doe" && e.email == "john@doe.com"));
@@ -188,7 +172,7 @@ mod get {
         assert_eq!(response.status(), StatusCode::OK);
 
         let users = response.json::<Vec<User>>().await.unwrap();
-        assert_eq!(users.len(), 2);
+        assert_eq!(users.len(), 3);
 
         let response = client
             .get(format!("/api/users/{}", users[0].id))

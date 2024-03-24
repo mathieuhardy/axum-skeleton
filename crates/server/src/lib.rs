@@ -4,21 +4,16 @@
 #![forbid(unsafe_code)]
 
 pub mod config;
+pub mod layers;
 
-pub(crate) mod auth;
-pub(crate) mod cors;
 pub(crate) mod error;
 pub(crate) mod extractors;
 pub(crate) mod prelude;
 pub(crate) mod routes;
 pub(crate) mod state;
-pub(crate) mod timeout;
-pub(crate) mod tracing;
-pub(crate) mod types;
 
 pub use axum;
 
-use axum::response::IntoResponse;
 use tokio::net::TcpListener;
 use tokio::signal;
 use tower_http::compression::CompressionLayer;
@@ -28,8 +23,8 @@ use crate::config::Config;
 #[cfg(debug_assertions)]
 #[cfg(feature = "sanity")]
 use crate::config::Environment;
+use crate::layers::*;
 use crate::prelude::*;
-use crate::tracing::tracing_layer;
 use utils::filesystem::{relative_path, root_relative_path};
 
 /// Starts the server application.
@@ -99,18 +94,25 @@ pub async fn app(
     event!(Level::INFO, "🗃  Database initialized");
 
     // CORS layer
-    let cors = cors::build(config);
+    let cors = layers::cors::build(config);
 
     event!(Level::INFO, "🔑 CORS configured");
     event!(Level::TRACE, "{:#?}", cors);
 
     // Timeout
-    let timeout = timeout::timeout_layer(config);
+    let timeout = layers::timeout::timeout_layer(config);
 
     event!(Level::INFO, "⏰ Timeout configured");
 
+    // Compression
+    let compression_layer = CompressionLayer::new();
+
+    event!(Level::INFO, "🔻 Compression enabled");
+
     // Authentication layer
-    let authentication = auth::authentication_layer(&pg_pool);
+    let authentication = auth::authentication_layer(config, &pg_pool);
+
+    event!(Level::INFO, "👤 Authentication enabled");
 
     // Sensitive layers
     let (sensitive_request_layer, sensitive_response_layer) = tracing::sensitive_headers_layers();
@@ -118,14 +120,18 @@ pub async fn app(
     // Request ID layers
     let (request_id_layer, propagate_request_id_layer) = tracing::request_id_layers();
 
+    // Tracing
+    let tracing_layer = layers::tracing::tracing_layer();
+
     // State shared between handlers
     let state = AppState::new(pg_pool, redis_pool);
+
     event!(Level::INFO, "📦 State configured");
 
     // Create router
     let mut router = Router::new()
         .fallback(handler_404)
-        .nest("/", routes::build().await)
+        .nest("/", routes::build())
         .with_state(state);
 
     router = setup_favicon(router)?;
@@ -133,11 +139,11 @@ pub async fn app(
     router = router
         .layer(cors)
         .layer(timeout)
-        .layer(CompressionLayer::new())
+        .layer(compression_layer)
         .layer(authentication)
         .layer(request_id_layer)
         .layer(sensitive_request_layer)
-        .layer(tracing_layer())
+        .layer(tracing_layer)
         .layer(propagate_request_id_layer)
         .layer(sensitive_response_layer);
 
@@ -146,7 +152,7 @@ pub async fn app(
     if Environment::Development.equals(&config.environment) {
         router = sanity::initialize(router).map_err(Error::Sanity)?;
 
-        event!(Level::INFO, "🩺 Sanity installed");
+        event!(Level::INFO, "🩺 Sanity enabled");
     }
 
     Ok(router)

@@ -59,6 +59,13 @@ pub struct PasswordSettings {
     pub pattern: PasswordPatternSettings,
 }
 
+/// Structure that contains all sessions settings.
+#[derive(Debug, Deserialize)]
+pub struct SessionsSettings {
+    /// Timeout for the user session.
+    pub timeout_in_hours: u32,
+}
+
 /// Structure that contains all passwords's pattern settings.
 #[derive(Debug, Deserialize)]
 pub struct PasswordPatternSettings {
@@ -98,6 +105,9 @@ pub struct Config {
 
     /// Passwords configuration.
     pub password: PasswordSettings,
+
+    /// Sessions configuration.
+    pub sessions: SessionsSettings,
 }
 
 /// Possible environment values.

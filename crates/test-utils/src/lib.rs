@@ -146,8 +146,13 @@ pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
     // Configure connection to the database
     let db = initialize_database(db_env_variable).await?;
 
+    let client = reqwest::ClientBuilder::new()
+        .cookie_store(true)
+        .build()
+        .unwrap();
+
     Ok(TestClient {
-        client: reqwest::Client::new(),
+        client,
         address,
         db,
     })
