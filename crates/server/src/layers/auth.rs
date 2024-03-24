@@ -6,16 +6,21 @@ use async_trait::async_trait;
 use axum_login::{AuthManagerLayer, AuthManagerLayerBuilder, AuthUser, AuthnBackend, UserId};
 use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
 
+use database::error::Error as DatabaseError;
 use database::models::users::*;
 use database::sqlx::PgPool;
 use database::traits::sqlx::postgres::crud::CRUD;
 use utils::hashing;
 
+use crate::config::Config;
 use crate::prelude::*;
+
+/// Authentication session convenient type.
+pub type AuthSession = axum_login::AuthSession<Backend>;
 
 /// User structure used during authentication (simply a wrapper around the database's type).
 #[derive(Debug, Clone)]
-pub struct AuthenticationUser(User);
+pub struct AuthenticationUser(pub User);
 
 impl AuthUser for AuthenticationUser {
     type Id = Uuid;
@@ -34,18 +39,18 @@ impl AuthUser for AuthenticationUser {
 /// Structure used to store the credentials that must be provided by a user to check it's
 /// existence. This should match a form displayed to the user where he can enter his email and
 /// password.
-#[derive(Clone)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Credentials {
     /// Email used during authentication.
-    email: String,
+    pub email: String,
 
     /// Password used during authentication.
-    password: String,
+    pub password: String,
 }
 
 /// Authentication backend structure that contains all needed data (e.g. a connection to the
 /// database in order to fetch users information).
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Backend {
     /// Database handle.
     db: PgPool,
@@ -62,22 +67,31 @@ impl AuthnBackend for Backend {
         credentials: Self::Credentials,
     ) -> Result<Option<Self::User>, Self::Error> {
         // Try to find the user in database, return Unauthorized if not found.
-        let user: User = User::find_by_filters(
+        let users = User::find_by_filters(
             &Filters {
                 email: Some(credentials.email),
                 ..Filters::default()
             },
             &self.db,
         )
-        .await
-        .map_err(|_| Error::Unauthorized)?
-        .try_into()
-        .map_err(|_| Error::Unauthorized)?;
+        .await;
+
+        let users = match users {
+            Ok(users) => users,
+            Err(DatabaseError::NotFound) => return Ok(None),
+            _ => return Err(Error::Unauthorized),
+        };
+
+        if users.is_empty() {
+            return Ok(None);
+        }
 
         // Verify password
-        hashing::verify(&credentials.password, &user.password).await?;
-
-        Ok(Some(AuthenticationUser(user.clone())))
+        match hashing::verify(&credentials.password, &users[0].password).await {
+            Ok(true) => Ok(Some(AuthenticationUser(users[0].clone()))),
+            Ok(false) => Ok(None),
+            _ => Err(Error::Unauthorized),
+        }
     }
 
     async fn get_user(&self, user_id: &UserId<Self>) -> Result<Option<Self::User>, Self::Error> {
@@ -107,19 +121,18 @@ impl Backend {
 ///
 /// # Returns
 /// The authentication layer.
-pub fn authentication_layer(db: &PgPool) -> AuthManagerLayer<Backend, MemoryStore> {
+pub fn authentication_layer(
+    config: &Config,
+    db: &PgPool,
+) -> AuthManagerLayer<Backend, MemoryStore> {
     // Session storage backend
     // TODO: use reddis to store the values
     let session_store = MemoryStore::default();
 
     // Session layer
-    // TODO: with_secure ?
-    // TODO: get expiration date from configuration
-    // TODO: with_signed ?
-    let session_layer = SessionManagerLayer::new(session_store)
-        //.with_secure(false)
-        .with_expiry(Expiry::OnInactivity(time::Duration::days(1)));
-    //.with_signed(cookie::Key::generate());
+    let session_layer = SessionManagerLayer::new(session_store).with_expiry(Expiry::OnInactivity(
+        time::Duration::hours(config.sessions.timeout_in_hours.into()),
+    ));
 
     // Authentication backend
     let backend = Backend::new(db);

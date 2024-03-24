@@ -1,10 +1,11 @@
 //! This file contains all routes of the application.
 
 mod api;
+mod auth;
 #[cfg(feature = "k8s")]
 mod k8s;
 
-use axum::response::Html;
+use axum_login::login_required;
 
 use crate::prelude::*;
 
@@ -12,19 +13,21 @@ use crate::prelude::*;
 ///
 /// # Returns
 /// An Axum router.
-pub async fn build() -> Router<AppState> {
+pub fn build() -> Router<AppState> {
     let router = Router::new();
 
     #[cfg(feature = "k8s")]
     let router = router.nest("/k8", k8s::build());
 
     router
-        .route("/", get(hello().await))
+        .route("/protected", get(protected))
+        .route_layer(login_required!(Backend))
+        .merge(auth::build())
         .nest("/api", api::build())
 }
 
-/// Demo handler.
+/// Protected handler.
 #[axum::debug_handler]
-async fn hello() -> Html<&'static str> {
-    Html("<h1>Hello, World!</h1>")
+async fn protected() -> impl IntoResponse {
+    axum::response::Html("<h1>Hello, World!</h1>")
 }

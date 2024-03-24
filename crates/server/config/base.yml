@@ -23,3 +23,6 @@ password:
     spaces: false
     min_length: 8
     max_length: null
+
+sessions:
+  timeout_in_hours: 24
