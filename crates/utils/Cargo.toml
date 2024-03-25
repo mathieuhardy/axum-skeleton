@@ -4,12 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-argon2 = { version = "0.5.3", default-features = false, features = ["alloc", "password-hash"] }
-project-root = { version = "0.2.2", default-features = false }
+argon2 = { version = "0.5.3", default-features = false, features = ["alloc", "password-hash"], optional = true }
+project-root = { version = "0.2.2", default-features = false, optional = true }
 thiserror = { version = "1.0.58", default-features = false }
-tokio = { version = "1.36.0", default-features = false, features = ["full"] }
+tokio = { version = "1.36.0", default-features = false, features = ["full"], optional = true }
 
 [features]
-fs = []
-hashing = []
+fs = ["project-root"]
+hashing = ["argon2", "tokio"]
 password = []
