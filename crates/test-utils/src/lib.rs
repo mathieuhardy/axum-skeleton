@@ -16,6 +16,8 @@ use std::panic::{catch_unwind, UnwindSafe};
 use std::sync::Arc;
 use tokio::net::TcpListener;
 use tokio::sync::Mutex;
+use tracing::subscriber::DefaultGuard;
+use tracing_appender::non_blocking::WorkerGuard;
 
 #[cfg(feature = "derives")]
 pub use test_utils_derives::*;
@@ -30,11 +32,17 @@ pub struct TestClient {
     /// Client used to send requests.
     pub client: Client,
 
-    /// Base address prefixed to every URL passed.
-    pub address: SocketAddr,
-
     /// Database connection if needed for tests.
     pub db: PgPool,
+
+    /// Base address prefixed to every URL passed.
+    address: SocketAddr,
+
+    /// Tracing subscriber guard to be kept during the tests.
+    _tracing_subscriber: DefaultGuard,
+
+    /// Tracing appender guard to be kept during the tests.
+    _tracing_appender_guard: WorkerGuard,
 }
 
 impl TestClient {
@@ -123,9 +131,31 @@ impl TestClient {
 pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
     dotenvy::dotenv()?;
 
+    let config: Config = Environment::Testing.try_into()?;
+
+    // Tracing
+    let (writer, appender_guard) = tracing_appender::non_blocking(std::io::stdout());
+
+    let subscriber = tracing_subscriber::fmt()
+        .with_ansi(true)
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .with_level(true)
+        .with_target(false)
+        .with_writer(std::io::stdout)
+        .compact()
+        .finish();
+
+    let subscriber_guard = tracing::subscriber::set_default(subscriber);
+
+    // Configure connection to the database
     let db_env_variable = "DATABASE_URL_TEST";
 
-    let config: Config = Environment::Testing.try_into()?;
+    let db = initialize_database(db_env_variable).await?;
+
+    let client = reqwest::ClientBuilder::new()
+        .cookie_store(true)
+        .build()
+        .unwrap();
 
     // Configure server
     let listener = TcpListener::bind(format!(
@@ -138,23 +168,17 @@ pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
 
     let app = app(&config, Some(db_env_variable), None).await.unwrap();
 
-    // TODO: get logs from server
+    // Spawn the server and return the test client
     tokio::spawn(async move {
         axum::serve(listener, app).await.unwrap();
     });
 
-    // Configure connection to the database
-    let db = initialize_database(db_env_variable).await?;
-
-    let client = reqwest::ClientBuilder::new()
-        .cookie_store(true)
-        .build()
-        .unwrap();
-
     Ok(TestClient {
         client,
-        address,
         db,
+        address,
+        _tracing_subscriber: subscriber_guard,
+        _tracing_appender_guard: appender_guard,
     })
 }
 

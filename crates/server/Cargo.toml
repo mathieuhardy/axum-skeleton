@@ -15,6 +15,7 @@ tokio = { version = "1.36.0", default-features = false, features = ["full"] }
 tower-http = { version = "0.5.2", default-features = false, features = ["compression-full", "cors", "fs", "redirect", "request-id", "sensitive-headers","timeout" ,"trace"] }
 tower-sessions = { version = "0.12.0", default-features = false, features = ["signed"] }
 tracing = { version = "0.1.40", default-features = false, features = ["attributes", "log", "std"] }
+tracing-subscriber = { version = "0.3.18", default-features = false, features = ["ansi", "env-filter", "fmt"]}
 uuid = { version = "1.8.0", default-features = false }
 validator = { version = "0.15", default-features = false }
 

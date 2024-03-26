@@ -79,6 +79,7 @@ mod delete {
             .await
             .unwrap();
 
+        //assert!(false);
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
     }
 }
