@@ -12,6 +12,9 @@ pub(crate) mod prelude;
 pub(crate) mod routes;
 pub(crate) mod state;
 
+#[cfg(test)]
+mod tests;
+
 pub use axum;
 
 use tokio::net::TcpListener;

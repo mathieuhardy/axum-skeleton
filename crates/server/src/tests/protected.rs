@@ -1,16 +1,8 @@
-// TODO: find a better solution
-#[allow(clippy::duplicate_mod)]
-#[path = "auth.rs"]
-mod auth;
-
-#[allow(clippy::duplicate_mod)]
-#[path = "common/mod.rs"]
-mod common;
-
 use serial_test::serial;
 use test_utils::*;
 
-use auth::*;
+use crate::tests::auth;
+use crate::tests::common::*;
 
 async fn setup() -> TestClient {
     init_server().await.unwrap()
@@ -41,7 +33,7 @@ mod get {
             // Login
             auth::post::test_login(
                 &client,
-                auth::DataType::Json,
+                DataType::Json,
                 EmailValidity::Valid,
                 PasswordValidity::Valid,
             )
@@ -63,7 +55,7 @@ mod get {
             // Login
             auth::post::test_login(
                 &client,
-                auth::DataType::Json,
+                DataType::Json,
                 EmailValidity::Valid,
                 PasswordValidity::Valid,
             )

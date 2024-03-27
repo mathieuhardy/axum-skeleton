@@ -1,14 +1,8 @@
-// TODO: find a better solution
-#[allow(clippy::duplicate_mod)]
-#[path = "common/mod.rs"]
-mod common;
-
 use serial_test::serial;
 use test_utils::*;
 
-use server::layers::auth::*;
-
-pub use common::*;
+use crate::layers::auth::*;
+use crate::tests::common::*;
 
 async fn setup() -> TestClient {
     init_server().await.unwrap()
