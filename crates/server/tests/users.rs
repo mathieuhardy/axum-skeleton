@@ -5,7 +5,6 @@ mod common;
 
 use rand::distributions::{Alphanumeric, DistString};
 use serial_test::serial;
-use std::module_path;
 use test_utils::*;
 use urlencoding::encode;
 use uuid::Uuid;
@@ -28,57 +27,29 @@ async fn first_user(client: &TestClient) -> User {
     users[0].clone()
 }
 
-#[hook(setup, _)]
-#[tokio::test]
-#[serial]
-async fn all() {
-    |client| async move {
-        let client = client.lock().await;
-
-        get::me(&client).await;
-        get::all(&client).await;
-        get::by_filters(&client).await;
-        get::by_id(&client).await;
-
-        post::nominal(&client).await;
-        post::invalid_email(&client).await;
-        post::invalid_first_name(&client).await;
-        post::invalid_last_name(&client).await;
-        post::invalid_password(&client).await;
-
-        put::nominal(&client).await;
-        put::invalid_email(&client).await;
-        put::invalid_first_name(&client).await;
-        put::invalid_last_name(&client).await;
-
-        patch::nominal(&client).await;
-        patch::invalid_email(&client).await;
-        patch::invalid_first_name(&client).await;
-        patch::invalid_last_name(&client).await;
-        patch::set_password(&client).await;
-
-        delete::by_id(&client).await;
-    }
-}
-
 mod delete {
     use super::*;
 
-    pub async fn by_id(client: &TestClient) {
-        println!("{}::by_id", module_path!());
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn by_id() {
+        |client| async move {
+            let client = client.lock().await;
 
-        let response = client.get("/api/users").send().await;
-        assert_eq!(response.status(), StatusCode::OK);
+            let response = client.get("/api/users").send().await;
+            assert_eq!(response.status(), StatusCode::OK);
 
-        let users = response.json::<Vec<User>>().await;
-        assert!(!users.is_empty());
+            let users = response.json::<Vec<User>>().await;
+            assert!(!users.is_empty());
 
-        let response = client
-            .delete(format!("/api/users/{}", users[0].id))
-            .send()
-            .await;
+            let response = client
+                .delete(format!("/api/users/{}", users[0].id))
+                .send()
+                .await;
 
-        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+            assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        }
     }
 }
 
@@ -86,93 +57,113 @@ mod get {
     use super::*;
 
     /// TEST_PLAN: /TC/USERS/GET/ME
-    pub async fn me(client: &TestClient) {
-        println!("{}::me", module_path!());
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn me() {
+        |client| async move {
+            let client = client.lock().await;
 
-        let response = client.get("/api/users/me").send().await;
-        assert_eq!(response.status(), StatusCode::OK);
+            let response = client.get("/api/users/me").send().await;
+            assert_eq!(response.status(), StatusCode::OK);
 
-        let user = response.json::<User>().await;
-        assert_eq!(user.first_name, "John");
-        assert_eq!(user.last_name, "Doe");
-        assert_eq!(user.email, "john@doe.com");
+            let user = response.json::<User>().await;
+            assert_eq!(user.first_name, "John");
+            assert_eq!(user.last_name, "Doe");
+            assert_eq!(user.email, "john@doe.com");
+        }
     }
 
     /// TEST_PLAN: /TC/USERS/GET/ALL
-    pub async fn all(client: &TestClient) {
-        println!("{}::all", module_path!());
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn all() {
+        |client| async move {
+            let client = client.lock().await;
 
-        let response = client.get("/api/users").send().await;
-        assert_eq!(response.status(), StatusCode::OK);
+            let response = client.get("/api/users").send().await;
+            assert_eq!(response.status(), StatusCode::OK);
 
-        let users = response.json::<Vec<User>>().await;
-        assert_eq!(users.len(), 3);
-        assert!(users.iter().any(|e| e.first_name == "Giga"
-            && e.last_name == "Chad"
-            && e.email == "giga@chad.com"));
-        assert!(users
-            .iter()
-            .any(|e| e.first_name == "John" && e.last_name == "Doe" && e.email == "john@doe.com"));
-        assert!(users
-            .iter()
-            .any(|e| e.first_name == "Jane" && e.last_name == "Doe" && e.email == "jane@doe.com"));
+            let users = response.json::<Vec<User>>().await;
+            assert_eq!(users.len(), 3);
+            assert!(users.iter().any(|e| e.first_name == "Giga"
+                && e.last_name == "Chad"
+                && e.email == "giga@chad.com"));
+            assert!(users.iter().any(|e| e.first_name == "John"
+                && e.last_name == "Doe"
+                && e.email == "john@doe.com"));
+            assert!(users.iter().any(|e| e.first_name == "Jane"
+                && e.last_name == "Doe"
+                && e.email == "jane@doe.com"));
+        }
     }
 
     /// TEST_PLAN: /TC/USERS/GET/FILTERED
-    pub async fn by_filters(client: &TestClient) {
-        println!("{}::by_filters", module_path!());
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn by_filters() {
+        |client| async move {
+            let client = client.lock().await;
 
-        // By name
-        let response = client
-            .get(format!("/api/users?first_name={}", encode("John")))
-            .send()
-            .await;
-        assert_eq!(response.status(), StatusCode::OK);
+            // By name
+            let response = client
+                .get(format!("/api/users?first_name={}", encode("John")))
+                .send()
+                .await;
+            assert_eq!(response.status(), StatusCode::OK);
 
-        let users = response.json::<Vec<User>>().await;
-        assert_eq!(users.len(), 1);
-        assert_eq!(users[0].first_name, "John");
-        assert_eq!(users[0].last_name, "Doe");
-        assert_eq!(users[0].email, "john@doe.com");
+            let users = response.json::<Vec<User>>().await;
+            assert_eq!(users.len(), 1);
+            assert_eq!(users[0].first_name, "John");
+            assert_eq!(users[0].last_name, "Doe");
+            assert_eq!(users[0].email, "john@doe.com");
 
-        // By name (not found)
-        let response = client.get("/api/users?first_name=404").send().await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+            // By name (not found)
+            let response = client.get("/api/users?first_name=404").send().await;
+            assert_eq!(response.status(), StatusCode::NOT_FOUND);
 
-        // By email
-        let response = client.get("/api/users?email=john@doe.com").send().await;
-        assert_eq!(response.status(), StatusCode::OK);
+            // By email
+            let response = client.get("/api/users?email=john@doe.com").send().await;
+            assert_eq!(response.status(), StatusCode::OK);
 
-        let users = response.json::<Vec<User>>().await;
-        assert_eq!(users.len(), 1);
-        assert_eq!(users[0].first_name, "John");
-        assert_eq!(users[0].last_name, "Doe");
-        assert_eq!(users[0].email, "john@doe.com");
+            let users = response.json::<Vec<User>>().await;
+            assert_eq!(users.len(), 1);
+            assert_eq!(users[0].first_name, "John");
+            assert_eq!(users[0].last_name, "Doe");
+            assert_eq!(users[0].email, "john@doe.com");
 
-        // By email (not found)
-        let response = client.get("/api/users?email=404").send().await;
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+            // By email (not found)
+            let response = client.get("/api/users?email=404").send().await;
+            assert_eq!(response.status(), StatusCode::NOT_FOUND);
+        }
     }
 
     /// TEST_PLAN: /TC/USERS/GET/ID
-    pub async fn by_id(client: &TestClient) {
-        println!("{}::by_id", module_path!());
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn by_id() {
+        |client| async move {
+            let client = client.lock().await;
 
-        let response = client.get("/api/users").send().await;
-        assert_eq!(response.status(), StatusCode::OK);
+            let response = client.get("/api/users").send().await;
+            assert_eq!(response.status(), StatusCode::OK);
 
-        let users = response.json::<Vec<User>>().await;
-        assert_eq!(users.len(), 3);
+            let users = response.json::<Vec<User>>().await;
+            assert_eq!(users.len(), 3);
 
-        let response = client
-            .get(format!("/api/users/{}", users[0].id))
-            .send()
-            .await;
+            let response = client
+                .get(format!("/api/users/{}", users[0].id))
+                .send()
+                .await;
 
-        assert_eq!(response.status(), StatusCode::OK);
+            assert_eq!(response.status(), StatusCode::OK);
 
-        let user = response.json::<User>().await;
-        assert_eq!(users[0], user);
+            let user = response.json::<User>().await;
+            assert_eq!(users[0], user);
+        }
     }
 }
 
@@ -309,151 +300,176 @@ mod patch {
         assert_eq!(response.status(), expected_status);
     }
 
-    pub async fn nominal(client: &TestClient) {
-        println!("{}::nominal", module_path!());
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn nominal() {
+        |client| async move {
+            let client = client.lock().await;
 
-        let user = first_user(client).await;
+            let user = first_user(&client).await;
 
-        for data_type in [DataType::Form, DataType::Json] {
-            test_patch(
-                client,
-                user.id,
-                data_type,
-                FirstNameValidity::Valid,
-                LastNameValidity::Valid,
-                EmailValidity::Valid,
-            )
-            .await;
-        }
-    }
-
-    pub async fn invalid_email(client: &TestClient) {
-        println!("{}::invalid_email", module_path!());
-
-        let user = first_user(client).await;
-
-        for data_type in [DataType::Form, DataType::Json] {
-            test_patch(
-                client,
-                user.id,
-                data_type,
-                FirstNameValidity::Valid,
-                LastNameValidity::Valid,
-                EmailValidity::Invalid,
-            )
-            .await;
-        }
-    }
-
-    pub async fn invalid_first_name(client: &TestClient) {
-        println!("{}::invalid_first_name", module_path!());
-
-        let user = first_user(client).await;
-
-        for data_type in [DataType::Form, DataType::Json] {
-            test_patch(
-                client,
-                user.id,
-                data_type,
-                FirstNameValidity::Invalid,
-                LastNameValidity::Valid,
-                EmailValidity::Valid,
-            )
-            .await;
-        }
-    }
-
-    pub async fn invalid_last_name(client: &TestClient) {
-        println!("{}::invalid_last_name", module_path!());
-
-        let user = first_user(client).await;
-
-        for data_type in [DataType::Form, DataType::Json] {
-            test_patch(
-                client,
-                user.id,
-                data_type,
-                FirstNameValidity::Valid,
-                LastNameValidity::Invalid,
-                EmailValidity::Valid,
-            )
-            .await;
-        }
-    }
-
-    pub async fn set_password(client: &TestClient) {
-        println!("{}::set_password", module_path!());
-
-        // Create a user to update
-        let uniq = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
-
-        let request = UserRequest {
-            first_name: Some(format!("{uniq}-first-name")),
-            last_name: Some(format!("{uniq}-last-name")),
-            email: Some(format!("{uniq}@email.com")),
-            password: Some("0#Abcdef".to_string()),
-            ..UserRequest::default()
-        };
-
-        let response = client.post("/api/users").json(&request).send().await;
-
-        assert_eq!(response.status(), StatusCode::CREATED);
-
-        let user = response.json::<User>().await;
-
-        let data_types = vec![DataType::Form, DataType::Json];
-
-        // Invalid current password
-        for data_type in &data_types {
-            test_patch_password(
-                client,
-                &user.id,
-                data_type.clone(),
-                PasswordValidity::Invalid,
-                Some("INVALID_PASSWORD"),
-                PasswordValidity::Valid,
-                None,
-            )
-            .await;
-        }
-
-        // Invalid new passwords
-        let passwords = vec![
-            ".#Abcdef",
-            "0#ABCDEF",
-            "0#abcdef",
-            "0Abcdefg",
-            "0#Abcde f",
-            "0#Abcde",
-        ];
-
-        for data_type in &data_types {
-            for password in &passwords {
-                test_patch_password(
-                    client,
-                    &user.id,
-                    data_type.clone(),
-                    PasswordValidity::Valid,
-                    None,
-                    PasswordValidity::Invalid,
-                    Some(password),
+            for data_type in [DataType::Form, DataType::Json] {
+                test_patch(
+                    &client,
+                    user.id,
+                    data_type,
+                    FirstNameValidity::Valid,
+                    LastNameValidity::Valid,
+                    EmailValidity::Valid,
                 )
                 .await;
             }
         }
+    }
 
-        // Nominal
-        for data_type in data_types {
-            test_patch_password(
-                client,
-                &user.id,
-                data_type.clone(),
-                PasswordValidity::Valid,
-                Some("0#Abcdef"),
-                PasswordValidity::Valid,
-                None,
-            )
-            .await;
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn invalid_email() {
+        |client| async move {
+            let client = client.lock().await;
+
+            let user = first_user(&client).await;
+
+            for data_type in [DataType::Form, DataType::Json] {
+                test_patch(
+                    &client,
+                    user.id,
+                    data_type,
+                    FirstNameValidity::Valid,
+                    LastNameValidity::Valid,
+                    EmailValidity::Invalid,
+                )
+                .await;
+            }
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn invalid_first_name() {
+        |client| async move {
+            let client = client.lock().await;
+
+            let user = first_user(&client).await;
+
+            for data_type in [DataType::Form, DataType::Json] {
+                test_patch(
+                    &client,
+                    user.id,
+                    data_type,
+                    FirstNameValidity::Invalid,
+                    LastNameValidity::Valid,
+                    EmailValidity::Valid,
+                )
+                .await;
+            }
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn invalid_last_name() {
+        |client| async move {
+            let client = client.lock().await;
+
+            let user = first_user(&client).await;
+
+            for data_type in [DataType::Form, DataType::Json] {
+                test_patch(
+                    &client,
+                    user.id,
+                    data_type,
+                    FirstNameValidity::Valid,
+                    LastNameValidity::Invalid,
+                    EmailValidity::Valid,
+                )
+                .await;
+            }
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn set_password() {
+        |client| async move {
+            let client = client.lock().await;
+
+            // Create a user to update
+            let uniq = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
+
+            let request = UserRequest {
+                first_name: Some(format!("{uniq}-first-name")),
+                last_name: Some(format!("{uniq}-last-name")),
+                email: Some(format!("{uniq}@email.com")),
+                password: Some("0#Abcdef".to_string()),
+                ..UserRequest::default()
+            };
+
+            let response = client.post("/api/users").json(&request).send().await;
+
+            assert_eq!(response.status(), StatusCode::CREATED);
+
+            let user = response.json::<User>().await;
+
+            let data_types = vec![DataType::Form, DataType::Json];
+
+            // Invalid current password
+            for data_type in &data_types {
+                test_patch_password(
+                    &client,
+                    &user.id,
+                    data_type.clone(),
+                    PasswordValidity::Invalid,
+                    Some("INVALID_PASSWORD"),
+                    PasswordValidity::Valid,
+                    None,
+                )
+                .await;
+            }
+
+            // Invalid new passwords
+            let passwords = vec![
+                ".#Abcdef",
+                "0#ABCDEF",
+                "0#abcdef",
+                "0Abcdefg",
+                "0#Abcde f",
+                "0#Abcde",
+            ];
+
+            for data_type in &data_types {
+                for password in &passwords {
+                    test_patch_password(
+                        &client,
+                        &user.id,
+                        data_type.clone(),
+                        PasswordValidity::Valid,
+                        None,
+                        PasswordValidity::Invalid,
+                        Some(password),
+                    )
+                    .await;
+                }
+            }
+
+            // Nominal
+            for data_type in data_types {
+                test_patch_password(
+                    &client,
+                    &user.id,
+                    data_type.clone(),
+                    PasswordValidity::Valid,
+                    Some("0#Abcdef"),
+                    PasswordValidity::Valid,
+                    None,
+                )
+                .await;
+            }
         }
     }
 }
@@ -544,100 +560,125 @@ mod post {
         }
     }
 
-    pub async fn nominal(client: &TestClient) {
-        println!("{}::nominal", module_path!());
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn nominal() {
+        |client| async move {
+            let client = client.lock().await;
 
-        for data_type in [DataType::Form, DataType::Json] {
-            test_post(
-                client,
-                data_type,
-                FirstNameValidity::Valid,
-                LastNameValidity::Valid,
-                EmailValidity::Valid,
-                PasswordValidity::Valid,
-                None,
-            )
-            .await;
-        }
-    }
-
-    pub async fn invalid_email(client: &TestClient) {
-        println!("{}::invalid_email", module_path!());
-
-        for data_type in [DataType::Form, DataType::Json] {
-            test_post(
-                client,
-                data_type,
-                FirstNameValidity::Valid,
-                LastNameValidity::Valid,
-                EmailValidity::Invalid,
-                PasswordValidity::Valid,
-                None,
-            )
-            .await;
-        }
-    }
-
-    pub async fn invalid_first_name(client: &TestClient) {
-        println!("{}::invalid_first_name", module_path!());
-
-        for data_type in [DataType::Form, DataType::Json] {
-            test_post(
-                client,
-                data_type,
-                FirstNameValidity::Invalid,
-                LastNameValidity::Valid,
-                EmailValidity::Valid,
-                PasswordValidity::Valid,
-                None,
-            )
-            .await;
-        }
-    }
-
-    pub async fn invalid_last_name(client: &TestClient) {
-        println!("{}::invalid_last_name", module_path!());
-
-        for data_type in [DataType::Form, DataType::Json] {
-            test_post(
-                client,
-                data_type,
-                FirstNameValidity::Valid,
-                LastNameValidity::Invalid,
-                EmailValidity::Valid,
-                PasswordValidity::Valid,
-                None,
-            )
-            .await;
-        }
-    }
-
-    pub async fn invalid_password(client: &TestClient) {
-        println!("{}::invalid_password", module_path!());
-
-        let passwords = vec![
-            ".#Abcdef",
-            "0#ABCDEF",
-            "0#abcdef",
-            "0Abcdefg",
-            "0#Abcde f",
-            "0#Abcde",
-        ];
-
-        let data_types = vec![DataType::Form, DataType::Json];
-
-        for data_type in data_types {
-            for password in &passwords {
+            for data_type in [DataType::Form, DataType::Json] {
                 test_post(
-                    client,
-                    data_type.clone(),
+                    &client,
+                    data_type,
                     FirstNameValidity::Valid,
                     LastNameValidity::Valid,
                     EmailValidity::Valid,
-                    PasswordValidity::Invalid,
-                    Some(password),
+                    PasswordValidity::Valid,
+                    None,
                 )
                 .await;
+            }
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn invalid_email() {
+        |client| async move {
+            let client = client.lock().await;
+
+            for data_type in [DataType::Form, DataType::Json] {
+                test_post(
+                    &client,
+                    data_type,
+                    FirstNameValidity::Valid,
+                    LastNameValidity::Valid,
+                    EmailValidity::Invalid,
+                    PasswordValidity::Valid,
+                    None,
+                )
+                .await;
+            }
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn invalid_first_name() {
+        |client| async move {
+            let client = client.lock().await;
+
+            for data_type in [DataType::Form, DataType::Json] {
+                test_post(
+                    &client,
+                    data_type,
+                    FirstNameValidity::Invalid,
+                    LastNameValidity::Valid,
+                    EmailValidity::Valid,
+                    PasswordValidity::Valid,
+                    None,
+                )
+                .await;
+            }
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn invalid_last_name() {
+        |client| async move {
+            let client = client.lock().await;
+
+            for data_type in [DataType::Form, DataType::Json] {
+                test_post(
+                    &client,
+                    data_type,
+                    FirstNameValidity::Valid,
+                    LastNameValidity::Invalid,
+                    EmailValidity::Valid,
+                    PasswordValidity::Valid,
+                    None,
+                )
+                .await;
+            }
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn invalid_password() {
+        |client| async move {
+            let client = client.lock().await;
+
+            let passwords = vec![
+                ".#Abcdef",
+                "0#ABCDEF",
+                "0#abcdef",
+                "0Abcdefg",
+                "0#Abcde f",
+                "0#Abcde",
+            ];
+
+            let data_types = vec![DataType::Form, DataType::Json];
+
+            for data_type in data_types {
+                for password in &passwords {
+                    test_post(
+                        &client,
+                        data_type.clone(),
+                        FirstNameValidity::Valid,
+                        LastNameValidity::Valid,
+                        EmailValidity::Valid,
+                        PasswordValidity::Invalid,
+                        Some(password),
+                    )
+                    .await;
+                }
             }
         }
     }
@@ -717,75 +758,95 @@ mod put {
         }
     }
 
-    pub async fn nominal(client: &TestClient) {
-        println!("{}::nominal", module_path!());
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn nominal() {
+        |client| async move {
+            let client = client.lock().await;
 
-        let user = first_user(client).await;
+            let user = first_user(&client).await;
 
-        for data_type in [DataType::Form, DataType::Json] {
-            test_put(
-                client,
-                user.id,
-                data_type,
-                FirstNameValidity::Valid,
-                LastNameValidity::Valid,
-                EmailValidity::Valid,
-            )
-            .await;
+            for data_type in [DataType::Form, DataType::Json] {
+                test_put(
+                    &client,
+                    user.id,
+                    data_type,
+                    FirstNameValidity::Valid,
+                    LastNameValidity::Valid,
+                    EmailValidity::Valid,
+                )
+                .await;
+            }
         }
     }
 
-    pub async fn invalid_email(client: &TestClient) {
-        println!("{}::invalid_email", module_path!());
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn invalid_email() {
+        |client| async move {
+            let client = client.lock().await;
 
-        let user = first_user(client).await;
+            let user = first_user(&client).await;
 
-        for data_type in [DataType::Form, DataType::Json] {
-            test_put(
-                client,
-                user.id,
-                data_type,
-                FirstNameValidity::Valid,
-                LastNameValidity::Valid,
-                EmailValidity::Invalid,
-            )
-            .await;
+            for data_type in [DataType::Form, DataType::Json] {
+                test_put(
+                    &client,
+                    user.id,
+                    data_type,
+                    FirstNameValidity::Valid,
+                    LastNameValidity::Valid,
+                    EmailValidity::Invalid,
+                )
+                .await;
+            }
         }
     }
 
-    pub async fn invalid_first_name(client: &TestClient) {
-        println!("{}::invalid_first_name", module_path!());
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn invalid_first_name() {
+        |client| async move {
+            let client = client.lock().await;
 
-        let user = first_user(client).await;
+            let user = first_user(&client).await;
 
-        for data_type in [DataType::Form, DataType::Json] {
-            test_put(
-                client,
-                user.id,
-                data_type,
-                FirstNameValidity::Invalid,
-                LastNameValidity::Valid,
-                EmailValidity::Valid,
-            )
-            .await;
+            for data_type in [DataType::Form, DataType::Json] {
+                test_put(
+                    &client,
+                    user.id,
+                    data_type,
+                    FirstNameValidity::Invalid,
+                    LastNameValidity::Valid,
+                    EmailValidity::Valid,
+                )
+                .await;
+            }
         }
     }
 
-    pub async fn invalid_last_name(client: &TestClient) {
-        println!("{}::invalid_last_name", module_path!());
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn invalid_last_name() {
+        |client| async move {
+            let client = client.lock().await;
 
-        let user = first_user(client).await;
+            let user = first_user(&client).await;
 
-        for data_type in [DataType::Form, DataType::Json] {
-            test_put(
-                client,
-                user.id,
-                data_type,
-                FirstNameValidity::Valid,
-                LastNameValidity::Invalid,
-                EmailValidity::Valid,
-            )
-            .await;
+            for data_type in [DataType::Form, DataType::Json] {
+                test_put(
+                    &client,
+                    user.id,
+                    data_type,
+                    FirstNameValidity::Valid,
+                    LastNameValidity::Invalid,
+                    EmailValidity::Valid,
+                )
+                .await;
+            }
         }
     }
 }

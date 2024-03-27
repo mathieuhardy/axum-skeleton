@@ -14,20 +14,6 @@ async fn setup() -> TestClient {
     init_server().await.unwrap()
 }
 
-#[hook(setup, _)]
-#[tokio::test]
-#[serial]
-async fn all() {
-    |client| async move {
-        let client = client.lock().await;
-
-        post::login_with_invalid_credentials(&client).await;
-        post::login_with_valid_credentials(&client).await;
-        post::logout_not_logged_in(&client).await;
-        post::logout_logged_in(&client).await;
-    }
-}
-
 pub mod post {
     use super::*;
 
@@ -78,63 +64,83 @@ pub mod post {
         assert_eq!(response.status(), expected_status);
     }
 
-    pub async fn login_with_invalid_credentials(client: &TestClient) {
-        println!("{}::login_with_invalid_credentials", module_path!());
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn login_with_invalid_credentials() {
+        |client| async move {
+            let client = client.lock().await;
 
-        for data_type in [DataType::Form, DataType::Json] {
-            // Invalid email
+            for data_type in [DataType::Form, DataType::Json] {
+                // Invalid email
+                test_login(
+                    &client,
+                    data_type.clone(),
+                    EmailValidity::Invalid,
+                    PasswordValidity::Valid,
+                )
+                .await;
+
+                // Invalid password
+                test_login(
+                    &client,
+                    data_type,
+                    EmailValidity::Valid,
+                    PasswordValidity::Invalid,
+                )
+                .await;
+            }
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn login_with_valid_credentials() {
+        |client| async move {
+            let client = client.lock().await;
+
+            for data_type in [DataType::Form, DataType::Json] {
+                test_login(
+                    &client,
+                    data_type,
+                    EmailValidity::Valid,
+                    PasswordValidity::Valid,
+                )
+                .await;
+            }
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn logout_not_logged_in() {
+        |client| async move {
+            let client = client.lock().await;
+
+            let response = client.post("/logout").send().await;
+            assert_eq!(response.status(), StatusCode::OK);
+        }
+    }
+
+    #[hook(setup, _)]
+    #[tokio::test]
+    #[serial]
+    pub async fn logout_logged_in() {
+        |client| async move {
+            let client = client.lock().await;
+
             test_login(
-                client,
-                data_type.clone(),
-                EmailValidity::Invalid,
+                &client,
+                DataType::Json,
+                EmailValidity::Valid,
                 PasswordValidity::Valid,
             )
             .await;
 
-            // Invalid password
-            test_login(
-                client,
-                data_type,
-                EmailValidity::Valid,
-                PasswordValidity::Invalid,
-            )
-            .await;
+            let response = client.post("/logout").send().await;
+            assert_eq!(response.status(), StatusCode::OK);
         }
-    }
-
-    pub async fn login_with_valid_credentials(client: &TestClient) {
-        println!("{}::login_with_valid_credentials", module_path!());
-
-        for data_type in [DataType::Form, DataType::Json] {
-            test_login(
-                client,
-                data_type,
-                EmailValidity::Valid,
-                PasswordValidity::Valid,
-            )
-            .await;
-        }
-    }
-
-    pub async fn logout_not_logged_in(client: &TestClient) {
-        println!("{}::logout_not_logged_in", module_path!());
-
-        let response = client.post("/logout").send().await;
-        assert_eq!(response.status(), StatusCode::OK);
-    }
-
-    pub async fn logout_logged_in(client: &TestClient) {
-        println!("{}::logout_logged_in", module_path!());
-
-        test_login(
-            client,
-            DataType::Json,
-            EmailValidity::Valid,
-            PasswordValidity::Valid,
-        )
-        .await;
-
-        let response = client.post("/logout").send().await;
-        assert_eq!(response.status(), StatusCode::OK);
     }
 }
