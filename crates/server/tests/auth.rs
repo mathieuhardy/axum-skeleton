@@ -52,17 +52,18 @@ pub mod post {
 
         // Call endpoint and get response
         let response = match data_type {
-            DataType::Json => client
-                .post("/login")
-                .json(&Credentials { email, password })
-                .send()
-                .await
-                .unwrap(),
+            DataType::Json => {
+                client
+                    .post("/login")
+                    .json(&Credentials { email, password })
+                    .send()
+                    .await
+            }
 
             DataType::Form => {
-                let data = vec![("email", &email), ("password", &password)];
+                let data = [("email", &email), ("password", &password)];
 
-                client.post("/login").form(&data).send().await.unwrap()
+                client.post("/login").form(&data).send().await
             }
         };
 
@@ -118,7 +119,7 @@ pub mod post {
     pub async fn logout_not_logged_in(client: &TestClient) {
         println!("{}::logout_not_logged_in", module_path!());
 
-        let response = client.post("/logout").send().await.unwrap();
+        let response = client.post("/logout").send().await;
         assert_eq!(response.status(), StatusCode::OK);
     }
 
@@ -133,7 +134,7 @@ pub mod post {
         )
         .await;
 
-        let response = client.post("/logout").send().await.unwrap();
+        let response = client.post("/logout").send().await;
         assert_eq!(response.status(), StatusCode::OK);
     }
 }

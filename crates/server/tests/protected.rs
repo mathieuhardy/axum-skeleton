@@ -35,7 +35,7 @@ mod get {
     pub async fn unauthorized(client: &TestClient) {
         println!("{}::unauthorized", module_path!());
 
-        let response = client.get("/protected").send().await.unwrap();
+        let response = client.get("/protected").send().await;
         assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
     }
 
@@ -52,7 +52,7 @@ mod get {
         .await;
 
         // Check access after login (must be successful)
-        let response = client.get("/protected").send().await.unwrap();
+        let response = client.get("/protected").send().await;
         assert_eq!(response.status(), StatusCode::OK);
     }
 
@@ -69,11 +69,11 @@ mod get {
         .await;
 
         // Logout
-        let response = client.post("/logout").send().await.unwrap();
+        let response = client.post("/logout").send().await;
         assert_eq!(response.status(), StatusCode::OK);
 
         // Check access after login (must be successful)
-        let response = client.get("/protected").send().await.unwrap();
+        let response = client.get("/protected").send().await;
         assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
     }
 }

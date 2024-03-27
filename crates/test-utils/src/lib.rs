@@ -4,18 +4,26 @@
 #![forbid(unsafe_code)]
 #![feature(async_closure)]
 
-pub use reqwest::{Client, RequestBuilder, StatusCode};
+pub use axum::http::StatusCode;
 
+use axum::body::Body;
+use axum::extract::Request;
+use axum::http::header::CONTENT_TYPE;
+use axum::http::response::Response;
+use axum::http::Method;
+use axum::Router;
+use http_body_util::BodyExt;
+use mime::Mime;
+use serde::{Deserialize, Serialize};
 use sqlx::migrate::MigrateDatabase;
 use sqlx::postgres::{PgPool, PgPoolOptions};
 use std::error::Error;
 use std::fmt::{Debug, Display};
 use std::future::Future;
-use std::net::SocketAddr;
 use std::panic::{catch_unwind, UnwindSafe};
 use std::sync::Arc;
-use tokio::net::TcpListener;
 use tokio::sync::Mutex;
+use tower::util::ServiceExt;
 
 #[cfg(feature = "derives")]
 pub use test_utils_derives::*;
@@ -27,92 +35,247 @@ use utils::filesystem::root_relative_path;
 /// Structure used by the tests to make requests to the test server.
 #[derive(Debug)]
 pub struct TestClient {
-    /// Client used to send requests.
-    pub client: Client,
-
-    /// Base address prefixed to every URL passed.
-    pub address: SocketAddr,
-
     /// Database connection if needed for tests.
     pub db: PgPool,
+
+    /// Router application to be tested.
+    app: Router,
+}
+
+/// Structure used to build a HTTP request for the tests.
+pub struct TestRequestBuilder {
+    /// Application to be used.
+    app: Router, // TODO: ref ?
+
+    /// HTTP method.
+    method: Method,
+
+    /// URL to be requested.
+    url: String,
+
+    /// Body to be sent alongside the request.
+    body: Body,
+
+    /// Content type of the request.
+    content_type: Option<Mime>,
+}
+
+impl TestRequestBuilder {
+    /// Creates a new request builder with the JSON data provided.
+    ///
+    /// # Arguments
+    /// * `data` - JSON data to be used.
+    ///
+    /// # Returns
+    /// A new request builder (for chaining).
+    pub fn json<T: Serialize>(&self, data: &T) -> Self {
+        Self {
+            app: self.app.clone(),
+            method: self.method.clone(),
+            url: self.url.clone(),
+            body: Body::from(serde_json::to_vec(data).unwrap()),
+            content_type: Some(mime::APPLICATION_JSON),
+        }
+    }
+
+    /// Creates a new request builder with the form data provided.
+    ///
+    /// # Arguments
+    /// * `data` - Form data to be used.
+    ///
+    /// # Returns
+    pub fn form<K, V>(&self, data: &[(K, V)]) -> Self
+    where
+        K: ToString + Display + Serialize,
+        V: ToString + Display + Serialize,
+    {
+        let body: String = data
+            .iter()
+            .map(|(k, v)| format!("{k}={v}"))
+            .collect::<Vec<String>>()
+            .join("&");
+
+        Self {
+            app: self.app.clone(),
+            method: self.method.clone(),
+            url: self.url.clone(),
+            body: Body::from(body),
+            content_type: Some(mime::APPLICATION_WWW_FORM_URLENCODED),
+        }
+    }
+
+    /// Sends the request represented by ths builder.
+    /// The function consumes the self object.
+    ///
+    /// # Returns
+    /// A test response object.
+    pub async fn send(self) -> TestResponse {
+        let mut builder = Request::builder()
+            .method(self.method.clone())
+            .uri(self.url.clone());
+
+        if let Some(content_type) = &self.content_type {
+            builder = builder.header(CONTENT_TYPE, content_type.as_ref());
+        }
+
+        let response = self
+            .app
+            .clone()
+            .oneshot(builder.body(self.body).unwrap())
+            .await
+            .unwrap();
+
+        TestResponse {
+            rc: response.status(),
+            response,
+        }
+    }
+}
+
+/// Structure returned by a request for tests.
+pub struct TestResponse {
+    /// Status code.
+    rc: StatusCode,
+
+    /// Raw response.
+    response: Response<Body>,
+}
+
+impl TestResponse {
+    /// Gets the status code of the request.
+    ///
+    /// # Returns
+    /// The status code of the execution of the request.
+    pub fn status(&self) -> StatusCode {
+        self.rc
+    }
+
+    /// Converts the body into JSON data. Consumes the self object.
+    ///
+    /// # Returns
+    /// An object whose type is defined by the caller.
+    pub async fn json<T>(self) -> T
+    where
+        T: for<'a> Deserialize<'a>,
+    {
+        let body = self
+            .response
+            .into_body()
+            .collect()
+            .await
+            .unwrap()
+            .to_bytes();
+
+        let data: T = serde_json::from_slice(&body).unwrap();
+
+        data
+    }
 }
 
 impl TestClient {
-    /// Builds an URL from base address and relative URL provided.
+    /// Creates a request builder with parameters.
     ///
     /// # Arguments
-    /// * `url` - Relative URL of the destination.
+    /// * `method` - HTTP method used for the request.
+    /// * `url` - URL of the destination.
     ///
     /// # Returns
-    /// The string of the full URL.
-    fn build_url<T: ToString + Display>(&self, url: T) -> String {
-        format!("http://{}{url}", self.address)
+    /// The request builder.
+    fn make_builder<T>(&self, method: Method, url: T) -> TestRequestBuilder
+    where
+        T: ToString + Display,
+    {
+        TestRequestBuilder {
+            app: self.app.clone(),
+            method,
+            url: url.to_string(),
+            body: Body::default(),
+            content_type: None,
+        }
     }
 
-    /// Sends a DELETE request to the test server.
+    /// Prepares a DELETE request.
     ///
     /// # Arguments
-    /// * `url` - Relative URL of the destination.
+    /// * `url` - URL of the destination.
     ///
     /// # Returns
     /// A request builder that can be enriched before sending.
-    pub fn delete<T: ToString + Display>(&self, url: T) -> RequestBuilder {
-        self.client.delete(self.build_url(url))
+    pub fn delete<T>(&self, url: T) -> TestRequestBuilder
+    where
+        T: ToString + Display,
+    {
+        self.make_builder(Method::DELETE, url)
     }
 
-    /// Sends a GET request to the test server.
+    /// Prepares a GET request.
     ///
     /// # Arguments
-    /// * `url` - Relative URL of the destination.
+    /// * `url` - URL of the destination.
     ///
     /// # Returns
     /// A request builder that can be enriched before sending.
-    pub fn get<T: ToString + Display>(&self, url: T) -> RequestBuilder {
-        self.client.get(self.build_url(url))
+    pub fn get<T>(&self, url: T) -> TestRequestBuilder
+    where
+        T: ToString + Display,
+    {
+        self.make_builder(Method::GET, url)
     }
 
-    /// Sends a HEAD request to the test server.
+    /// Prepares a POST request.
     ///
     /// # Arguments
-    /// * `url` - Relative URL of the destination.
+    /// * `url` - URL of the destination.
     ///
     /// # Returns
     /// A request builder that can be enriched before sending.
-    pub fn head<T: ToString + Display>(&self, url: T) -> RequestBuilder {
-        self.client.head(self.build_url(url))
+    pub fn post<T>(&self, url: T) -> TestRequestBuilder
+    where
+        T: ToString + Display,
+    {
+        self.make_builder(Method::POST, url)
     }
 
-    /// Sends a PATCH request to the test server.
+    /// Prepares a HEAD request.
     ///
     /// # Arguments
-    /// * `url` - Relative URL of the destination.
+    /// * `url` - URL of the destination.
     ///
     /// # Returns
     /// A request builder that can be enriched before sending.
-    pub fn patch<T: ToString + Display>(&self, url: T) -> RequestBuilder {
-        self.client.patch(self.build_url(url))
+    pub fn head<T>(&self, url: T) -> TestRequestBuilder
+    where
+        T: ToString + Display,
+    {
+        self.make_builder(Method::HEAD, url)
     }
 
-    /// Sends a POST request to the test server.
+    /// Prepares a PATCH request.
     ///
     /// # Arguments
-    /// * `url` - Relative URL of the destination.
+    /// * `url` - URL of the destination.
     ///
     /// # Returns
     /// A request builder that can be enriched before sending.
-    pub fn post<T: ToString + Display>(&self, url: T) -> RequestBuilder {
-        self.client.post(self.build_url(url))
+    pub fn patch<T>(&self, url: T) -> TestRequestBuilder
+    where
+        T: ToString + Display,
+    {
+        self.make_builder(Method::PATCH, url)
     }
 
-    /// Sends a PUT request to the test server.
+    /// Prepares a PUT request.
     ///
     /// # Arguments
-    /// * `url` - Relative URL of the destination.
+    /// * `url` - URL of the destination.
     ///
     /// # Returns
     /// A request builder that can be enriched before sending.
-    pub fn put<T: ToString + Display>(&self, url: T) -> RequestBuilder {
-        self.client.put(self.build_url(url))
+    pub fn put<T>(&self, url: T) -> TestRequestBuilder
+    where
+        T: ToString + Display,
+    {
+        self.make_builder(Method::PUT, url)
     }
 }
 
@@ -124,38 +287,12 @@ pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
     dotenvy::dotenv()?;
 
     let db_env_variable = "DATABASE_URL_TEST";
-
     let config: Config = Environment::Testing.try_into()?;
 
-    // Configure server
-    let listener = TcpListener::bind(format!(
-        "{}:{}",
-        config.application.host, config.application.port
-    ))
-    .await?;
-
-    let address = listener.local_addr()?;
-
+    let db = initialize_database(db_env_variable).await?;
     let app = app(&config, Some(db_env_variable), None).await.unwrap();
 
-    // TODO: get logs from server
-    tokio::spawn(async move {
-        axum::serve(listener, app).await.unwrap();
-    });
-
-    // Configure connection to the database
-    let db = initialize_database(db_env_variable).await?;
-
-    let client = reqwest::ClientBuilder::new()
-        .cookie_store(true)
-        .build()
-        .unwrap();
-
-    Ok(TestClient {
-        client,
-        address,
-        db,
-    })
+    Ok(TestClient { db, app })
 }
 
 /// Initialize the database use in the application.
