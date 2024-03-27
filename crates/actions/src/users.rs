@@ -34,13 +34,9 @@ pub async fn create_user(request: &UserRequest, db: &PgPool) -> Res<User> {
 /// # Returns
 /// The user updated or an error.
 pub async fn update_user(id: &Uuid, request: &UserRequest, db: &PgPool) -> Res<User> {
-    // Don't allow to update password here. It must be done via `set_user_password`.
-    let data = UserData {
-        password: None,
-        ..request.into()
-    };
-
-    User::update_by_id(id, &data, db).await.map_err(Into::into)
+    User::update_by_id(id, &request.into(), db)
+        .await
+        .map_err(Into::into)
 }
 
 /// Sets an existing user's password.
