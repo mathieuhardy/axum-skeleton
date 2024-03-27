@@ -84,7 +84,7 @@ pub struct PasswordUpdateRequest {
 }
 
 /// Structure that list all filters available for querying database.
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 #[serde_as]
 pub struct Filters {
     /// First name of the user (or None).

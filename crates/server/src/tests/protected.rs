@@ -16,7 +16,7 @@ mod get {
     #[serial]
     pub async fn unauthorized() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             let response = client.get("/protected").send().await;
             assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
@@ -28,11 +28,11 @@ mod get {
     #[serial]
     pub async fn after_login() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             // Login
             auth::post::test_login(
-                &client,
+                &mut client,
                 DataType::Json,
                 EmailValidity::Valid,
                 PasswordValidity::Valid,
@@ -50,11 +50,11 @@ mod get {
     #[serial]
     pub async fn after_logout() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             // Login
             auth::post::test_login(
-                &client,
+                &mut client,
                 DataType::Json,
                 EmailValidity::Valid,
                 PasswordValidity::Valid,
