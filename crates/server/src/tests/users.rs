@@ -1,8 +1,3 @@
-// TODO: find a better solution
-#[allow(clippy::duplicate_mod)]
-#[path = "common/mod.rs"]
-mod common;
-
 use rand::distributions::{Alphanumeric, DistString};
 use serial_test::serial;
 use test_utils::*;
@@ -11,7 +6,7 @@ use uuid::Uuid;
 
 use database::models::users::*;
 
-use common::*;
+use crate::tests::common::*;
 
 async fn setup() -> TestClient {
     init_server().await.unwrap()
