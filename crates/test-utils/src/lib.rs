@@ -68,13 +68,11 @@ impl TestRequestBuilder<'_> {
     ///
     /// # Returns
     /// A new request builder (for chaining).
-    pub fn json<T: Serialize>(&self, data: &T) -> Self {
+    pub fn json<T: Serialize>(self, data: &T) -> Self {
         Self {
-            app: self.app,
-            method: self.method.clone(),
-            url: self.url.clone(),
             body: Body::from(serde_json::to_vec(data).unwrap()),
             content_type: Some(mime::APPLICATION_JSON),
+            ..self
         }
     }
 
@@ -84,7 +82,7 @@ impl TestRequestBuilder<'_> {
     /// * `data` - Form data to be used.
     ///
     /// # Returns
-    pub fn form<K, V>(&self, data: &[(K, V)]) -> Self
+    pub fn form<K, V>(self, data: &[(K, V)]) -> Self
     where
         K: ToString + Display + Serialize,
         V: ToString + Display + Serialize,
@@ -96,11 +94,9 @@ impl TestRequestBuilder<'_> {
             .join("&");
 
         Self {
-            app: self.app,
-            method: self.method.clone(),
-            url: self.url.clone(),
             body: Body::from(body),
             content_type: Some(mime::APPLICATION_WWW_FORM_URLENCODED),
+            ..self
         }
     }
 
