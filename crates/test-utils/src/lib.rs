@@ -8,7 +8,7 @@ pub use axum::http::StatusCode;
 
 use axum::body::Body;
 use axum::extract::Request;
-use axum::http::header::CONTENT_TYPE;
+use axum::http::header::{HeaderName, HeaderValue, CONTENT_TYPE, COOKIE, SET_COOKIE};
 use axum::http::response::Response;
 use axum::http::Method;
 use axum::Router;
@@ -40,12 +40,18 @@ pub struct TestClient {
 
     /// Router application to be tested.
     app: Router,
+
+    /// Store cookie or not.
+    pub cookie_store: bool,
+
+    /// Cookie header value to be sent.
+    cookie: Option<HeaderValue>,
 }
 
 /// Structure used to build a HTTP request for the tests.
 pub struct TestRequestBuilder<'a> {
     /// Application to be used.
-    app: &'a Router,
+    client: &'a mut TestClient,
 
     /// HTTP method.
     method: Method,
@@ -100,6 +106,19 @@ impl TestRequestBuilder<'_> {
         }
     }
 
+    /// Sets the `cookie_store` value.
+    ///
+    /// # Arguments
+    /// * `value` - Value to be set.
+    ///
+    ///
+    /// # Returns
+    /// A test response object.
+    pub fn cookie_store(self, value: bool) -> Self {
+        self.client.cookie_store = value;
+        self
+    }
+
     /// Sends the request represented by ths builder.
     /// The function consumes the self object.
     ///
@@ -114,12 +133,25 @@ impl TestRequestBuilder<'_> {
             builder = builder.header(CONTENT_TYPE, content_type.as_ref());
         }
 
+        if self.client.cookie_store {
+            if let Some(cookie) = &self.client.cookie {
+                builder = builder.header(COOKIE, cookie.clone());
+            }
+        }
+
         let response = self
+            .client
             .app
             .clone()
             .oneshot(builder.body(self.body).unwrap())
             .await
             .unwrap();
+
+        if self.client.cookie_store {
+            if let Some(cookie) = response.headers().get::<HeaderName>(SET_COOKIE) {
+                self.client.cookie = Some(cookie.clone());
+            }
+        }
 
         TestResponse {
             rc: response.status(),
@@ -177,12 +209,12 @@ impl TestClient {
     ///
     /// # Returns
     /// The request builder.
-    fn make_builder<T>(&self, method: Method, url: T) -> TestRequestBuilder
+    fn make_builder<T>(&mut self, method: Method, url: T) -> TestRequestBuilder
     where
         T: ToString + Display,
     {
         TestRequestBuilder {
-            app: &self.app,
+            client: self,
             method,
             url: url.to_string(),
             body: Body::default(),
@@ -197,7 +229,7 @@ impl TestClient {
     ///
     /// # Returns
     /// A request builder that can be enriched before sending.
-    pub fn delete<T>(&self, url: T) -> TestRequestBuilder
+    pub fn delete<T>(&mut self, url: T) -> TestRequestBuilder
     where
         T: ToString + Display,
     {
@@ -211,7 +243,7 @@ impl TestClient {
     ///
     /// # Returns
     /// A request builder that can be enriched before sending.
-    pub fn get<T>(&self, url: T) -> TestRequestBuilder
+    pub fn get<T>(&mut self, url: T) -> TestRequestBuilder
     where
         T: ToString + Display,
     {
@@ -225,7 +257,7 @@ impl TestClient {
     ///
     /// # Returns
     /// A request builder that can be enriched before sending.
-    pub fn post<T>(&self, url: T) -> TestRequestBuilder
+    pub fn post<T>(&mut self, url: T) -> TestRequestBuilder
     where
         T: ToString + Display,
     {
@@ -239,7 +271,7 @@ impl TestClient {
     ///
     /// # Returns
     /// A request builder that can be enriched before sending.
-    pub fn head<T>(&self, url: T) -> TestRequestBuilder
+    pub fn head<T>(&mut self, url: T) -> TestRequestBuilder
     where
         T: ToString + Display,
     {
@@ -253,7 +285,7 @@ impl TestClient {
     ///
     /// # Returns
     /// A request builder that can be enriched before sending.
-    pub fn patch<T>(&self, url: T) -> TestRequestBuilder
+    pub fn patch<T>(&mut self, url: T) -> TestRequestBuilder
     where
         T: ToString + Display,
     {
@@ -267,7 +299,7 @@ impl TestClient {
     ///
     /// # Returns
     /// A request builder that can be enriched before sending.
-    pub fn put<T>(&self, url: T) -> TestRequestBuilder
+    pub fn put<T>(&mut self, url: T) -> TestRequestBuilder
     where
         T: ToString + Display,
     {
@@ -288,7 +320,15 @@ pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
     let db = initialize_database(db_env_variable).await?;
     let app = app(&config, Some(db_env_variable), None).await.unwrap();
 
-    Ok(TestClient { db, app })
+    // Run custom test script to populate the database with fake data
+    reset_fake_data(&db).await?;
+
+    Ok(TestClient {
+        db,
+        app,
+        cookie_store: false,
+        cookie: None,
+    })
 }
 
 /// Initialize the database use in the application.
@@ -306,9 +346,6 @@ async fn initialize_database(db_env_variable: &str) -> Result<PgPool, Box<dyn Er
     if !sqlx::Postgres::database_exists(&db_url).await? {
         sqlx::Postgres::create_database(&db_url).await?;
     }
-
-    // Run custom test script to populate
-    reset_fake_data(&db).await?;
 
     Ok(db)
 }

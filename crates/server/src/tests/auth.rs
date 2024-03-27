@@ -12,7 +12,7 @@ pub mod post {
     use super::*;
 
     pub async fn test_login(
-        client: &TestClient,
+        client: &mut TestClient,
         data_type: DataType,
         email_validity: EmailValidity,
         password_validity: PasswordValidity,
@@ -35,6 +35,7 @@ pub mod post {
             DataType::Json => {
                 client
                     .post("/login")
+                    .cookie_store(true)
                     .json(&Credentials { email, password })
                     .send()
                     .await
@@ -43,7 +44,12 @@ pub mod post {
             DataType::Form => {
                 let data = [("email", &email), ("password", &password)];
 
-                client.post("/login").form(&data).send().await
+                client
+                    .post("/login")
+                    .cookie_store(true)
+                    .form(&data)
+                    .send()
+                    .await
             }
         };
 
@@ -63,12 +69,12 @@ pub mod post {
     #[serial]
     pub async fn login_with_invalid_credentials() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             for data_type in [DataType::Form, DataType::Json] {
                 // Invalid email
                 test_login(
-                    &client,
+                    &mut client,
                     data_type.clone(),
                     EmailValidity::Invalid,
                     PasswordValidity::Valid,
@@ -77,7 +83,7 @@ pub mod post {
 
                 // Invalid password
                 test_login(
-                    &client,
+                    &mut client,
                     data_type,
                     EmailValidity::Valid,
                     PasswordValidity::Invalid,
@@ -92,11 +98,11 @@ pub mod post {
     #[serial]
     pub async fn login_with_valid_credentials() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             for data_type in [DataType::Form, DataType::Json] {
                 test_login(
-                    &client,
+                    &mut client,
                     data_type,
                     EmailValidity::Valid,
                     PasswordValidity::Valid,
@@ -111,7 +117,7 @@ pub mod post {
     #[serial]
     pub async fn logout_not_logged_in() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             let response = client.post("/logout").send().await;
             assert_eq!(response.status(), StatusCode::OK);
@@ -123,10 +129,10 @@ pub mod post {
     #[serial]
     pub async fn logout_logged_in() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             test_login(
-                &client,
+                &mut client,
                 DataType::Json,
                 EmailValidity::Valid,
                 PasswordValidity::Valid,

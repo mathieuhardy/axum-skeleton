@@ -1,41 +1,37 @@
-#[allow(dead_code)]
-pub const ADMIN_EMAIL: &str = "giga@chad.com";
+pub const USERS_COUNT: usize = 2;
 
-#[allow(dead_code)]
+// Admin user section
+pub const ADMIN_EMAIL: &str = "giga@chad.com";
 pub const ADMIN_PASSWORD: &str = "Z0*zZZZZ";
 
-#[allow(dead_code)]
-pub const INVALID_EMAIL: &str = "invalid.com";
+// Basic user section
+pub const USER_EMAIL: &str = "john@doe.com";
 
-#[allow(dead_code)]
+// Invalid entries
+pub const INVALID_EMAIL: &str = "invalid.com";
 pub const INVALID_PASSWORD: &str = "invalid";
 
-#[allow(dead_code)]
 #[derive(Clone)]
 pub enum DataType {
     Form,
     Json,
 }
 
-#[allow(dead_code)]
 pub enum EmailValidity {
     Invalid,
     Valid,
 }
 
-#[allow(dead_code)]
 pub enum FirstNameValidity {
     Invalid,
     Valid,
 }
 
-#[allow(dead_code)]
 pub enum LastNameValidity {
     Invalid,
     Valid,
 }
 
-#[allow(dead_code)]
 pub enum PasswordValidity {
     Invalid,
     Valid,

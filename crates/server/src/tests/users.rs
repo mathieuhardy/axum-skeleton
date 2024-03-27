@@ -12,8 +12,13 @@ async fn setup() -> TestClient {
     init_server().await.unwrap()
 }
 
-async fn first_user(client: &TestClient) -> User {
-    let response = client.get("/api/users").send().await;
+async fn basic_user(client: &mut TestClient) -> User {
+    let filters = Filters {
+        email: Some(USER_EMAIL.to_string()),
+        ..Filters::default()
+    };
+
+    let response = client.get("/api/users").json(&filters).send().await;
     assert_eq!(response.status(), StatusCode::OK);
 
     let users = response.json::<Vec<User>>().await;
@@ -30,16 +35,22 @@ mod delete {
     #[serial]
     pub async fn by_id() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
-            let response = client.get("/api/users").send().await;
-            assert_eq!(response.status(), StatusCode::OK);
-
-            let users = response.json::<Vec<User>>().await;
-            assert!(!users.is_empty());
+            let user = post::test_post(
+                &mut client,
+                DataType::Json,
+                FirstNameValidity::Valid,
+                LastNameValidity::Valid,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+                None,
+            )
+            .await
+            .unwrap();
 
             let response = client
-                .delete(format!("/api/users/{}", users[0].id))
+                .delete(format!("/api/users/{}", user.id))
                 .send()
                 .await;
 
@@ -55,9 +66,10 @@ mod get {
     #[hook(setup, _)]
     #[tokio::test]
     #[serial]
+    // TODO: login and test
     pub async fn me() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             let response = client.get("/api/users/me").send().await;
             assert_eq!(response.status(), StatusCode::OK);
@@ -75,22 +87,19 @@ mod get {
     #[serial]
     pub async fn all() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             let response = client.get("/api/users").send().await;
             assert_eq!(response.status(), StatusCode::OK);
 
             let users = response.json::<Vec<User>>().await;
-            assert_eq!(users.len(), 3);
+            assert_eq!(users.len(), USERS_COUNT);
             assert!(users.iter().any(|e| e.first_name == "Giga"
                 && e.last_name == "Chad"
                 && e.email == "giga@chad.com"));
             assert!(users.iter().any(|e| e.first_name == "John"
                 && e.last_name == "Doe"
                 && e.email == "john@doe.com"));
-            assert!(users.iter().any(|e| e.first_name == "Jane"
-                && e.last_name == "Doe"
-                && e.email == "jane@doe.com"));
         }
     }
 
@@ -100,7 +109,7 @@ mod get {
     #[serial]
     pub async fn by_filters() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             // By name
             let response = client
@@ -141,13 +150,13 @@ mod get {
     #[serial]
     pub async fn by_id() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             let response = client.get("/api/users").send().await;
             assert_eq!(response.status(), StatusCode::OK);
 
             let users = response.json::<Vec<User>>().await;
-            assert_eq!(users.len(), 3);
+            assert_eq!(users.len(), USERS_COUNT);
 
             let response = client
                 .get(format!("/api/users/{}", users[0].id))
@@ -166,7 +175,7 @@ mod patch {
     use super::*;
 
     async fn test_patch(
-        client: &TestClient,
+        client: &mut TestClient,
         id: Uuid,
         data_type: DataType,
         first_name_validity: FirstNameValidity,
@@ -243,7 +252,7 @@ mod patch {
     }
 
     async fn test_patch_password(
-        client: &TestClient,
+        client: &mut TestClient,
         id: &Uuid,
         data_type: DataType,
         current_password_validity: PasswordValidity,
@@ -300,13 +309,13 @@ mod patch {
     #[serial]
     pub async fn nominal() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
-            let user = first_user(&client).await;
+            let user = basic_user(&mut client).await;
 
             for data_type in [DataType::Form, DataType::Json] {
                 test_patch(
-                    &client,
+                    &mut client,
                     user.id,
                     data_type,
                     FirstNameValidity::Valid,
@@ -323,13 +332,13 @@ mod patch {
     #[serial]
     pub async fn invalid_email() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
-            let user = first_user(&client).await;
+            let user = basic_user(&mut client).await;
 
             for data_type in [DataType::Form, DataType::Json] {
                 test_patch(
-                    &client,
+                    &mut client,
                     user.id,
                     data_type,
                     FirstNameValidity::Valid,
@@ -346,13 +355,13 @@ mod patch {
     #[serial]
     pub async fn invalid_first_name() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
-            let user = first_user(&client).await;
+            let user = basic_user(&mut client).await;
 
             for data_type in [DataType::Form, DataType::Json] {
                 test_patch(
-                    &client,
+                    &mut client,
                     user.id,
                     data_type,
                     FirstNameValidity::Invalid,
@@ -369,13 +378,13 @@ mod patch {
     #[serial]
     pub async fn invalid_last_name() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
-            let user = first_user(&client).await;
+            let user = basic_user(&mut client).await;
 
             for data_type in [DataType::Form, DataType::Json] {
                 test_patch(
-                    &client,
+                    &mut client,
                     user.id,
                     data_type,
                     FirstNameValidity::Valid,
@@ -392,7 +401,7 @@ mod patch {
     #[serial]
     pub async fn set_password() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             // Create a user to update
             let uniq = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
@@ -416,7 +425,7 @@ mod patch {
             // Invalid current password
             for data_type in &data_types {
                 test_patch_password(
-                    &client,
+                    &mut client,
                     &user.id,
                     data_type.clone(),
                     PasswordValidity::Invalid,
@@ -440,7 +449,7 @@ mod patch {
             for data_type in &data_types {
                 for password in &passwords {
                     test_patch_password(
-                        &client,
+                        &mut client,
                         &user.id,
                         data_type.clone(),
                         PasswordValidity::Valid,
@@ -455,7 +464,7 @@ mod patch {
             // Nominal
             for data_type in data_types {
                 test_patch_password(
-                    &client,
+                    &mut client,
                     &user.id,
                     data_type.clone(),
                     PasswordValidity::Valid,
@@ -472,15 +481,15 @@ mod patch {
 mod post {
     use super::*;
 
-    async fn test_post(
-        client: &TestClient,
+    pub async fn test_post(
+        client: &mut TestClient,
         data_type: DataType,
         first_name_validity: FirstNameValidity,
         last_name_validity: LastNameValidity,
         email_validity: EmailValidity,
         password_validity: PasswordValidity,
         password: Option<&str>,
-    ) {
+    ) -> Option<User> {
         // Prepare inputs
         let uniq = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
 
@@ -552,7 +561,11 @@ mod post {
             assert_eq!(user.first_name, first_name);
             assert_eq!(user.last_name, last_name);
             assert_eq!(user.email, email);
+
+            return Some(user);
         }
+
+        None
     }
 
     #[hook(setup, _)]
@@ -560,11 +573,11 @@ mod post {
     #[serial]
     pub async fn nominal() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             for data_type in [DataType::Form, DataType::Json] {
                 test_post(
-                    &client,
+                    &mut client,
                     data_type,
                     FirstNameValidity::Valid,
                     LastNameValidity::Valid,
@@ -582,11 +595,11 @@ mod post {
     #[serial]
     pub async fn invalid_email() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             for data_type in [DataType::Form, DataType::Json] {
                 test_post(
-                    &client,
+                    &mut client,
                     data_type,
                     FirstNameValidity::Valid,
                     LastNameValidity::Valid,
@@ -604,11 +617,11 @@ mod post {
     #[serial]
     pub async fn invalid_first_name() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             for data_type in [DataType::Form, DataType::Json] {
                 test_post(
-                    &client,
+                    &mut client,
                     data_type,
                     FirstNameValidity::Invalid,
                     LastNameValidity::Valid,
@@ -626,11 +639,11 @@ mod post {
     #[serial]
     pub async fn invalid_last_name() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             for data_type in [DataType::Form, DataType::Json] {
                 test_post(
-                    &client,
+                    &mut client,
                     data_type,
                     FirstNameValidity::Valid,
                     LastNameValidity::Invalid,
@@ -648,7 +661,7 @@ mod post {
     #[serial]
     pub async fn invalid_password() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
             let passwords = vec![
                 ".#Abcdef",
@@ -664,7 +677,7 @@ mod post {
             for data_type in data_types {
                 for password in &passwords {
                     test_post(
-                        &client,
+                        &mut client,
                         data_type.clone(),
                         FirstNameValidity::Valid,
                         LastNameValidity::Valid,
@@ -683,7 +696,7 @@ mod put {
     use super::*;
 
     async fn test_put(
-        client: &TestClient,
+        client: &mut TestClient,
         id: Uuid,
         data_type: DataType,
         first_name_validity: FirstNameValidity,
@@ -758,13 +771,13 @@ mod put {
     #[serial]
     pub async fn nominal() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
-            let user = first_user(&client).await;
+            let user = basic_user(&mut client).await;
 
             for data_type in [DataType::Form, DataType::Json] {
                 test_put(
-                    &client,
+                    &mut client,
                     user.id,
                     data_type,
                     FirstNameValidity::Valid,
@@ -781,13 +794,13 @@ mod put {
     #[serial]
     pub async fn invalid_email() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
-            let user = first_user(&client).await;
+            let user = basic_user(&mut client).await;
 
             for data_type in [DataType::Form, DataType::Json] {
                 test_put(
-                    &client,
+                    &mut client,
                     user.id,
                     data_type,
                     FirstNameValidity::Valid,
@@ -804,13 +817,13 @@ mod put {
     #[serial]
     pub async fn invalid_first_name() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
-            let user = first_user(&client).await;
+            let user = basic_user(&mut client).await;
 
             for data_type in [DataType::Form, DataType::Json] {
                 test_put(
-                    &client,
+                    &mut client,
                     user.id,
                     data_type,
                     FirstNameValidity::Invalid,
@@ -827,13 +840,13 @@ mod put {
     #[serial]
     pub async fn invalid_last_name() {
         |client| async move {
-            let client = client.lock().await;
+            let mut client = client.lock().await;
 
-            let user = first_user(&client).await;
+            let user = basic_user(&mut client).await;
 
             for data_type in [DataType::Form, DataType::Json] {
                 test_put(
-                    &client,
+                    &mut client,
                     user.id,
                     data_type,
                     FirstNameValidity::Valid,
