@@ -43,9 +43,9 @@ pub struct TestClient {
 }
 
 /// Structure used to build a HTTP request for the tests.
-pub struct TestRequestBuilder {
+pub struct TestRequestBuilder<'a> {
     /// Application to be used.
-    app: Router, // TODO: ref ?
+    app: &'a Router,
 
     /// HTTP method.
     method: Method,
@@ -60,7 +60,7 @@ pub struct TestRequestBuilder {
     content_type: Option<Mime>,
 }
 
-impl TestRequestBuilder {
+impl TestRequestBuilder<'_> {
     /// Creates a new request builder with the JSON data provided.
     ///
     /// # Arguments
@@ -70,7 +70,7 @@ impl TestRequestBuilder {
     /// A new request builder (for chaining).
     pub fn json<T: Serialize>(&self, data: &T) -> Self {
         Self {
-            app: self.app.clone(),
+            app: self.app,
             method: self.method.clone(),
             url: self.url.clone(),
             body: Body::from(serde_json::to_vec(data).unwrap()),
@@ -96,7 +96,7 @@ impl TestRequestBuilder {
             .join("&");
 
         Self {
-            app: self.app.clone(),
+            app: self.app,
             method: self.method.clone(),
             url: self.url.clone(),
             body: Body::from(body),
@@ -186,7 +186,7 @@ impl TestClient {
         T: ToString + Display,
     {
         TestRequestBuilder {
-            app: self.app.clone(),
+            app: &self.app,
             method,
             url: url.to_string(),
             body: Body::default(),

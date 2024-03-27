@@ -6,6 +6,8 @@
 - GraphQL
 - Job queue
 - Websockets
+- Tracing/logging during unit tests
+- Move request structures to server
 
 ## Devops
 
