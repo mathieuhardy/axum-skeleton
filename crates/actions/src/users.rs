@@ -3,6 +3,7 @@
 use database::models::users::*;
 use utils::hashing::{hash_password, verify};
 
+use crate::entities::users::{PasswordUpdateRequest, UserRequest};
 use crate::prelude::*;
 
 /// Creates a new user.

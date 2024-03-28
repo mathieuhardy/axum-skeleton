@@ -1,5 +1,6 @@
 //! This file contains all routes dedicated to the users management.
 
+use actions::entities::users::{PasswordUpdateRequest, UserRequest};
 use actions::users::{create_user, set_user_password, update_user};
 use database::models::users::*;
 use database::traits::sqlx::postgres::crud::*;

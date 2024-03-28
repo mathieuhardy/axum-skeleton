@@ -4,7 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+serde = { version = "1.0.197", default-features = false, features = ["derive"] }
 thiserror = { version = "1.0.58", default-features = false }
+validator = { version = "0.15", default-features = false, features = ["derive"] }
 
 database = { path = "../database", default-features = false }
 utils = { path = "../utils", default-features = false, features = ["hashing"] }

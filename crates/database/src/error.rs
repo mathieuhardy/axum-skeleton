@@ -22,10 +22,6 @@ pub enum Error {
     #[error("No record found in database")]
     NotFound,
 
-    /// Error during access of the password checks.
-    #[error("Cannot access password checks")]
-    PasswordChecksAccess,
-
     /// Generic Redis error.
     #[error("{0}")]
     Redis(#[from] bb8_redis::redis::RedisError),
