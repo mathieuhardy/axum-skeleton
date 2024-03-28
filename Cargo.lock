@@ -7,8 +7,10 @@ name = "actions"
 version = "0.1.0"
 dependencies = [
  "database",
+ "serde",
  "thiserror",
  "utils",
+ "validator",
 ]
 
 [[package]]

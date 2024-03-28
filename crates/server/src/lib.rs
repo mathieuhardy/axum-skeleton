@@ -82,7 +82,7 @@ pub async fn app(
     redis_env_variable: Option<&str>,
 ) -> Res<Router> {
     // Database configuration
-    database::password::set_checks(utils::password::Checks {
+    actions::validators::password::set_checks(utils::password::Checks {
         digit: config.password.pattern.digit,
         lowercase: config.password.pattern.lowercase,
         uppercase: config.password.pattern.uppercase,

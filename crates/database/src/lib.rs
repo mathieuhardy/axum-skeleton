@@ -8,14 +8,13 @@
 
 pub mod error;
 pub mod models;
-pub mod password;
 pub mod traits;
 
 pub(crate) mod prelude;
 pub(crate) mod requests;
 
 // Re-exports
-pub use {bb8, bb8_redis, sqlx, uuid};
+pub use {bb8, bb8_redis, serde, sqlx, uuid};
 
 // External crates
 use bb8_redis::RedisConnectionManager;

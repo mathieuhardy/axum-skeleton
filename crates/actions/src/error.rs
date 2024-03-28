@@ -22,4 +22,8 @@ pub enum Error {
     /// Password provided is invalid.
     #[error("Provided password is invalid")]
     InvalidPassword,
+
+    /// Error during access of the password checks.
+    #[error("Cannot access password checks")]
+    PasswordChecksAccess,
 }

@@ -3,6 +3,8 @@
 
 #![forbid(unsafe_code)]
 
+pub mod entities;
 pub mod error;
 pub mod prelude;
 pub mod users;
+pub mod validators;
