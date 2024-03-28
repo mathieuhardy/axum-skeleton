@@ -4,6 +4,7 @@ use test_utils::*;
 use urlencoding::encode;
 use uuid::Uuid;
 
+use actions::entities::users::{PasswordUpdateRequest, UserRequest};
 use database::models::users::*;
 
 use crate::tests::auth;
