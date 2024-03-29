@@ -33,6 +33,10 @@ pub enum Error {
     #[error("{0}")]
     Filesystem(#[from] utils::error::Error),
 
+    /// Generic filesystem error.
+    #[error("Forbidden")]
+    Forbidden,
+
     /// Invalid environment configuration provided.
     #[error("Invalid environment: {0}")]
     InvalidEnvironment(String),
@@ -72,6 +76,7 @@ impl axum::response::IntoResponse for Error {
         match self {
             Self::Actions(ActionsError::InvalidPassword) => StatusCode::FORBIDDEN.into_response(),
             Self::Database(DatabaseError::NotFound) => StatusCode::NOT_FOUND.into_response(),
+            Self::Forbidden => StatusCode::FORBIDDEN.into_response(),
             Self::Unauthorized => StatusCode::UNAUTHORIZED.into_response(),
             Self::Validation(_) => StatusCode::UNPROCESSABLE_ENTITY.into_response(),
             _ => StatusCode::INTERNAL_SERVER_ERROR.into_response(),

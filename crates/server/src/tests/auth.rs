@@ -1,6 +1,8 @@
 use serial_test::serial;
 use test_utils::*;
 
+use database::models::users::{User, UserRole};
+
 use crate::layers::auth::*;
 use crate::tests::common::*;
 
@@ -11,24 +13,23 @@ async fn setup() -> TestClient {
 pub mod post {
     use super::*;
 
-    pub async fn test_login(
+    pub async fn login(
         client: &mut TestClient,
-        data_type: DataType,
+        user: &User,
+        data_type: &DataType,
         email_validity: EmailValidity,
         password_validity: PasswordValidity,
     ) {
         // Prepare inputs
         let email = match email_validity {
-            EmailValidity::Invalid => INVALID_EMAIL,
-            EmailValidity::Valid => ADMIN_EMAIL,
-        }
-        .to_string();
+            EmailValidity::Invalid => INVALID_EMAIL.to_string(),
+            EmailValidity::Valid => user.email.clone(),
+        };
 
         let password = match password_validity {
-            PasswordValidity::Invalid => INVALID_PASSWORD,
-            PasswordValidity::Valid => ADMIN_PASSWORD,
-        }
-        .to_string();
+            PasswordValidity::Invalid => INVALID_PASSWORD.to_string(),
+            PasswordValidity::Valid => user.password.clone(),
+        };
 
         // Call endpoint and get response
         let response = match data_type {
@@ -64,6 +65,47 @@ pub mod post {
         assert_eq!(response.status(), expected_status);
     }
 
+    pub async fn login_as_admin(client: &mut TestClient) {
+        let user = get_user_info(UserRole::Admin).unwrap();
+
+        login_with_user(client, &user).await;
+    }
+
+    pub async fn login_as_normal(client: &mut TestClient) {
+        let user = get_user_info(UserRole::Normal).unwrap();
+
+        login_with_user(client, &user).await;
+    }
+
+    pub async fn login_as_guest(client: &mut TestClient) {
+        let user = get_user_info(UserRole::Guest).unwrap();
+
+        login_with_user(client, &user).await;
+    }
+
+    pub async fn login_as(client: &mut TestClient, email: &str, password: &str) {
+        login_with_user(
+            client,
+            &User {
+                email: email.to_string(),
+                password: password.to_string(),
+                ..User::default()
+            },
+        )
+        .await
+    }
+
+    async fn login_with_user(client: &mut TestClient, user: &User) {
+        login(
+            client,
+            user,
+            &DataType::Json,
+            EmailValidity::Valid,
+            PasswordValidity::Valid,
+        )
+        .await
+    }
+
     #[hook(setup, _)]
     #[tokio::test]
     #[serial]
@@ -71,20 +113,24 @@ pub mod post {
         |client| async move {
             let mut client = client.lock().await;
 
+            let user = get_user_info(UserRole::Admin).unwrap();
+
             for data_type in [DataType::Form, DataType::Json] {
                 // Invalid email
-                test_login(
+                login(
                     &mut client,
-                    data_type.clone(),
+                    &user,
+                    &data_type,
                     EmailValidity::Invalid,
                     PasswordValidity::Valid,
                 )
                 .await;
 
                 // Invalid password
-                test_login(
+                login(
                     &mut client,
-                    data_type,
+                    &user,
+                    &data_type,
                     EmailValidity::Valid,
                     PasswordValidity::Invalid,
                 )
@@ -100,10 +146,13 @@ pub mod post {
         |client| async move {
             let mut client = client.lock().await;
 
+            let user = get_user_info(UserRole::Admin).unwrap();
+
             for data_type in [DataType::Form, DataType::Json] {
-                test_login(
+                login(
                     &mut client,
-                    data_type,
+                    &user,
+                    &data_type,
                     EmailValidity::Valid,
                     PasswordValidity::Valid,
                 )
@@ -131,9 +180,12 @@ pub mod post {
         |client| async move {
             let mut client = client.lock().await;
 
-            test_login(
+            let user = get_user_info(UserRole::Admin).unwrap();
+
+            login(
                 &mut client,
-                DataType::Json,
+                &user,
+                &DataType::Json,
                 EmailValidity::Valid,
                 PasswordValidity::Valid,
             )
