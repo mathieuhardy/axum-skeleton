@@ -30,6 +30,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Create types
+
+CREATE TYPE user_role AS ENUM ('admin', 'normal', 'guest');
+
 -- Create tables
 
 CREATE TABLE users (
@@ -37,6 +41,7 @@ CREATE TABLE users (
     first_name    VARCHAR NOT NULL,
     last_name     VARCHAR NOT NULL,
     email         VARCHAR NOT NULL,
+    role          user_role NOT NULL DEFAULT 'guest',
     password      VARCHAR NOT NULL,
     created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -47,10 +52,10 @@ CREATE TABLE users (
 SELECT create_updated_at_trigger('users');
 
 -- Insert fake data (must not be done for production usage)
-INSERT INTO users (first_name, last_name, email, password)
+INSERT INTO users (first_name, last_name, email, role, password)
 VALUES
     -- Original password: johndoeisthebest
-    ('John', 'Doe', 'john@doe.com', '$argon2id$v=19$m=16,t=2,p=1$YWJjZGVmZ2hpamtsbW5vcA$zs3MjnjdDjde5NfooJ0f+g'),
+    ('John', 'Doe', 'john@doe.com', 'admin', '$argon2id$v=19$m=16,t=2,p=1$YWJjZGVmZ2hpamtsbW5vcA$zs3MjnjdDjde5NfooJ0f+g'),
 
     -- Original password: nothisisjaneofcourse
-    ('Jane', 'Doe', 'jane@doe.com', '$argon2id$v=19$m=16,t=2,p=1$YWJjZGVmZ2hpamtsbW5vcA$4kRXsgWWfcwrxbN9NOkX0A');
+    ('Jane', 'Doe', 'jane@doe.com', 'normal', '$argon2id$v=19$m=16,t=2,p=1$YWJjZGVmZ2hpamtsbW5vcA$4kRXsgWWfcwrxbN9NOkX0A');

@@ -1,6 +1,6 @@
 use validator::Validate;
 
-use database::models::users::UserData;
+use database::models::users::{UserData, UserRole};
 
 use crate::prelude::*;
 use crate::validators::password::validate_password;
@@ -25,6 +25,9 @@ pub struct UserRequest {
     #[validate(email)]
     pub email: Option<String>,
 
+    /// See `User::role`.
+    pub role: Option<UserRole>,
+
     /// See `User::password`.
     #[validate(custom = "validate_password")]
     pub password: Option<String>,
@@ -38,6 +41,7 @@ impl From<UserRequest> for UserData {
             first_name: request.first_name.clone(),
             last_name: request.last_name.clone(),
             email: request.email.clone(),
+            role: request.role.clone(),
             password: None,
         }
     }

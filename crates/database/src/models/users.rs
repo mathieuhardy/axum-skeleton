@@ -1,11 +1,36 @@
 //! List all structures and methods used to manage users in database.
 
+use sqlx::postgres::{PgHasArrayType, PgTypeInfo};
+
 use database_derives::*;
 
 use crate::prelude::*;
 
+/// List of users roles.
+#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, sqlx::Type)]
+#[sqlx(type_name = "user_role", rename_all = "lowercase")]
+pub enum UserRole {
+    /// User with all privileges.
+    Admin,
+
+    /// Normal user.
+    Normal,
+
+    /// User with very limited privileges.
+    #[default]
+    Guest,
+}
+
+impl PgHasArrayType for UserRole {
+    fn array_type_info() -> PgTypeInfo {
+        PgTypeInfo::with_name("_user_role")
+    }
+}
+
 /// Mirrors the `users`'s' table.
-#[derive(Clone, Debug, PartialEq, FromRow, Deserialize, Serialize, TryFromVec, Validate)]
+#[derive(
+    Clone, Debug, Default, PartialEq, FromRow, Deserialize, Serialize, TryFromVec, Validate,
+)]
 pub struct User {
     /// Unique record identifier.
     pub id: Uuid,
@@ -18,6 +43,9 @@ pub struct User {
 
     /// Email of the user.
     pub email: String,
+
+    /// Role of the user.
+    pub role: UserRole,
 
     /// Password of the user (hashed of course).
     pub password: String,
@@ -41,6 +69,9 @@ pub struct UserData {
     /// See `User::email`.
     pub email: Option<String>,
 
+    /// See `User::role`.
+    pub role: Option<UserRole>,
+
     /// See `User::password`.
     pub password: Option<String>,
 }
@@ -60,6 +91,9 @@ pub struct Filters {
     /// Email of the user (or None).
     #[serde_as(as = "NoneAsEmptyString")]
     pub email: Option<String>,
+
+    /// Role of the user (or None).
+    pub role: Option<UserRole>,
 }
 
 impl CRUD for User {
@@ -99,6 +133,7 @@ impl User {
     ///       first_name: Some("foo".to_string()),
     ///       last_name: Some("foo".to_string()),
     ///       email: None,
+    ///       role: Some(UserRole::Normal),
     ///   };
     ///
     ///   let db = PgPoolOptions::new()
@@ -116,6 +151,7 @@ impl User {
             .bind(&filters.first_name)
             .bind(&filters.last_name)
             .bind(&filters.email)
+            .bind(&filters.role)
             .fetch_all(db)
             .await
             .inspect_err(|e| event!(Level::ERROR, "{e}"))
