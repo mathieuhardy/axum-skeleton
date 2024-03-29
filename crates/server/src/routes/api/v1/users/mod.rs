@@ -48,19 +48,11 @@ mod get {
     /// Handler used to get information about the currently logged user.
     #[axum::debug_handler]
     #[instrument]
-    pub async fn me(State(state): State<AppState>) -> Res<Json<User>> {
-        let user = User::find_by_filters(
-            &Filters {
-                first_name: Some("John".to_string()),
-                last_name: Some("Doe".to_string()),
-                ..Filters::default()
-            },
-            &state.db,
-        )
-        .await?
-        .try_into()?;
-
-        Ok(Json(user))
+    pub async fn me(
+        auth_user: AuthenticationUser,
+        State(state): State<AppState>,
+    ) -> Res<Json<User>> {
+        Ok(Json(auth_user.0))
     }
 
     /// Handler used to get a list of users that match some filters.

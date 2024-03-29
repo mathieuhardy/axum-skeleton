@@ -6,6 +6,7 @@ use uuid::Uuid;
 
 use database::models::users::*;
 
+use crate::tests::auth;
 use crate::tests::common::*;
 
 async fn setup() -> TestClient {
@@ -37,6 +38,14 @@ mod delete {
         |client| async move {
             let mut client = client.lock().await;
 
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
+
             let user = post::test_post(
                 &mut client,
                 DataType::Json,
@@ -62,22 +71,93 @@ mod delete {
 mod get {
     use super::*;
 
+    mod credentials {
+        use super::*;
+
+        #[hook(setup, _)]
+        #[tokio::test]
+        #[serial]
+        pub async fn unauthorized() {
+            |client| async move {
+                let mut client = client.lock().await;
+
+                let response = client.get("/api/users/me").send().await;
+                assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+            }
+        }
+
+        #[hook(setup, _)]
+        #[tokio::test]
+        #[serial]
+        pub async fn after_login() {
+            |client| async move {
+                let mut client = client.lock().await;
+
+                // Login
+                auth::post::test_login(
+                    &mut client,
+                    DataType::Json,
+                    EmailValidity::Valid,
+                    PasswordValidity::Valid,
+                )
+                .await;
+
+                // Check access after login (must be successful)
+                let response = client.get("/api/users/me").send().await;
+                assert_eq!(response.status(), StatusCode::OK);
+            }
+        }
+
+        #[hook(setup, _)]
+        #[tokio::test]
+        #[serial]
+        pub async fn after_logout() {
+            |client| async move {
+                let mut client = client.lock().await;
+
+                // Login
+                auth::post::test_login(
+                    &mut client,
+                    DataType::Json,
+                    EmailValidity::Valid,
+                    PasswordValidity::Valid,
+                )
+                .await;
+
+                // Logout
+                let response = client.post("/logout").send().await;
+                assert_eq!(response.status(), StatusCode::OK);
+
+                // Check access after login (must be successful)
+                let response = client.get("/api/users/me").send().await;
+                assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+            }
+        }
+    }
+
     /// TEST_PLAN: /TC/USERS/GET/ME
     #[hook(setup, _)]
     #[tokio::test]
     #[serial]
-    // TODO: login and test
     pub async fn me() {
         |client| async move {
             let mut client = client.lock().await;
+
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
 
             let response = client.get("/api/users/me").send().await;
             assert_eq!(response.status(), StatusCode::OK);
 
             let user = response.json::<User>().await;
-            assert_eq!(user.first_name, "John");
-            assert_eq!(user.last_name, "Doe");
-            assert_eq!(user.email, "john@doe.com");
+            assert_eq!(user.first_name, ADMIN_FIRST_NAME);
+            assert_eq!(user.last_name, ADMIN_LAST_NAME);
+            assert_eq!(user.email, ADMIN_EMAIL);
         }
     }
 
@@ -88,6 +168,14 @@ mod get {
     pub async fn all() {
         |client| async move {
             let mut client = client.lock().await;
+
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
 
             let response = client.get("/api/users").send().await;
             assert_eq!(response.status(), StatusCode::OK);
@@ -110,6 +198,14 @@ mod get {
     pub async fn by_filters() {
         |client| async move {
             let mut client = client.lock().await;
+
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
 
             // By name
             let response = client
@@ -151,6 +247,14 @@ mod get {
     pub async fn by_id() {
         |client| async move {
             let mut client = client.lock().await;
+
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
 
             let response = client.get("/api/users").send().await;
             assert_eq!(response.status(), StatusCode::OK);
@@ -311,6 +415,14 @@ mod patch {
         |client| async move {
             let mut client = client.lock().await;
 
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
+
             let user = basic_user(&mut client).await;
 
             for data_type in [DataType::Form, DataType::Json] {
@@ -333,6 +445,14 @@ mod patch {
     pub async fn invalid_email() {
         |client| async move {
             let mut client = client.lock().await;
+
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
 
             let user = basic_user(&mut client).await;
 
@@ -357,6 +477,14 @@ mod patch {
         |client| async move {
             let mut client = client.lock().await;
 
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
+
             let user = basic_user(&mut client).await;
 
             for data_type in [DataType::Form, DataType::Json] {
@@ -380,6 +508,14 @@ mod patch {
         |client| async move {
             let mut client = client.lock().await;
 
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
+
             let user = basic_user(&mut client).await;
 
             for data_type in [DataType::Form, DataType::Json] {
@@ -402,6 +538,14 @@ mod patch {
     pub async fn set_password() {
         |client| async move {
             let mut client = client.lock().await;
+
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
 
             // Create a user to update
             let uniq = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
@@ -575,6 +719,14 @@ mod post {
         |client| async move {
             let mut client = client.lock().await;
 
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
+
             for data_type in [DataType::Form, DataType::Json] {
                 test_post(
                     &mut client,
@@ -596,6 +748,14 @@ mod post {
     pub async fn invalid_email() {
         |client| async move {
             let mut client = client.lock().await;
+
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
 
             for data_type in [DataType::Form, DataType::Json] {
                 test_post(
@@ -619,6 +779,14 @@ mod post {
         |client| async move {
             let mut client = client.lock().await;
 
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
+
             for data_type in [DataType::Form, DataType::Json] {
                 test_post(
                     &mut client,
@@ -641,6 +809,14 @@ mod post {
         |client| async move {
             let mut client = client.lock().await;
 
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
+
             for data_type in [DataType::Form, DataType::Json] {
                 test_post(
                     &mut client,
@@ -662,6 +838,14 @@ mod post {
     pub async fn invalid_password() {
         |client| async move {
             let mut client = client.lock().await;
+
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
 
             let passwords = vec![
                 ".#Abcdef",
@@ -773,6 +957,14 @@ mod put {
         |client| async move {
             let mut client = client.lock().await;
 
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
+
             let user = basic_user(&mut client).await;
 
             for data_type in [DataType::Form, DataType::Json] {
@@ -795,6 +987,14 @@ mod put {
     pub async fn invalid_email() {
         |client| async move {
             let mut client = client.lock().await;
+
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
 
             let user = basic_user(&mut client).await;
 
@@ -819,6 +1019,14 @@ mod put {
         |client| async move {
             let mut client = client.lock().await;
 
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
+
             let user = basic_user(&mut client).await;
 
             for data_type in [DataType::Form, DataType::Json] {
@@ -841,6 +1049,14 @@ mod put {
     pub async fn invalid_last_name() {
         |client| async move {
             let mut client = client.lock().await;
+
+            auth::post::test_login(
+                &mut client,
+                DataType::Json,
+                EmailValidity::Valid,
+                PasswordValidity::Valid,
+            )
+            .await;
 
             let user = basic_user(&mut client).await;
 

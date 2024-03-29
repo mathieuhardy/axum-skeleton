@@ -20,14 +20,7 @@ pub fn build() -> Router<AppState> {
     let router = router.nest("/k8", k8s::build());
 
     router
-        .route("/protected", get(protected))
+        .nest("/api", api::build())
         .route_layer(login_required!(Backend))
         .merge(auth::build())
-        .nest("/api", api::build())
-}
-
-/// Protected handler.
-#[axum::debug_handler]
-async fn protected() -> impl IntoResponse {
-    axum::response::Html("<h1>Hello, World!</h1>")
 }

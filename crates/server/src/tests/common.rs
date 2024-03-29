@@ -1,6 +1,8 @@
 pub const USERS_COUNT: usize = 2;
 
 // Admin user section
+pub const ADMIN_FIRST_NAME: &str = "Giga";
+pub const ADMIN_LAST_NAME: &str = "Chad";
 pub const ADMIN_EMAIL: &str = "giga@chad.com";
 pub const ADMIN_PASSWORD: &str = "Z0*zZZZZ";
 
