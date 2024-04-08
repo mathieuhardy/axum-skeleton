@@ -2,6 +2,7 @@
 
 // External crates
 pub(crate) use chrono::{DateTime, Utc};
+pub(crate) use derivative::Derivative;
 pub(crate) use serde::{Deserialize, Serialize};
 pub(crate) use serde_with::serde_as;
 pub(crate) use sqlx::{FromRow, PgPool};

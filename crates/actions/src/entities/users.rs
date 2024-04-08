@@ -8,7 +8,8 @@ use crate::validators::password::validate_password;
 /// Structure used by HTTP endpoint to query a modification in  the database.
 /// This structure is not expected to be used directly in queries. It must be converted first to a
 /// `UserData`.
-#[derive(Clone, Default, Debug, Deserialize, Serialize, Validate)]
+#[derive(Clone, Default, Derivative, Deserialize, Serialize, Validate)]
+#[derivative(Debug)]
 pub struct UserRequest {
     /// See `User::sid`.
     pub id: Option<Uuid>,
@@ -29,6 +30,7 @@ pub struct UserRequest {
     pub role: Option<UserRole>,
 
     /// See `User::password`.
+    #[derivative(Debug = "ignore")]
     #[validate(custom = "validate_password")]
     pub password: Option<String>,
 }
@@ -54,13 +56,15 @@ impl From<&UserRequest> for UserData {
 }
 
 /// Structure provided to update the user's password
-#[derive(Debug, Deserialize, Serialize, Validate)]
+#[derive(Derivative, Deserialize, Serialize, Validate)]
+#[derivative(Debug)]
 pub struct PasswordUpdateRequest {
     /// Current password of the user. Not validated as it will be simply compared with the entry in
     /// database before updating.
     pub current: String,
 
     /// New password to be set in database.
+    #[derivative(Debug = "ignore")]
     #[validate(custom = "validate_password")]
     pub new: String,
 }

@@ -29,8 +29,9 @@ impl PgHasArrayType for UserRole {
 
 /// Mirrors the `users`'s' table.
 #[derive(
-    Clone, Debug, Default, PartialEq, FromRow, Deserialize, Serialize, TryFromVec, Validate,
+    Clone, Default, PartialEq, Derivative, FromRow, Deserialize, Serialize, TryFromVec, Validate,
 )]
+#[derivative(Debug)]
 pub struct User {
     /// Unique record identifier.
     pub id: Uuid,
@@ -48,6 +49,7 @@ pub struct User {
     pub role: UserRole,
 
     /// Password of the user (hashed of course).
+    #[derivative(Debug = "ignore")]
     pub password: String,
 
     /// Date of record's creation.

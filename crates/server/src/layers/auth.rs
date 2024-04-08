@@ -39,12 +39,14 @@ impl AuthUser for AuthenticationUser {
 /// Structure used to store the credentials that must be provided by a user to check it's
 /// existence. This should match a form displayed to the user where he can enter his email and
 /// password.
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Derivative, Deserialize, Serialize)]
+#[derivative(Debug)]
 pub struct Credentials {
     /// Email used during authentication.
     pub email: String,
 
     /// Password used during authentication.
+    #[derivative(Debug = "ignore")]
     pub password: String,
 }
 

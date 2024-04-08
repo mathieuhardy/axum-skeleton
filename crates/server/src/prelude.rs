@@ -6,6 +6,7 @@ pub(crate) use axum::http::StatusCode;
 pub(crate) use axum::response::IntoResponse;
 pub(crate) use axum::routing::{delete, get, patch, post, put};
 pub(crate) use axum::{Json, Router};
+pub(crate) use derivative::Derivative;
 pub(crate) use serde::{Deserialize, Serialize};
 pub(crate) use tracing::{event, instrument, Level};
 pub(crate) use uuid::Uuid;

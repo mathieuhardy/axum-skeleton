@@ -4,8 +4,7 @@
 - OpenApi
 - GraphQL
 - Job queue
-- Websockets
-- Remove sensitive data from tracing
+- SSE
 
 ## Devops
 
