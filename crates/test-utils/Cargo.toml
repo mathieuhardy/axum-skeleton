@@ -12,6 +12,8 @@ serde_json = { version = "1.0.115", default-features = false }
 sqlx = { version = "0.7.4", default-features = false, features = ["macros", "migrate", "postgres", "runtime-tokio", "tls-native-tls", "uuid"] }
 tokio = { version = "1.35.1", default-features = false, features = ["full"] }
 tower = { version = "0.4.13", default-features = false }
+tracing = { version = "0.1.40", default-features = false, features = ["attributes", "log", "std"] }
+tracing-subscriber = { version = "0.3.18", default-features = false, features = ["ansi", "env-filter", "fmt"]}
 
 server = { path = "../server", default-features = false }
 test-utils-derives = { path = "derives", default-features = false, optional = true }

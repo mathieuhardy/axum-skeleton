@@ -24,6 +24,7 @@ use std::panic::{catch_unwind, UnwindSafe};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tower::util::ServiceExt;
+use tracing::subscriber::DefaultGuard;
 
 #[cfg(feature = "derives")]
 pub use test_utils_derives::*;
@@ -46,6 +47,9 @@ pub struct TestClient {
 
     /// Cookie header value to be sent.
     cookie: Option<HeaderValue>,
+
+    /// Guard to be kept during the tests for tracing.
+    _subscriber_guard: DefaultGuard,
 }
 
 /// Structure used to build a HTTP request for the tests.
@@ -314,6 +318,19 @@ impl TestClient {
 pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
     dotenvy::dotenv()?;
 
+    // Tracing
+    let subscriber = tracing_subscriber::fmt()
+        .with_ansi(true)
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .with_level(true)
+        .with_target(false)
+        .with_test_writer()
+        .compact()
+        .finish();
+
+    let subscriber_guard = tracing::subscriber::set_default(subscriber);
+
+    // Initialize database and server
     let db_env_variable = "DATABASE_URL_TEST";
     let config: Config = Environment::Testing.try_into()?;
 
@@ -328,6 +345,7 @@ pub async fn init_server() -> Result<TestClient, Box<dyn Error>> {
         app,
         cookie_store: false,
         cookie: None,
+        _subscriber_guard: subscriber_guard,
     })
 }
 

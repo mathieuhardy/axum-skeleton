@@ -2372,6 +2372,8 @@ dependencies = [
  "test-utils-derives",
  "tokio",
  "tower",
+ "tracing",
+ "tracing-subscriber",
  "utils",
 ]
 

@@ -6,7 +6,6 @@
 - GraphQL
 - Job queue
 - Websockets
-- Tracing/logging during unit tests
 - Remove sensitive data from tracing
 
 ## Devops
