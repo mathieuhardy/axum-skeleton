@@ -1,7 +1,6 @@
 # ✅ TODO
 
-- Reddis
-- Guards/fairing
+- Redis
 - OpenApi
 - GraphQL
 - Job queue
