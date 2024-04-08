@@ -7,6 +7,7 @@ pub(crate) use serde::{Deserialize, Serialize};
 pub(crate) use database::sqlx::PgPool;
 pub(crate) use database::traits::sqlx::postgres::crud::CRUD;
 pub(crate) use database::uuid::Uuid;
+pub(crate) use derivative::Derivative;
 
 // Current crate
 pub use crate::error::*;
