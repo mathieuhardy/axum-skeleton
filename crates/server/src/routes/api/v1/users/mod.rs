@@ -33,18 +33,18 @@ mod delete {
     use super::*;
 
     /// Handler used to delete a user giving its ID.
-    #[axum::debug_handler]
+    #[axum::debug_handler(state = AppState)]
     #[instrument]
     pub async fn by_id(
         Path(id): Path<Uuid>,
+        DbPool(db): DbPool,
         auth_user: AuthenticationUser,
-        State(state): State<AppState>,
     ) -> Res<StatusCode> {
         if auth_user.0.role != UserRole::Admin {
             return Err(Error::Forbidden);
         }
 
-        User::delete_by_id(&id, &state.db).await?;
+        User::delete_by_id(&id, &db).await?;
 
         Ok(StatusCode::NO_CONTENT)
     }
@@ -55,45 +55,42 @@ mod get {
     use super::*;
 
     /// Handler used to get information about the currently logged user.
-    #[axum::debug_handler]
+    #[axum::debug_handler(state = AppState)]
     #[instrument]
-    pub async fn me(
-        auth_user: AuthenticationUser,
-        State(state): State<AppState>,
-    ) -> Res<Json<User>> {
+    pub async fn me(auth_user: AuthenticationUser) -> Res<Json<User>> {
         Ok(Json(auth_user.0))
     }
 
     /// Handler used to get a list of users that match some filters.
-    #[axum::debug_handler]
+    #[axum::debug_handler(state = AppState)]
     #[instrument]
     pub async fn filtered(
         auth_user: AuthenticationUser,
         Query(filters): Query<Filters>,
-        State(state): State<AppState>,
+        DbPool(db): DbPool,
     ) -> Res<Json<Vec<User>>> {
         if auth_user.0.role != UserRole::Admin {
             return Err(Error::Forbidden);
         }
 
-        let users = User::find_by_filters(&filters, &state.db).await?;
+        let users = User::find_by_filters(&filters, &db).await?;
 
         Ok(Json(users))
     }
 
     /// Handler used to get a specify user by providing its ID.
-    #[axum::debug_handler]
+    #[axum::debug_handler(state = AppState)]
     #[instrument]
     pub async fn by_id(
         Path(id): Path<Uuid>,
         auth_user: AuthenticationUser,
-        State(state): State<AppState>,
+        DbPool(db): DbPool,
     ) -> Res<Json<User>> {
         if auth_user.0.role != UserRole::Admin {
             return Err(Error::Forbidden);
         }
 
-        let user = User::get(&id, &state.db).await?;
+        let user = User::get(&id, &db).await?;
 
         Ok(Json(user))
     }
@@ -104,11 +101,11 @@ mod post {
     use super::*;
 
     /// Handler used to create a new user.
-    #[axum::debug_handler]
+    #[axum::debug_handler(state = AppState)]
     #[instrument]
     pub async fn user(
         auth_user: AuthenticationUser,
-        State(state): State<AppState>,
+        DbPool(db): DbPool,
         FormOrJson(request): FormOrJson<UserRequest>,
     ) -> Res<(StatusCode, Json<User>)> {
         if auth_user.0.role != UserRole::Admin {
@@ -117,7 +114,7 @@ mod post {
 
         request.validate()?;
 
-        let user = create_user(&request, &state.db).await?;
+        let user = create_user(&request, &db).await?;
 
         Ok((StatusCode::CREATED, Json(user)))
     }
@@ -128,12 +125,12 @@ mod patch {
     use super::*;
 
     /// Handler used to update an existing user by providing its ID.
-    #[axum::debug_handler]
+    #[axum::debug_handler(state = AppState)]
     #[instrument]
     pub async fn user(
         Path(id): Path<Uuid>,
         auth_user: AuthenticationUser,
-        State(state): State<AppState>,
+        DbPool(db): DbPool,
         FormOrJson(request): FormOrJson<UserRequest>,
     ) -> Res<Json<User>> {
         match auth_user.0.role {
@@ -150,18 +147,18 @@ mod patch {
 
         request.validate()?;
 
-        let user = update_user(&id, &request, &state.db).await?;
+        let user = update_user(&id, &request, &db).await?;
 
         Ok(Json(user))
     }
 
     /// Handler used to update an existing user's password by providing its ID.
-    #[axum::debug_handler]
+    #[axum::debug_handler(state = AppState)]
     #[instrument]
     pub async fn user_password(
         Path(id): Path<Uuid>,
         auth_user: AuthenticationUser,
-        State(state): State<AppState>,
+        DbPool(db): DbPool,
         FormOrJson(request): FormOrJson<PasswordUpdateRequest>,
     ) -> Res<StatusCode> {
         match auth_user.0.role {
@@ -176,7 +173,7 @@ mod patch {
 
         request.validate()?;
 
-        set_user_password(&id, &request, &state.db).await?;
+        set_user_password(&id, &request, &db).await?;
 
         Ok(StatusCode::OK)
     }
@@ -187,11 +184,11 @@ mod put {
     use super::*;
 
     /// Handler used to upsert a user.
-    #[axum::debug_handler]
+    #[axum::debug_handler(state = AppState)]
     #[instrument]
     pub async fn user(
         auth_user: AuthenticationUser,
-        State(state): State<AppState>,
+        DbPool(db): DbPool,
         FormOrJson(request): FormOrJson<UserRequest>,
     ) -> Res<(StatusCode, Json<User>)> {
         if auth_user.0.role != UserRole::Admin {
@@ -201,10 +198,10 @@ mod put {
         request.validate()?;
 
         let (rc, user) = if let Some(id) = request.id {
-            let user = update_user(&id, &request, &state.db).await?;
+            let user = update_user(&id, &request, &db).await?;
             (StatusCode::OK, user)
         } else {
-            let user = create_user(&request, &state.db).await?;
+            let user = create_user(&request, &db).await?;
             (StatusCode::CREATED, user)
         };
 

@@ -1,7 +1,7 @@
 //! List of common imports for this crate.
 
 // External crates
-pub(crate) use axum::extract::{Path, Query, State};
+pub(crate) use axum::extract::{Path, Query};
 pub(crate) use axum::http::StatusCode;
 pub(crate) use axum::response::IntoResponse;
 pub(crate) use axum::routing::{delete, get, patch, post, put};
