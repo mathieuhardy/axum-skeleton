@@ -4,19 +4,14 @@
 use axum::http::StatusCode;
 use thiserror::Error;
 
-use actions::error::Error as ActionsError;
-use database::error::Error as DatabaseError;
+use database::Error as DatabaseError;
 
 /// Helper for return types inside this crate.
-pub type Res<T> = Result<T, Error>;
+pub type ApiResult<T> = Result<T, Error>;
 
 /// Enumerates the possible errors returned by this crate.
 #[derive(Debug, Error)]
 pub enum Error {
-    /// Actions error.
-    #[error("{0}")]
-    Actions(#[from] ActionsError),
-
     /// Generic Axum error.
     #[error("{0}")]
     Axum(#[source] std::io::Error),
@@ -44,7 +39,7 @@ pub enum Error {
     /// Generic sanity error.
     #[cfg(feature = "sanity")]
     #[error("{0}")]
-    Sanity(#[source] sanity::error::Error),
+    Sanity(#[from] sanity::Error),
 
     /// Generic socket error.
     #[error("{0}")]
@@ -52,7 +47,7 @@ pub enum Error {
 
     /// Generic SQLx error.
     #[error("{0}")]
-    SQLx(#[from] database::sqlx::Error),
+    SQLx(#[from] sqlx::Error),
 
     /// Unexpected error that should never happen.
     #[error("Unexpected server error")]
@@ -65,20 +60,14 @@ pub enum Error {
     /// Unknown error (should be avoided).
     #[error("Unknown server error")]
     Unknown,
-
-    /// Validation error.
-    #[error("Unprocessable entity")]
-    Validation(#[from] validator::ValidationErrors),
 }
 
 impl axum::response::IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
         match self {
-            Self::Actions(ActionsError::InvalidPassword) => StatusCode::FORBIDDEN.into_response(),
             Self::Database(DatabaseError::NotFound) => StatusCode::NOT_FOUND.into_response(),
             Self::Forbidden => StatusCode::FORBIDDEN.into_response(),
             Self::Unauthorized => StatusCode::UNAUTHORIZED.into_response(),
-            Self::Validation(_) => StatusCode::UNPROCESSABLE_ENTITY.into_response(),
             _ => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
         }
     }

@@ -3,7 +3,8 @@
 ## Tests plans
 
 Tests plans describe the list of tests to be performed. Tests coverage are not
-sufficient as they don't ensure that all cases are correctly handled.
+sufficient as they don't ensure that all cases are correctly handled but it's a
+start.
 
 Eatch tests plan contains tests cases that are identified by a unique identifier
 whose syntax is a path starting by `/TC/` (e.g. `/TC/MOD/SUB-MOD/TEST_01`);
@@ -12,10 +13,11 @@ whose syntax is a path starting by `/TC/` (e.g. `/TC/MOD/SUB-MOD/TEST_01`);
 
 ## End-to-end tests
 
-Every route defined in crate `server` must be tested and if possible with
-different inputs in order to check input validations and errors management.
+Every route defined in the `api` folders of every hexagonal crate must be tested
+and if possible with different inputs in order to check input validations and
+errors management.
 
-Every test should instantiate the server and obtain a HTTP client by calling;
+Every test can instantiate the server and obtain a HTTP client by calling;
 
 ```rust
 let client = init_server().await.unwrap();

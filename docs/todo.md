@@ -2,9 +2,9 @@
 
 - Redis
 - OpenApi
-- GraphQL
 - Job queue
 - SSE
+- Other methods of authentication
 
 ## Devops
 
@@ -14,11 +14,11 @@
 
 - [Template](https://github.com/janos-r/axum-template)
 
-### Axum
+### Axum
 
 - [Axum Prometheus Metrics](https://github.com/tokio-rs/axum/tree/main/examples/prometheus-metrics)
 
-### Various
+### Various
 
 - [Crates](https://gist.github.com/vi/6620975b737a1caecf607e88cf6b7fea)
 - [Access](https://github.com/casbin-rs/axum-casbin)
@@ -33,7 +33,7 @@
 - [2](https://blog.devgenius.io/beyond-the-threads-websockets-in-rust-for-seamless-communication-e40d10e8a0e3)
 - [3](https://blog.logrocket.com/build-websocket-server-with-rust/#what-websocket)
 
-### Versioning
+### Versioning
 
 - [Best pratice](https://www.reddit.com/r/rust/comments/xnnnzq/whats_the_best_practice_for_shipping_multiple)
 - [Versio](https://crates.io/crates/versio)
@@ -55,4 +55,4 @@
 
 ### Hashing
 
-https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+- [Password storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)

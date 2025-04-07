@@ -11,18 +11,17 @@
 
 ## Database
 
-In the crate `database`, in the folder `scripts/sql` are stored some SQL
-scripts. They intend to be used by SQLx as plain text request. These requests
-can receive parameters by placing identifiers like this: `$1`, `$2`, etc.
 
-The file `build.rs` is called before running compilation and will take all
-scripts in this directory and create a `src/requests.rs` file that contains all
-requests stored in Rust constants available for SQLx usage.
+All base stuff is located in the `database` crate. It contains for example the
+migrations and the base functions to initialize the database. It also provides
+extractors for Axum endpoints.
+
+There's no more here as the requests will be declared in each hexagonal crate.
 
 ## Routes
 
-Every PATCH/POST/PUT route must allows to receive JSON or form data. This can be done
-easily using the type `FormOrJson`:
+Every PATCH/POST/PUT route must allows to receive JSON or form data. This can be
+done easily using the extractor `FormOrJson`:
 
 ```rust
 async fn post_handler(FormOrJson(data): FormOrJson<Data>) -> Json<Response> {

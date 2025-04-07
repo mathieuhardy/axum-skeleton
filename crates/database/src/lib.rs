@@ -1,27 +1,25 @@
-//! The `database`'s crate gathers of database related utilities:
+//! The `database`'s crate gathers of database related utilities such as:
 //!
-//! - models: structures that matches data returned from queries an matches the tables.
-//! - scripts: SQL raw scripts used in the crate for queries.
+//! - Initialization of the connection pool to the database.
+//! - Migrations.
+//! - Extractors used to access database in endpoints.
 
 #![forbid(unsafe_code)]
-#![feature(box_into_inner)]
 
-pub mod error;
-pub mod models;
-pub mod traits;
+// Modules
+pub mod extractor;
 
-pub(crate) mod prelude;
-pub(crate) mod requests;
+mod error;
+mod prelude;
 
-// Re-exports
-pub use {bb8, bb8_redis, serde, sqlx, uuid};
-
-// External crates
+// Crates
 use bb8_redis::RedisConnectionManager;
-use sqlx::postgres::PgPoolOptions;
+use sqlx::postgres::{PgPool, PgPoolOptions};
 
-// Local
-use crate::prelude::*;
+// Exports
+pub use error::Error;
+
+use prelude::*;
 
 /// Type used to manipulate a Redis database.
 pub type RedisPool = bb8::Pool<RedisConnectionManager>;
@@ -37,7 +35,7 @@ pub type RedisPool = bb8::Pool<RedisConnectionManager>;
 pub async fn initialize(
     db_env_variable: Option<&str>,
     redis_env_variable: Option<&str>,
-) -> Res<(PgPool, RedisPool)> {
+) -> ApiResult<(PgPool, RedisPool)> {
     // PostgresSQL
     let db_url = std::env::var(db_env_variable.unwrap_or("DATABASE_URL")).map_err(Error::Env)?;
 

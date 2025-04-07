@@ -1,0 +1,28 @@
+[package]
+name = "auth"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-trait = { workspace = true, default-features = false }
+axum = { workspace = true, default-features = false }
+axum-login = { workspace = true, default-features = false }
+derive_more = { workspace = true, default-features = false, features = ["debug"] }
+serde = { workspace = true, default-features = false }
+sqlx = { workspace = true, default-features = false }
+thiserror = { workspace = true, default-features = false }
+tracing = { workspace = true, default-features = false }
+uuid = { workspace = true, default-features = false, features = ["serde"] }
+validator = { workspace = true, default-features = false, features = ["derive"] }
+
+common-core = { workspace = true, default-features = false }
+common-web = { workspace = true, default-features = false }
+database = { workspace = true, default-features = false }
+utils = { workspace = true, default-features = false, features = ["hashing"] }
+
+[dev-dependencies]
+serial_test = { workspace = true, default-features = false }
+tokio = { workspace = true, default-features = false }
+
+test-utils = { workspace = true, default-features = false, features = ["database", "derives", "rand", "runner", "server"] }
+test-utils-derives = { workspace = true, default-features = false }

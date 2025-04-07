@@ -2,39 +2,32 @@
 //! function to start it and some default handlers.
 
 #![forbid(unsafe_code)]
+#![feature(stmt_expr_attributes)]
 
 pub mod config;
 pub mod layers;
 
 pub(crate) mod error;
-pub(crate) mod extractors;
 pub(crate) mod prelude;
 pub(crate) mod routes;
-pub(crate) mod state;
 
-#[cfg(test)]
-mod tests;
-
-pub use axum;
-
-use tokio::net::TcpListener;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
+use axum::Router;
 use tokio::signal;
-use tower_http::compression::CompressionLayer;
-use tower_http::services::ServeFile;
+
+use common_core::AppState;
+use security::password::{set_checks, Checks};
+use utils::filesystem::{relative_path, root_relative_path};
 
 use crate::config::Config;
-#[cfg(debug_assertions)]
-#[cfg(feature = "sanity")]
-use crate::config::Environment;
-use crate::layers::*;
 use crate::prelude::*;
-use utils::filesystem::{relative_path, root_relative_path};
 
 /// Starts the server application.
 ///
 /// # Returns
 /// An empty Result.
-pub async fn start(config: Option<crate::config::Config>) -> Res<()> {
+pub async fn start(config: Option<crate::config::Config>) -> ApiResult<()> {
     // Load configuration
     let config = match config {
         Some(config) => config,
@@ -50,7 +43,9 @@ pub async fn start(config: Option<crate::config::Config>) -> Res<()> {
     // Create TCP listener
     let address = format!("{}:{}", config.application.host, config.application.port);
 
-    let listener = TcpListener::bind(&address).await.map_err(Error::Socket)?;
+    let listener = tokio::net::TcpListener::bind(&address)
+        .await
+        .map_err(Error::Socket)?;
 
     // Start server
     event!(
@@ -80,9 +75,9 @@ pub async fn app(
     config: &Config,
     db_env_variable: Option<&str>,
     redis_env_variable: Option<&str>,
-) -> Res<Router> {
+) -> ApiResult<Router> {
     // Database configuration
-    actions::validators::password::set_checks(utils::password::Checks {
+    set_checks(Checks {
         digit: config.password.pattern.digit,
         lowercase: config.password.pattern.lowercase,
         uppercase: config.password.pattern.uppercase,
@@ -108,20 +103,21 @@ pub async fn app(
     event!(Level::INFO, "⏰ Timeout configured");
 
     // Compression
-    let compression_layer = CompressionLayer::new();
+    let compression_layer = tower_http::compression::CompressionLayer::new();
 
     event!(Level::INFO, "🔻 Compression enabled");
 
     // Authentication layer
-    let authentication = auth::authentication_layer(config, &pg_pool);
+    let authentication = layers::auth::authentication_layer(config, &pg_pool);
 
     event!(Level::INFO, "👤 Authentication enabled");
 
     // Sensitive layers
-    let (sensitive_request_layer, sensitive_response_layer) = tracing::sensitive_headers_layers();
+    let (sensitive_request_layer, sensitive_response_layer) =
+        layers::tracing::sensitive_headers_layers();
 
     // Request ID layers
-    let (request_id_layer, propagate_request_id_layer) = tracing::request_id_layers();
+    let (request_id_layer, propagate_request_id_layer) = layers::tracing::request_id_layers();
 
     // Tracing
     let tracing_layer = layers::tracing::tracing_layer();
@@ -134,7 +130,7 @@ pub async fn app(
     // Create router
     let mut router = Router::new()
         .fallback(handler_404)
-        .nest("/", routes::build())
+        .nest("/", routes::build(config)?)
         .with_state(state);
 
     router = setup_favicon(router)?;
@@ -149,14 +145,6 @@ pub async fn app(
         .layer(tracing_layer)
         .layer(propagate_request_id_layer)
         .layer(sensitive_response_layer);
-
-    #[cfg(debug_assertions)]
-    #[cfg(feature = "sanity")]
-    if Environment::Development.equals(&config.environment) {
-        router = sanity::initialize(router).map_err(Error::Sanity)?;
-
-        event!(Level::INFO, "🩺 Sanity enabled");
-    }
 
     Ok(router)
 }
@@ -208,11 +196,14 @@ fn bye() {
 ///
 /// # Returns
 /// New router handle.
-fn setup_favicon(router: Router) -> Res<Router> {
+fn setup_favicon(router: Router) -> ApiResult<Router> {
     let icon_path = relative_path("data/images/favicon.ico")
         .or(root_relative_path("crates/server/data/images/favicon.ico"))?;
 
-    event!(Level::INFO, "🟣 Favicon setup");
+    event!(Level::INFO, "🖼 Favicon setup");
 
-    Ok(router.nest_service("/favicon.ico", ServeFile::new(icon_path)))
+    Ok(router.nest_service(
+        "/favicon.ico",
+        tower_http::services::ServeFile::new(icon_path),
+    ))
 }

@@ -1,0 +1,17 @@
+[package]
+name = "axum-skeleton"
+version = "0.1.0"
+edition = "2021"
+authors = ["Mathieu Hardy <mhardy2008@gmail.com>"]
+description = "An Axum skeleton to start backend web application"
+readme = "README.md"
+homepage = "https://github.com/mathieuhardy/axum-skeleton"
+repository = "https://github.com/mathieuhardy/axum-skeleton"
+license-file = "LICENSE.txt"
+
+[dependencies]
+dotenvy = { workspace = true, default-features = false }
+tokio = { workspace = true, default-features = false, features = ["full"] }
+tracing-subscriber = { workspace = true, default-features = false, features = ["ansi", "env-filter", "fmt"]}
+
+server = { workspace = true, default-features = false, features = ["k8s", "sanity"] }

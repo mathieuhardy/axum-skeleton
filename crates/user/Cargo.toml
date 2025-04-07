@@ -1,0 +1,35 @@
+[package]
+name = "user"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-trait = { workspace = true, default-features = false }
+axum = { workspace = true, default-features = false, features = ["form", "http2", "json", "macros", "query", "tokio"] }
+axum-login = { workspace = true, default-features = false }
+chrono = { workspace = true, default-features = false, features = ["serde"] }
+derive_more = { workspace = true, default-features = false, features = ["debug", "deref"] }
+futures = { workspace = true, default-features = false }
+serde = { workspace = true, default-features = false, features = ["derive"] }
+sqlx = { workspace = true, default-features = false, features = ["macros", "postgres"] }
+thiserror = { workspace = true, default-features = false }
+tracing = { workspace = true, default-features = false, features = ["attributes", "log", "std"] }
+uuid = { workspace = true, default-features = false, features = ["serde", "v4"] }
+validator = { workspace = true, default-features = false, features = ["derive"] }
+
+auth = { workspace = true, default-features = false }
+common-core = { workspace = true, default-features = false }
+common-web = { workspace = true, default-features = false }
+database = { workspace = true, default-features = false }
+security = { workspace = true, default-features = false }
+utils = { workspace = true, default-features = false, features = ["hashing"] }
+
+[dev-dependencies]
+rand = { workspace = true, default-features = false }
+mockall = { workspace = true, default-features = false }
+serial_test = { workspace = true, default-features = false }
+tokio = { workspace = true, default-features = false }
+urlencoding = { workspace = true, default-features = false }
+
+test-utils = { workspace = true, default-features = false, features = ["database", "derives", "rand", "runner", "server"] }
+test-utils-derives = { workspace = true, default-features = false }

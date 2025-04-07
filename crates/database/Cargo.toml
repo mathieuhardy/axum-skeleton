@@ -2,19 +2,13 @@
 name = "database"
 version = "0.1.0"
 edition = "2021"
-build = "build.rs"
-
-[build-dependencies]
-walkdir = "2.5.0"
 
 [dependencies]
-bb8 = { version = "0.8.3", default-features = false }
-bb8-redis = { version = "0.15.0", default-features = false }
-chrono = { version = "0.4.35", default-features = false, features = ["serde"] }
-derivative = { version = "2.2.0", default-features = false }
-serde = { version = "1.0.197", default-features = false, features = ["derive"] }
-serde_with = { version = "3.7.0", default-features = false, features = ["macros"] }
-sqlx = { version = "0.7.4", default-features = false, features = [
+async-trait = { workspace = true, default-features = false }
+axum = { workspace = true, default-features = false }
+bb8 = { workspace = true, default-features = false }
+bb8-redis = { workspace = true, default-features = false }
+sqlx = { workspace = true, default-features = false, features = [
     "chrono",
     "macros",
     "migrate",
@@ -23,13 +17,7 @@ sqlx = { version = "0.7.4", default-features = false, features = [
     "tls-native-tls",
     "uuid"
 ] }
-thiserror = { version = "1.0.58", default-features = false }
-tracing = { version = "0.1.40", default-features = false, features = ["attributes", "log", "std"] }
-uuid = { version = "1.6.1", default-features = false, features = ["serde", "v4"] }
-validator = { version = "0.15", default-features = false, features = ["derive"] }
+thiserror = { workspace = true, default-features = false }
+tracing = { workspace = true, default-features = false, features = ["attributes", "log", "std"] }
 
-database-derives = { path = "derives", default-features = false }
-utils = { path = "../utils", default-features = false, features = ["fs", "hashing", "password"] }
-
-[dev-dependencies]
-tokio = { version = "1.35.1", default-features = false, features = ["full"] }
+common-core = { workspace = true, default-features = false }

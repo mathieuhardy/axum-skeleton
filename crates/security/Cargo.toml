@@ -1,0 +1,8 @@
+[package]
+name = "security"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tracing = { workspace = true, default-features = false }
+validator= { workspace = true, default-features = false }

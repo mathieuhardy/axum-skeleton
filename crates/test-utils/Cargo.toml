@@ -4,20 +4,41 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-dotenvy = { version = "0.15.7", default-features = false }
-http-body-util = { version = "0.1.1", default-features = false }
-mime = { version = "0.3.17", default-features = false }
-serde = { version = "1.0.197", default-features = false }
-serde_json = { version = "1.0.115", default-features = false }
-sqlx = { version = "0.7.4", default-features = false, features = ["macros", "migrate", "postgres", "runtime-tokio", "tls-native-tls", "uuid"] }
-tokio = { version = "1.35.1", default-features = false, features = ["full"] }
-tower = { version = "0.4.13", default-features = false }
-tracing = { version = "0.1.40", default-features = false, features = ["attributes", "log", "std"] }
-tracing-subscriber = { version = "0.3.18", default-features = false, features = ["ansi", "env-filter", "fmt"]}
+axum = { workspace = true, default-features = false, optional = true }
+dotenvy = { workspace = true, default-features = false, optional = true }
+http-body-util = { workspace = true, default-features = false, optional = true }
+mime = { workspace = true, default-features = false, optional = true }
+serde = { workspace = true, default-features = false, optional = true }
+serde_json = { workspace = true, default-features = false, optional = true }
+sqlx = { workspace = true, default-features = false, features = ["macros", "migrate", "postgres", "runtime-tokio", "tls-native-tls", "uuid"] }
+tokio = { workspace = true, default-features = false, features = ["full"], optional = true }
+tower = { workspace = true, default-features = false, optional = true }
+tracing = { workspace = true, default-features = false, features = ["attributes", "log", "std"], optional = true }
+tracing-subscriber = { workspace = true, default-features = false, features = ["ansi", "env-filter", "fmt"], optional = true }
+uuid = { workspace = true, default-features = false, features = ["v4"] }
 
-server = { path = "../server", default-features = false }
-test-utils-derives = { path = "derives", default-features = false, optional = true }
-utils = { path = "../utils", default-features = false, features = ["fs"] }
+auth = { workspace = true, default-features = false, optional = true }
+server = { workspace = true, default-features = false, optional = true }
+test-utils-derives = { workspace = true, default-features = false, optional = true }
+utils = { workspace = true, default-features = false, features = ["fs"], optional = true }
 
 [features]
+database = ["dep:dotenvy"]
 derives = ["dep:test-utils-derives"]
+rand = []
+runner = ["dep:tokio"]
+server = [
+    "auth",
+    "database",
+    "dep:axum",
+    "dep:dotenvy",
+    "dep:http-body-util",
+    "dep:mime",
+    "dep:serde",
+    "dep:serde_json",
+    "dep:server",
+    "dep:tower",
+    "dep:tracing",
+    "dep:tracing-subscriber",
+    "dep:utils",
+]

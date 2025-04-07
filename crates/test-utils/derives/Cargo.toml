@@ -12,6 +12,6 @@ quote = { version = "1.0.35", default-features = false }
 syn = { version = "2.0.53", default-features = false }
 
 [dev-dependencies]
-tokio = { version = "1.36.0", default-features = false, features = ["full"] }
+tokio = { workspace = true, default-features = false, features = ["full"] }
 
-test-utils = { path = "../../test-utils", default-features = false }
+test-utils = { workspace = true, default-features = false, features = ["runner"] }
