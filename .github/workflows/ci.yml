@@ -6,11 +6,28 @@ on:
       - main
   pull_request:
 
+env:
+  POSTGRES_USER: demo
+  POSTGRES_PASSWORD: demo
+  POSTGRES_DB: axum_test
+  POSTGRES_HOST: localhost
+  POSTGRES_PORT: 5432
+
 jobs:
   # Check that the project can be build in release mode
   build:
     name: Build
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        ports:
+          - 5432:5432
 
     steps:
       - name: Checkout
@@ -20,15 +37,39 @@ jobs:
         uses: moonrepo/setup-rust@v1
         with:
           cache-target: release
+          bins: cargo-nextest, sqlx-cli
+
+      - name: Install libpq
+        run: |
+          sudo apt-get install libpq-dev -y
+
+      - name: Setup database
+        env:
+          DATABASE_URL: postgres://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}
+        run: |
+          sqlx database create
+          sqlx migrate run --source ./crates/database/migrations
 
       - name: Build release
+        env:
+          DATABASE_URL: postgres://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}
         run: |
-          cargo build --release --all-features
+          cargo build --release --workspace --all-targets --all-features --locked
 
   # Run clippy on project
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        ports:
+          - 5432:5432
 
     steps:
       - name: Checkout
@@ -40,12 +81,21 @@ jobs:
         uses: moonrepo/setup-rust@v1
         with:
           cache-target: release
-          bins: cargo-make
+          bins: cargo-make, cargo-nextest, sqlx-cli
           components: clippy
-      
-      - name: Run clippy
+
+      - name: Setup database
+        env:
+          DATABASE_URL: postgres://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}
         run: |
-          cargo make clippy
+          sqlx database create
+          sqlx migrate run --source ./crates/database/migrations
+
+      - name: Run clippy
+        env:
+          DATABASE_URL: postgres://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}
+        run: |
+          cargo make clippy --release --workspace --all-targets --all-features --locked
 
   # Run linter to check the code formating
   lint:
@@ -71,13 +121,6 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
 
-    env:
-      POSTGRES_USER: demo
-      POSTGRES_PASSWORD: demo
-      POSTGRES_DB: axum_test
-      POSTGRES_HOST: localhost
-      POSTGRES_PORT: 5432
-
     services:
       postgres:
         image: postgres:16
@@ -98,7 +141,7 @@ jobs:
         uses: moonrepo/setup-rust@v1
         with:
           cache-target: release
-          bins: sqlx-cli
+          bins: cargo-nextest, sqlx-cli
 
       - name: Install libpq
         run: |
@@ -109,11 +152,14 @@ jobs:
           DATABASE_URL: postgres://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}
         run: |
           sqlx database create
+          sqlx migrate run --source ./crates/database/migrations
 
       - name: Dotenv
         run: |
           cp .env.sample .env
 
       - name: Run unit tests
+        env:
+          DATABASE_URL: postgres://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}
         run: |
-          cargo test --workspace --release
+          cargo nextest run --release --workspace --all-targets --all-features --locked

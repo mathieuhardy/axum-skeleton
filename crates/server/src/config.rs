@@ -204,7 +204,7 @@ impl Config {
     ///
     /// # Returns
     /// A result that contains an instance of Config.
-    pub fn new() -> Res<Self> {
+    pub fn new() -> ApiResult<Self> {
         let environment: Environment = std::env::var("ENVIRONMENT")
             .unwrap_or(DEFAULT_ENVIRONMENT.into())
             .try_into()?;

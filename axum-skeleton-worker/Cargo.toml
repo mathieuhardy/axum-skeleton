@@ -1,0 +1,13 @@
+[package]
+name = "axum-skeleton-worker"
+version = "0.1.0"
+edition = "2021"
+authors = ["Mathieu Hardy <mhardy2008@gmail.com>"]
+description = "An Axum skeleton worker (job queue)"
+readme = "README.md"
+homepage = "https://github.com/mathieuhardy/axum-skeleton"
+repository = "https://github.com/mathieuhardy/axum-skeleton"
+license-file = "LICENSE.txt"
+
+[dependencies]
+tokio = { workspace = true, default-features = false, features = ["full"] }

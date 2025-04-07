@@ -1,0 +1,9 @@
+[package]
+name = "k8s"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { workspace = true, default-features = false, features = ["http2"] }
+
+common-core = { workspace = true, default-features = false }

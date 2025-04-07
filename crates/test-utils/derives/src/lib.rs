@@ -81,7 +81,7 @@ pub fn hook(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     // Replace block of the function
     let runner: Stmt = parse_quote! {
-        test_utils::run_test(#setup, #stmts, #teardown).await;
+        test_utils::runner::run_test(#setup, #stmts, #teardown).await;
     };
 
     orig.block = Box::new(Block {

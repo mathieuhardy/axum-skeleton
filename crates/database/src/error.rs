@@ -5,9 +5,9 @@ use std::env::VarError;
 use thiserror::Error;
 
 /// Helper for return types inside this crate.
-pub type Res<T> = Result<T, Error>;
+pub type ApiResult<T> = Result<T, Error>;
 
-/// Enumerates the possible errors returned by this crate.
+/// Enumerates the possible errors used in this crate.
 #[derive(Debug, Error)]
 pub enum Error {
     /// Generic environment variable error.

@@ -4,7 +4,7 @@ use argon2::password_hash::rand_core::OsRng;
 use argon2::password_hash::{PasswordHash, PasswordVerifier, SaltString};
 use argon2::{Argon2, PasswordHasher};
 
-use crate::prelude::*;
+use crate::error::*;
 
 /// Hash a given password using Argon2id algorithm.
 ///

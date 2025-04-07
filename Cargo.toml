@@ -1,36 +1,63 @@
-[package]
-name = "axum-skeleton"
-version = "0.1.0"
-edition = "2021"
-authors = ["Mathieu Hardy <mhardy2008@gmail.com>"]
-description = "An Axum skeleton to start backend web application"
-readme = "README.md"
-homepage = "https://github.com/mathieuhardy/axum-skeleton"
-repository = "https://github.com/mathieuhardy/axum-skeleton"
-license-file = "LICENSE.txt"
-default-run = "axum-skeleton"
-
-[[bin]]
-name = "axum-skeleton"
-path = "src/main.rs"
-
-[[bin]]
-name = "axum-skeleton-worker"
-path = "src/worker.rs"
-
 [workspace]
+resolver = "2"
 members = [
-  "crates/actions",
+  "axum-skeleton",
+  "axum-skeleton-worker",
+  "crates/auth",
+  "crates/common-core",
+  "crates/common-web",
   "crates/database",
+  "crates/k8s",
   "crates/sanity",
+  "crates/security",
   "crates/server",
   "crates/test-utils",
+  "crates/user",
   "crates/utils",
 ]
 
-[dependencies]
+[workspace.dependencies]
+argon2 = { version = "0.5.3", default-features = false }
+async-trait = { version = "0.1.88", default-features = false }
+axum = { version = "0.7.4", default-features = false }
+axum-login = { version = "0.15.0", default-features = false }
+bb8 = { version = "0.8.3", default-features = false }
+bb8-redis = { version = "0.15.0", default-features = false }
+chrono = { version = "0.4.35", default-features = false }
+config = { version = "0.14.0", default-features = false }
+derive_more = { version = "2.0.1", default-features = false }
 dotenvy = { version = "0.15.7", default-features = false }
-tokio = { version = "1.36.0", default-features = false, features = ["full"] }
-tracing-subscriber = { version = "0.3.18", default-features = false, features = ["ansi", "env-filter", "fmt"]}
+futures = { version = "0.3.31", default-features = false }
+http-body-util = { version = "0.1.1", default-features = false }
+mime = { version = "0.3.17", default-features = false }
+mockall = { version = "0.13.1", default-features = false }
+project-root = { version = "0.2.2", default-features = false }
+rand = { version = "0.8.5", default-features = false }
+serde = { version = "1.0.197", default-features = false }
+serde_json = { version = "1.0.140", default-features = false }
+serial_test = { version = "3.0.0", default-features = false }
+sqlx = { version = "0.7.4", default-features = false }
+thiserror = { version = "2.0.12", default-features = false }
+time = { version = "0.3.34", default-features = false }
+tokio = { version = "1.35.1", default-features = false }
+tower = { version = "0.4.13", default-features = false }
+tower-http = { version = "0.5.2", default-features = false }
+tower-sessions = { version = "0.12.0", default-features = false }
+tracing = { version = "0.1.41", default-features = false }
+tracing-subscriber = { version = "0.3.18", default-features = false }
+urlencoding = { version = "2.1.3", default-features = false }
+uuid = { version = "1.16.0", default-features = false }
+validator = { version = "0.15", default-features = false }
 
-server = { path = "crates/server", features = ["k8s", "sanity"] }
+auth = { path = "crates/auth", default-features = false }
+common-core = { path = "crates/common-core", default-features = false }
+common-web = { path = "crates/common-web", default-features = false }
+database = { path = "crates/database", default-features = false }
+k8s = { path = "crates/k8s", default-features = false }
+sanity = { path = "crates/sanity", default-features = false }
+security = { path = "crates/security", default-features = false }
+server = { path = "crates/server", default-features = false }
+test-utils = { path = "crates/test-utils", default-features = false }
+test-utils-derives = { path = "crates/test-utils/derives", default-features = false }
+user = { path = "crates/user", default-features = false }
+utils = { path = "crates/utils", default-features = false }

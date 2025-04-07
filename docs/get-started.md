@@ -13,7 +13,7 @@ cargo build --release
 cargo test --workspace
 
 # Run the application
-cargo run
+cargo run -p axum-skeleton
 ```
 
 ## Advanced commands

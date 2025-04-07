@@ -3,7 +3,7 @@
 use std::path::PathBuf;
 use std::str::FromStr;
 
-use crate::prelude::*;
+use crate::error::*;
 
 /// Returns a path relative to the current directory.
 ///

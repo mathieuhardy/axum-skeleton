@@ -19,7 +19,7 @@
 ## Description
 
 This repository is a proof-of-concept of a backend server using Axum. This
-skeleton can be used as a starter kit.
+skeleton can be used as a starter kit. It's based on hexagonal architecture.
 
 ## Documentations
 

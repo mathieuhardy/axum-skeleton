@@ -22,6 +22,7 @@ pub enum Error {
     Filesystem(#[from] std::io::Error),
 
     /// Generic tokio task joining error.
+    #[cfg(feature = "hashing")]
     #[error("{0}")]
     TaskJoin(#[from] tokio::task::JoinError),
 
