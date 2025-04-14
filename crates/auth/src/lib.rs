@@ -27,12 +27,13 @@ mod api;
 mod application;
 mod domain;
 mod extractor;
+mod infrastructure;
 mod prelude;
 
 #[cfg(test)]
 mod tests;
 
 // Exports
+pub use crate::infrastructure::SQLxAuthRepository;
 pub use api::router;
-pub use domain::auth_backend::{AuthBackend, AuthCredentials};
-pub use domain::auth_user::{AuthUser, AuthUserRole};
+pub use domain::auth_user::{AuthCredentials, AuthUser, AuthUserRole};
