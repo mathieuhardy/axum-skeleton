@@ -9,7 +9,7 @@ use axum_login::login_required;
 #[cfg(feature = "sanity")]
 use tracing::{event, Level};
 
-use auth::AuthBackend;
+use auth::SQLxAuthRepository;
 use common_core::AppState;
 
 use crate::config::Config;
@@ -42,7 +42,7 @@ pub fn build(config: &Config) -> ApiResult<Router<AppState>> {
 
     router = router
         .nest("/api", api::router())
-        .route_layer(login_required!(AuthBackend))
+        .route_layer(login_required!(SQLxAuthRepository))
         .merge(auth::router());
 
     Ok(router)

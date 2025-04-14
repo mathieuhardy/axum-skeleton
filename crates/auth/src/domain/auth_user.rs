@@ -1,17 +1,29 @@
 //! Authentication user related entities.
 
 use axum_login::AuthUser as AxumAuthUser;
-use sqlx::postgres::{PgHasArrayType, PgTypeInfo};
-use sqlx::{FromRow, Type};
-use uuid::Uuid;
 use validator::Validate;
+
+use security::password::validate_password;
 
 use crate::prelude::*;
 
+/// Structure used to store the credentials that must be provided by a user to check it's
+/// existence. This should match a form displayed to the user where he can enter his email and
+/// password.
+#[derive(Clone, Deserialize, Serialize, Validate, derive_more::Debug)]
+pub struct AuthCredentials {
+    /// Email used during authentication.
+    #[validate(email)]
+    pub email: String,
+
+    /// Password used during authentication.
+    #[debug(skip)]
+    #[validate(custom = "validate_password")]
+    pub password: String,
+}
+
 /// List of users roles.
-#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize, Type)]
-#[sqlx(type_name = "user_role")]
-#[sqlx(rename_all = "lowercase")]
+#[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize)]
 pub enum AuthUserRole {
     /// User with all privileges.
     Admin,
@@ -24,16 +36,8 @@ pub enum AuthUserRole {
     Guest,
 }
 
-impl PgHasArrayType for AuthUserRole {
-    fn array_type_info() -> PgTypeInfo {
-        PgTypeInfo::with_name("_user_role")
-    }
-}
-
 /// Needed field to handle authentication of a user.
-#[derive(
-    Clone, Default, PartialEq, FromRow, Deserialize, Serialize, Validate, derive_more::Debug,
-)]
+#[derive(Clone, Default, PartialEq, Deserialize, Serialize, Validate, derive_more::Debug)]
 pub struct AuthUser {
     /// Unique record identifier.
     pub id: Uuid,
@@ -88,7 +92,54 @@ impl AxumAuthUser for AuthUser {
 mod tests {
     use test_utils::rand::*;
 
+    use security::password::{set_checks, Checks};
+
     use super::*;
+
+    #[tokio::test]
+    async fn test_credentials_validation_email() -> Result<(), Box<dyn std::error::Error>> {
+        set_checks(Checks::default());
+
+        let credentials = AuthCredentials {
+            email: random_email(),
+            password: random_password(),
+        };
+
+        assert!(credentials.validate().is_ok());
+
+        let credentials = AuthCredentials {
+            email: random_string(),
+            password: random_password(),
+        };
+
+        assert!(credentials.validate().is_err());
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_credentials_validation_pasword() -> Result<(), Box<dyn std::error::Error>> {
+        set_checks(Checks {
+            min_length: 8,
+            ..Checks::default()
+        });
+
+        let credentials = AuthCredentials {
+            email: random_email(),
+            password: random_password(),
+        };
+
+        assert!(credentials.validate().is_ok());
+
+        let credentials = AuthCredentials {
+            email: random_email(),
+            password: String::new(),
+        };
+
+        assert!(credentials.validate().is_err());
+
+        Ok(())
+    }
 
     #[tokio::test]
     async fn test_auth_user_is_admin() -> Result<(), Box<dyn std::error::Error>> {
