@@ -1,27 +1,37 @@
 //! Use-case for login a user.
 
+use axum_login::{AuthSession, AuthnBackend};
+use std::marker::PhantomData;
 use tracing::{event, Level};
 
 use common_core::UseCase;
 
-use crate::domain::auth_backend::{AuthCredentials, AuthSession};
+use crate::domain::port::AuthRepository;
 use crate::prelude::*;
 
 /// Login use-case structure.
-pub struct Login;
+pub struct Login<T> {
+    /// Phantom data used to use the T parameter in the struct.
+    _marker: PhantomData<T>,
+}
 
-impl Login {
+impl<T> Login<T> {
     /// Creates a `Login` use-case instance.
     ///
     /// # Returns
     /// A `Login` instance.
     pub fn new() -> Self {
-        Self {}
+        Self {
+            _marker: PhantomData,
+        }
     }
 }
 
-impl UseCase for Login {
-    type Args = (AuthSession, AuthCredentials);
+impl<T> UseCase for Login<T>
+where
+    T: AuthnBackend + AuthRepository,
+{
+    type Args = (AuthSession<T>, T::Credentials);
     type Output = ();
     type Error = Error;
 
@@ -29,7 +39,7 @@ impl UseCase for Login {
         let (mut auth_session, credentials) = args;
 
         // Try to authenticate the user
-        let user = match auth_session.authenticate(credentials.clone()).await {
+        let user = match auth_session.authenticate(credentials).await {
             Ok(Some(user)) => user,
 
             Ok(None) => {
@@ -48,10 +58,8 @@ impl UseCase for Login {
             return Err(Error::Internal);
         }
 
-        event!(Level::INFO, "Successfully logged in as {}", user.email);
+        event!(Level::INFO, "Successfully logged in as {:?}", user);
 
         Ok(())
     }
 }
-
-// TODO: tests

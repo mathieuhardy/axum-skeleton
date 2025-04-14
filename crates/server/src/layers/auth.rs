@@ -6,7 +6,7 @@ use axum_login::{AuthManagerLayer, AuthManagerLayerBuilder};
 use sqlx::postgres::PgPool;
 use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
 
-use auth::AuthBackend;
+use auth::SQLxAuthRepository;
 
 use crate::config::Config;
 
@@ -20,7 +20,7 @@ use crate::config::Config;
 pub fn authentication_layer(
     config: &Config,
     db: &PgPool,
-) -> AuthManagerLayer<AuthBackend, MemoryStore> {
+) -> AuthManagerLayer<SQLxAuthRepository, MemoryStore> {
     // Session storage backend
     // TODO: use reddis to store the values
     let session_store = MemoryStore::default();
@@ -31,7 +31,7 @@ pub fn authentication_layer(
     ));
 
     // Authentication backend
-    let backend = AuthBackend::new(db);
+    let backend = SQLxAuthRepository::new(db);
 
     AuthManagerLayerBuilder::new(backend, session_layer).build()
 }

@@ -4,7 +4,6 @@ use serial_test::serial;
 use urlencoding::encode;
 // use uuid::Uuid;
 
-use auth::{AuthUser, AuthUserRole};
 // use security::password::{set_checks, Checks};
 use test_utils::rand::*;
 use test_utils::runner::*;
@@ -13,13 +12,13 @@ use test_utils_derives::*;
 
 use crate::api::tests::utils::*;
 // use crate::domain::user::{PasswordUpdateRequest, UpdateUserRequest, UpsertUserRequest, User};
-use crate::domain::user::User;
+use crate::domain::user::{User, UserRole};
 
 #[derive(Clone)]
 struct AuthUsers {
-    admin: AuthUser,
-    normal: AuthUser,
-    guest: AuthUser,
+    admin: User,
+    normal: User,
+    guest: User,
 }
 
 #[derive(Clone)]
@@ -43,25 +42,25 @@ struct DataSet {
 async fn setup() -> DataSet {
     let client = init_server().await.unwrap();
 
-    let auth_user_admin = AuthUser {
+    let auth_user_admin = User {
         email: random_email(),
-        role: AuthUserRole::Admin,
+        role: UserRole::Admin,
         password: random_password(),
-        ..AuthUser::default()
+        ..Default::default()
     };
 
-    let auth_user_normal = AuthUser {
+    let auth_user_normal = User {
         email: random_email(),
-        role: AuthUserRole::Normal,
+        role: UserRole::Normal,
         password: random_password(),
-        ..AuthUser::default()
+        ..Default::default()
     };
 
-    let auth_user_guest = AuthUser {
+    let auth_user_guest = User {
         email: random_email(),
-        role: AuthUserRole::Guest,
+        role: UserRole::Guest,
         password: random_password(),
-        ..AuthUser::default()
+        ..Default::default()
     };
 
     let user_admin = create_user(&auth_user_admin, &client.db).await.unwrap();
@@ -94,14 +93,24 @@ pub async fn test_delete_by_id() {
         let data = dataset.data.clone();
         let client = &mut dataset.client;
 
-        client.login(&data.auth_users.admin).await;
+        client
+            .login(
+                &data.auth_users.admin.email,
+                &data.auth_users.admin.password,
+            )
+            .await;
 
         let user = post_normal_user(client, &data.auth_users.admin)
             .await
             .unwrap();
 
         // Test as normal user
-        client.login(&data.auth_users.normal).await;
+        client
+            .login(
+                &data.auth_users.normal.email,
+                &data.auth_users.normal.password,
+            )
+            .await;
 
         let response = client
             .delete(format!("/api/users/{}", user.id))
@@ -111,7 +120,12 @@ pub async fn test_delete_by_id() {
         assert_eq!(response.status(), StatusCode::FORBIDDEN);
 
         // Test as guest user
-        client.login(&data.auth_users.guest).await;
+        client
+            .login(
+                &data.auth_users.guest.email,
+                &data.auth_users.guest.password,
+            )
+            .await;
 
         let response = client
             .delete(format!("/api/users/{}", user.id))
@@ -121,7 +135,12 @@ pub async fn test_delete_by_id() {
         assert_eq!(response.status(), StatusCode::FORBIDDEN);
 
         // Test as admin
-        client.login(&data.auth_users.admin).await;
+        client
+            .login(
+                &data.auth_users.admin.email,
+                &data.auth_users.admin.password,
+            )
+            .await;
 
         let response = client
             .delete(format!("/api/users/{}", user.id))
@@ -155,7 +174,12 @@ pub async fn test_get_current_after_logout() {
         let client = &mut dataset.client;
 
         // Login as admin
-        client.login(&data.auth_users.admin).await;
+        client
+            .login(
+                &data.auth_users.admin.email,
+                &data.auth_users.admin.password,
+            )
+            .await;
 
         // Logout
         let response = client.post("/logout").send().await;
@@ -178,7 +202,12 @@ pub async fn test_get_current_nominal() {
         let client = &mut dataset.client;
 
         // Login as admin
-        client.login(&data.auth_users.admin).await;
+        client
+            .login(
+                &data.auth_users.admin.email,
+                &data.auth_users.admin.password,
+            )
+            .await;
 
         // Check access after login (must be successful)
         let response = client.get("/api/users/current").send().await;
@@ -200,7 +229,12 @@ pub async fn test_get_all() {
         let client = &mut dataset.client;
 
         // Test as admin user
-        client.login(&data.auth_users.admin).await;
+        client
+            .login(
+                &data.auth_users.admin.email,
+                &data.auth_users.admin.password,
+            )
+            .await;
 
         let response = client.get("/api/users").send().await;
         assert_eq!(response.status(), StatusCode::OK);
@@ -214,13 +248,23 @@ pub async fn test_get_all() {
         assert!(users.iter().any(|e| e.email == data.auth_users.guest.email));
 
         // Test as normal user
-        client.login(&data.auth_users.normal).await;
+        client
+            .login(
+                &data.auth_users.normal.email,
+                &data.auth_users.normal.password,
+            )
+            .await;
 
         let response = client.get("/api/users").send().await;
         assert_eq!(response.status(), StatusCode::FORBIDDEN);
 
         // Test as guest user
-        client.login(&data.auth_users.guest).await;
+        client
+            .login(
+                &data.auth_users.guest.email,
+                &data.auth_users.guest.password,
+            )
+            .await;
 
         let response = client.get("/api/users").send().await;
         assert_eq!(response.status(), StatusCode::FORBIDDEN);
@@ -238,7 +282,12 @@ pub async fn test_get_by_filters() {
         let client = &mut dataset.client;
 
         // Login as admin
-        client.login(&data.auth_users.admin).await;
+        client
+            .login(
+                &data.auth_users.admin.email,
+                &data.auth_users.admin.password,
+            )
+            .await;
 
         // By name
         let response = client
@@ -282,13 +331,23 @@ pub async fn test_get_by_filters() {
         assert!(users.is_empty());
 
         // Test as normal user
-        client.login(&data.auth_users.normal).await;
+        client
+            .login(
+                &data.auth_users.normal.email,
+                &data.auth_users.normal.password,
+            )
+            .await;
 
         let response = client.get("/api/users").send().await;
         assert_eq!(response.status(), StatusCode::FORBIDDEN);
 
         // Test as guest user
-        client.login(&data.auth_users.guest).await;
+        client
+            .login(
+                &data.auth_users.guest.email,
+                &data.auth_users.guest.password,
+            )
+            .await;
 
         let response = client.get("/api/users").send().await;
         assert_eq!(response.status(), StatusCode::FORBIDDEN);
@@ -306,7 +365,12 @@ pub async fn test_get_by_id() {
         let client = &mut dataset.client;
 
         // Test as admin
-        client.login(&data.auth_users.admin).await;
+        client
+            .login(
+                &data.auth_users.admin.email,
+                &data.auth_users.admin.password,
+            )
+            .await;
 
         let response = client
             .get(format!("/api/users/{}", data.users.guest.id))
@@ -318,7 +382,12 @@ pub async fn test_get_by_id() {
         assert_eq!(fetched.id, data.users.guest.id);
 
         // Test as normal user
-        client.login(&data.auth_users.normal).await;
+        client
+            .login(
+                &data.auth_users.normal.email,
+                &data.auth_users.normal.password,
+            )
+            .await;
 
         let response = client
             .get(format!("/api/users/{}", data.users.guest.id))
@@ -327,7 +396,12 @@ pub async fn test_get_by_id() {
         assert_eq!(response.status(), StatusCode::FORBIDDEN);
 
         // Test as guest user
-        client.login(&data.auth_users.guest).await;
+        client
+            .login(
+                &data.auth_users.guest.email,
+                &data.auth_users.guest.password,
+            )
+            .await;
 
         let response = client
             .get(format!("/api/users/{}", data.users.guest.id))

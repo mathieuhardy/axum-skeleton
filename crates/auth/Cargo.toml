@@ -8,6 +8,7 @@ async-trait = { workspace = true, default-features = false }
 axum = { workspace = true, default-features = false, features = ["macros"] }
 axum-login = { workspace = true, default-features = false }
 derive_more = { workspace = true, default-features = false, features = ["debug"] }
+futures = { workspace = true, default-features = false }
 serde = { workspace = true, default-features = false }
 sqlx = { workspace = true, default-features = false }
 thiserror = { workspace = true, default-features = false }
@@ -18,9 +19,11 @@ validator = { workspace = true, default-features = false, features = ["derive"] 
 common-core = { workspace = true, default-features = false }
 common-web = { workspace = true, default-features = false }
 database = { workspace = true, default-features = false }
+security = { workspace = true, default-features = false }
 utils = { workspace = true, default-features = false, features = ["hashing"] }
 
 [dev-dependencies]
+mockall = { workspace = true, default-features = false }
 serial_test = { workspace = true, default-features = false }
 tokio = { workspace = true, default-features = false }
 

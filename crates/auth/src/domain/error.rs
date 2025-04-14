@@ -27,6 +27,10 @@ pub enum Error {
     /// The user is not found in database.
     #[error("User not found")]
     UserNotFound,
+
+    /// Validation error.
+    #[error("Unprocessable entity")]
+    Validation(#[from] validator::ValidationErrors),
 }
 
 impl axum::response::IntoResponse for Error {
@@ -36,6 +40,7 @@ impl axum::response::IntoResponse for Error {
         let (rc, code) = match self {
             Self::Unauthorized => (StatusCode::UNAUTHORIZED, "UNAUTHORIZED"),
             Self::UserNotFound => (StatusCode::UNAUTHORIZED, "USER_NOT_FOUND"),
+            Self::Validation(_) => (StatusCode::UNPROCESSABLE_ENTITY, "UNPROCESSABLE_ENTITY"),
             _ => (StatusCode::INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR"),
         };
 

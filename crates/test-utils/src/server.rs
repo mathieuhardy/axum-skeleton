@@ -15,7 +15,7 @@ use std::fmt::Display;
 use tower::util::ServiceExt;
 use tracing::subscriber::DefaultGuard;
 
-use auth::{AuthCredentials, AuthUser};
+use auth::AuthCredentials;
 use server::app;
 use server::config::{Config, Environment};
 
@@ -150,12 +150,12 @@ impl TestClient {
     ///
     /// # Arguments
     /// * `user` - User to be logged as.
-    pub async fn login(&mut self, user: &AuthUser) {
+    pub async fn login(&mut self, email: &str, password: &str) {
         self.post("/login")
             .cookie_store(true)
             .json(&AuthCredentials {
-                email: user.email.clone(),
-                password: user.password.clone(),
+                email: email.to_string(),
+                password: password.to_string(),
             })
             .send()
             .await;

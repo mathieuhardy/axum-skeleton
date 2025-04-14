@@ -7,12 +7,14 @@ use axum::response::IntoResponse;
 use axum::routing::post;
 use axum::Router;
 use tracing::instrument;
+use validator::Validate;
 
 use common_core::{AppState, UseCase};
 use common_web::extractor::FormOrJson;
 
 use crate::application::{Login, Logout};
-use crate::domain::auth_backend::{AuthCredentials, AuthSession};
+use crate::domain::auth_user::AuthCredentials;
+use crate::infrastructure::{SQLxAuthRepository, SQLxAuthSession};
 use crate::prelude::*;
 
 /// Builds a router for the authorization crate.
@@ -39,10 +41,14 @@ pub fn router() -> Router<AppState> {
 #[instrument]
 #[axum::debug_handler]
 pub async fn login(
-    auth_session: AuthSession,
+    auth_session: SQLxAuthSession,
     FormOrJson(credentials): FormOrJson<AuthCredentials>,
 ) -> ApiResult<impl IntoResponse> {
-    Login::new().handle((auth_session, credentials)).await
+    credentials.validate()?;
+
+    Login::<SQLxAuthRepository>::new()
+        .handle((auth_session, credentials))
+        .await
 }
 
 /// Logout handler.
@@ -56,6 +62,8 @@ pub async fn login(
 ///   - 500: INTERNAL_SERVER_ERROR.
 #[instrument]
 #[axum::debug_handler]
-pub async fn logout(auth_session: AuthSession) -> impl IntoResponse {
-    Logout::new().handle(auth_session).await
+pub async fn logout(auth_session: SQLxAuthSession) -> impl IntoResponse {
+    Logout::<SQLxAuthRepository>::new()
+        .handle(auth_session)
+        .await
 }

@@ -1,11 +1,11 @@
 use axum::http::StatusCode;
 use sqlx::postgres::PgPool;
 
-use auth::{AuthUser, AuthUserRole};
 use test_utils::rand::*;
 use test_utils::server::*;
 
 use crate::domain::user::{CreateUserRequest, User, UserRole};
+use crate::infrastructure::user::{DbUser, DbUserRole};
 
 #[derive(Default)]
 pub enum EmailValidity {
@@ -23,7 +23,7 @@ pub enum PasswordValidity {
 
 #[derive(Default)]
 pub struct PostInputs<'a> {
-    caller: AuthUser,
+    caller: User,
     email_validity: EmailValidity,
     password_validity: PasswordValidity,
     password: Option<&'a str>,
@@ -64,7 +64,7 @@ pub async fn post(client: &mut TestClient, inputs: &PostInputs<'_>) -> Option<Us
     // Check return code and values
     let expected_status = match (&caller.role, email_validity, password_validity) {
         // Only admin can create users
-        (AuthUserRole::Normal, _, _) | (AuthUserRole::Guest, _, _) => StatusCode::FORBIDDEN,
+        (UserRole::Normal, _, _) | (UserRole::Guest, _, _) => StatusCode::FORBIDDEN,
 
         // Do not allow invalid email or password
         (_, EmailValidity::_Invalid, _) | (_, _, PasswordValidity::_Invalid) => {
@@ -86,7 +86,7 @@ pub async fn post(client: &mut TestClient, inputs: &PostInputs<'_>) -> Option<Us
     None
 }
 
-pub async fn post_normal_user(client: &mut TestClient, caller: &AuthUser) -> Option<User> {
+pub async fn post_normal_user(client: &mut TestClient, caller: &User) -> Option<User> {
     post(
         client,
         &PostInputs {
@@ -98,45 +98,32 @@ pub async fn post_normal_user(client: &mut TestClient, caller: &AuthUser) -> Opt
     .await
 }
 
-pub async fn create_user(
-    user: &AuthUser,
-    pool: &PgPool,
-) -> Result<User, Box<dyn std::error::Error>> {
+pub async fn create_user(user: &User, pool: &PgPool) -> Result<User, Box<dyn std::error::Error>> {
     let first_name = random_string();
     let last_name = random_string();
 
     let user = sqlx::query_as!(
-        AuthUser,
+        DbUser,
         "
         INSERT INTO users (first_name, last_name, email, role, password)
         VALUES ($1, $2, $3, $4, $5)
         RETURNING
             id,
+            first_name,
+            last_name,
             email,
             role AS \"role: _\",
-            password",
+            password,
+            created_at,
+            updated_at",
         first_name,
         last_name,
         user.email.clone(),
-        user.role.clone() as AuthUserRole,
+        DbUserRole::from(user.role.clone()) as DbUserRole,
         utils::hashing::hash_password(&user.password)?,
     )
     .fetch_one(pool)
     .await?;
 
-    let role = match user.role {
-        AuthUserRole::Admin => UserRole::Admin,
-        AuthUserRole::Normal => UserRole::Normal,
-        AuthUserRole::Guest => UserRole::Guest,
-    };
-
-    Ok(User {
-        id: user.id,
-        first_name,
-        last_name,
-        email: user.email.clone(),
-        role,
-        password: user.password.clone(),
-        ..Default::default()
-    })
+    Ok(user.into())
 }

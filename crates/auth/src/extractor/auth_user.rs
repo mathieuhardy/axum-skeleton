@@ -10,8 +10,8 @@ use axum::RequestPartsExt;
 
 use common_core::AppState;
 
-use crate::domain::auth_backend::AuthSession;
 use crate::domain::auth_user::AuthUser;
+use crate::infrastructure::SQLxAuthSession;
 
 #[async_trait]
 impl<S> FromRequestParts<S> for AuthUser
@@ -23,7 +23,7 @@ where
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
         let auth_session = parts
-            .extract::<AuthSession>()
+            .extract::<SQLxAuthSession>()
             .await
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
