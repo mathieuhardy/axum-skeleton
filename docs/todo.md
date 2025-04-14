@@ -1,10 +1,24 @@
 # ✅ TODO
 
+- auth: don't call SQLx in domain if possible (store a trait impl in the AuthSession)
+- auth: add email verification process
+- auth: add endpoints to manage the list of sessions (show, invalidate, etc).
+- security: declare a structure for the password
+- user: add routes for self register: /api/users/profile
+- user: allow a user to self register
+- user: make password optional ?
+- user: add route for password recovery
+
+- enable missing tests
+- add missing tracing events for all errors
+- allow testing endpoints using mock if possible
+
 - Redis
 - OpenApi
 - Job queue
 - SSE
-- Other methods of authentication
+- Other methods of authentication (OTP, JWT, etc.)
+- Rate limiting for authentication (in an Axum middleware)
 
 ## Devops
 

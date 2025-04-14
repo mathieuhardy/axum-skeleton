@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 async-trait = { workspace = true, default-features = false }
-axum = { workspace = true, default-features = false }
+axum = { workspace = true, default-features = false, features = ["macros"] }
 axum-login = { workspace = true, default-features = false }
 derive_more = { workspace = true, default-features = false, features = ["debug"] }
 serde = { workspace = true, default-features = false }

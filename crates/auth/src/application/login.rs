@@ -43,7 +43,7 @@ impl UseCase for Login {
             }
         };
 
-        // Create the sesion for this user
+        // Create the session for this user
         if auth_session.login(&user).await.is_err() {
             return Err(Error::Internal);
         }

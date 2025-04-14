@@ -58,7 +58,7 @@ impl AuthnBackend for AuthBackend {
             sqlx::query_file_as!(Self::User, "sql/find_user_by_email.sql", credentials.email)
                 .fetch_one(&self.db)
                 .await
-                .map_err(|_| Error::Unauthorized)?;
+                .map_err(|_| Error::UserNotFound)?;
 
         // Verify password
         match utils::hashing::verify(&credentials.password, &user.password).await {

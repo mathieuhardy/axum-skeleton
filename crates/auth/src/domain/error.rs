@@ -4,6 +4,8 @@
 use axum::http::StatusCode;
 use thiserror::Error;
 
+use common_core::ApiError;
+
 /// Helper for return types inside this crate.
 pub type ApiResult<T> = Result<T, Error>;
 
@@ -21,13 +23,22 @@ pub enum Error {
     /// Cannot authorize a user.
     #[error("Unauthorized")]
     Unauthorized,
+
+    /// The user is not found in database.
+    #[error("User not found")]
+    UserNotFound,
 }
 
 impl axum::response::IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
-        match self {
-            Self::Unauthorized => StatusCode::UNAUTHORIZED.into_response(),
-            _ => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-        }
+        let message = self.to_string();
+
+        let (rc, code) = match self {
+            Self::Unauthorized => (StatusCode::UNAUTHORIZED, "UNAUTHORIZED"),
+            Self::UserNotFound => (StatusCode::UNAUTHORIZED, "USER_NOT_FOUND"),
+            _ => (StatusCode::INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR"),
+        };
+
+        (rc, ApiError::new(code, message)).into_response()
     }
 }
