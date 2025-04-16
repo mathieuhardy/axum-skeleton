@@ -20,18 +20,18 @@ TOTAL = 7
 TFOOT_END = 8
 FINISHED = 9
 
-TERRIBLE = 'terrible'
-BAD = 'bad'
-BAD_2 = 'bad-2'
-BAD_3 = 'bad-3'
-BAD_4 = 'bad-4'
-QUITE_GOOD = 'quite-good'
-QUITE_GOOD_2 = 'quite-good-2'
-GOOD = 'good'
-GOOD_2 = 'good'
-VERY_GOOD = 'very-good'
+TERRIBLE = "terrible"
+BAD = "bad"
+BAD_2 = "bad-2"
+BAD_3 = "bad-3"
+BAD_4 = "bad-4"
+QUITE_GOOD = "quite-good"
+QUITE_GOOD_2 = "quite-good-2"
+GOOD = "good"
+GOOD_2 = "good"
+VERY_GOOD = "very-good"
 
-CSS = '''
+CSS = """
 body {
     background-color: #272727;
     color: #eeeeee;
@@ -126,11 +126,12 @@ table tbody tr,
 table tfoot tr {
     border: 1px solid #dddddd;
 }
-'''
+"""
+
 
 def get_class(entry):
-    if entry.find('%') > 0:
-        number = float(entry.replace('%', ''))
+    if entry.find("%") > 0:
+        number = float(entry.replace("%", ""))
         if number < 10.0:
             return TERRIBLE
         if number < 20.0:
@@ -150,40 +151,42 @@ def get_class(entry):
         if number <= 100.0:
             return VERY_GOOD
 
-    return ''
+    return ""
+
 
 def to_html(type, match, file):
     if type == CRATE:
-        file.write(f'<h1>{match.group(1)}</h1><h2>{match.group(2)}</h2>')
+        file.write(f"<h1>{match.group(1)}</h1><h2>{match.group(2)}</h2>")
     elif type == THEAD_START:
-        file.write('<table><thead>')
+        file.write("<table><thead>")
     elif type == HEADER:
-        file.write('<tr>')
+        file.write("<tr>")
         for group in match.groups():
-            file.write(f'<th>{group.strip()}</th>')
-        file.write('</tr>')
+            file.write(f"<th>{group.strip()}</th>")
+        file.write("</tr>")
     elif type == THEAD_END:
-        file.write('</thead><tbody>')
+        file.write("</thead><tbody>")
     elif type == RESULT:
-        file.write('<tr>')
+        file.write("<tr>")
         for group in match.groups():
             group = group.strip()
             c = get_class(group)
             file.write(f'<td class="{c}">{group}</td>')
-        file.write('</tr>')
+        file.write("</tr>")
     elif type == TFOOT_START:
-        file.write('</tbody><tfoot>')
+        file.write("</tbody><tfoot>")
     elif type == TOTAL:
-        file.write('<tr>')
+        file.write("<tr>")
         for group in match.groups():
             group = group.strip()
             c = get_class(group)
             file.write(f'<th class="{c}">{group}</th>')
-        file.write('</tr>')
+        file.write("</tr>")
     elif type == TFOOT_END:
-        file.write('</tfoot></table>')
+        file.write("</tfoot></table>")
     elif type == FINISHED:
         pass
+
 
 def next_expectation(type):
     if type == CRATE:
@@ -203,28 +206,35 @@ def next_expectation(type):
     elif type == FINISHED:
         return []
 
-    print('Internal error: no expectation found')
+    print("Internal error: no expectation found")
     sys.exit(1)
 
-with open(output, 'w') as f_out:
-    # Write html header
-    f_out.write(f'<html><head><title>Documentation coverage</title><style>{CSS}</style></head><body>')
 
-    with open(input, 'r') as f_in:
+with open(output, "w") as f_out:
+    # Write html header
+    f_out.write(
+        f"<html><head><title>Documentation coverage</title><style>{CSS}</style></head><body>"
+    )
+
+    with open(input, "r") as f_in:
         # Read all lines of the input file
         lines = f_in.readlines()
 
         # Prepare regexes
         regexes = {
-            CRATE: re.compile('^ Documenting (.*) \((.*)\)'),
-            THEAD_START: re.compile('^\+[-+]+\+$'),
-            HEADER: re.compile('^\| (.*) +\| +(.*) +\| +(.*) +\| +(.*) +\| +(.*) +\|$'),
-            THEAD_END: re.compile('^\+[-+]+\+$'),
-            RESULT: re.compile('^\| (.*) +\| +(.*) +\| +(.*) +\| +(.*) +\| +(.*) +\|$'),
-            TFOOT_START: re.compile('^\+[-+]+\+$'),
-            TOTAL: re.compile('^\| (.*) +\| +(.*) +\| +(.*) +\| +(.*) +\| +(.*) +\|$'),
-            TFOOT_END: re.compile('^\+[-+]+\+$'),
-            FINISHED: re.compile('^ +Finished.*$'),
+            CRATE: re.compile(r"^ Documenting (.*) \((.*)\)"),
+            THEAD_START: re.compile(r"^\+[-+]+\+$"),
+            HEADER: re.compile(
+                r"^\| (.*) +\| +(.*) +\| +(.*) +\| +(.*) +\| +(.*) +\|$"
+            ),
+            THEAD_END: re.compile(r"^\+[-+]+\+$"),
+            RESULT: re.compile(
+                r"^\| (.*) +\| +(.*) +\| +(.*) +\| +(.*) +\| +(.*) +\|$"
+            ),
+            TFOOT_START: re.compile(r"^\+[-+]+\+$"),
+            TOTAL: re.compile(r"^\| (.*) +\| +(.*) +\| +(.*) +\| +(.*) +\| +(.*) +\|$"),
+            TFOOT_END: re.compile(r"^\+[-+]+\+$"),
+            FINISHED: re.compile(r"^ +Finished.*$"),
         }
 
         # First pattern expected is a crate module
@@ -250,8 +260,7 @@ with open(output, 'w') as f_out:
                 break
 
             # if not found:
-                # print('Parsing error: expectation has not been found')
+            # print('Parsing error: expectation has not been found')
 
     # Write html footer
-    f_out.write('</body></html>')
-
+    f_out.write("</body></html>")
