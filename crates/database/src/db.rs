@@ -1,3 +1,5 @@
+//! Databases connections initialization
+
 use bb8_redis::RedisConnectionManager;
 use sqlx::postgres::{PgPool, PgPoolOptions};
 
