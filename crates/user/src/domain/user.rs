@@ -1,3 +1,5 @@
+//! User data structures.
+
 use chrono::{DateTime, Utc};
 use validator::Validate;
 

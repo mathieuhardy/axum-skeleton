@@ -1,3 +1,5 @@
+//! Use-case for upserting a user.
+
 use common_core::UseCase;
 use utils::hashing::hash_password;
 
@@ -5,16 +7,27 @@ use crate::domain::port::UserRepository;
 use crate::domain::user::{UpsertUserRequest, User, UserData};
 use crate::prelude::*;
 
+/// Repositories used by this use-case.
 #[derive(Clone)]
 pub struct UpsertUserRepos {
+    /// User repository.
     pub user: Arc<dyn UserRepository>,
 }
 
+/// User creation/update use-case structure.
 pub struct UpsertUser {
+    /// List of repositories used.
     repos: UpsertUserRepos,
 }
 
 impl UpsertUser {
+    /// Creates a new `UpsertUser` use-case instance.
+    ///
+    /// # Arguments
+    /// * `repos`: List of repositories used by this use-case.
+    ///
+    /// # Returns
+    /// A `UpsertUser` instance.
     pub fn new(repos: UpsertUserRepos) -> Self {
         Self { repos }
     }

@@ -1,3 +1,5 @@
+//! Use-case for creating a user.
+
 use common_core::UseCase;
 use utils::hashing::hash_password;
 
@@ -5,16 +7,27 @@ use crate::domain::port::UserRepository;
 use crate::domain::user::{CreateUserRequest, User, UserData};
 use crate::prelude::*;
 
+/// Repositories used by this use-case.
 #[derive(Clone)]
 pub struct CreateUserRepos {
+    /// User repository.
     pub user: Arc<dyn UserRepository>,
 }
 
+/// User creation use-case structure.
 pub struct CreateUser {
+    /// List of repositories used.
     repos: CreateUserRepos,
 }
 
 impl CreateUser {
+    /// Creates a new `CreateUser` use-case instance.
+    ///
+    /// # Arguments
+    /// * `repos`: List of repositories used by this use-case.
+    ///
+    /// # Returns
+    /// A `CreateUser` instance.
     pub fn new(repos: CreateUserRepos) -> Self {
         Self { repos }
     }

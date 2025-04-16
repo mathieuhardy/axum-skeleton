@@ -1,3 +1,5 @@
+//! SQLx implementation of the UserRepository trait.
+
 use chrono::{DateTime, Utc};
 use futures::future::BoxFuture;
 use sqlx::postgres::{PgHasArrayType, PgTypeInfo};
@@ -92,11 +94,20 @@ impl From<DbUser> for User {
     }
 }
 
+/// SQLx version of the UserRepository trait.
 pub struct SQLxUserRepository {
+    /// Database connection pool.
     db: PgPool,
 }
 
 impl SQLxUserRepository {
+    /// Creates a new SQLxUserRepository instance.
+    ///
+    /// # Arguments
+    /// * `db` - The database connection pool.
+    ///
+    /// # Returns
+    /// A new instance of SQLxUserRepository.
     #[must_use]
     pub fn new(db: PgPool) -> Self {
         Self { db }

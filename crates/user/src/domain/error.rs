@@ -4,10 +4,12 @@
 use axum::http::StatusCode;
 use thiserror::Error;
 
+use common_core::ApiError;
+
 /// Helper for return types inside this crate.
 pub type ApiResult<T> = Result<T, Error>;
 
-/// Enumerates the possible errors returned by this crate.
+/// Enumerates the possible errors used in this crate.
 #[derive(Debug, Error)]
 pub enum Error {
     /// Generic filesystem error.
@@ -41,13 +43,17 @@ pub enum Error {
 
 impl axum::response::IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
-        match self {
-            Self::Forbidden | Self::InvalidPassword => StatusCode::FORBIDDEN.into_response(),
-            Self::NotFound => StatusCode::NOT_FOUND.into_response(),
+        let message = self.to_string();
+
+        let (rc, code) = match self {
+            Self::Forbidden | Self::InvalidPassword => (StatusCode::FORBIDDEN, "FORBIDDEN"),
+            Self::NotFound => (StatusCode::NOT_FOUND, "NOT_FOUND"),
             Self::Validation(_) | Self::MissingPassword => {
-                StatusCode::UNPROCESSABLE_ENTITY.into_response()
+                (StatusCode::UNPROCESSABLE_ENTITY, "UNPROCESSABLE_ENTITY")
             }
-            _ => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-        }
+            _ => (StatusCode::INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR"),
+        };
+
+        (rc, ApiError::new(code, message)).into_response()
     }
 }

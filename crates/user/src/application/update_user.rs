@@ -1,19 +1,32 @@
+//! Use-case for updating a user.
+
 use common_core::UseCase;
 
 use crate::domain::port::UserRepository;
 use crate::domain::user::{UpdateUserRequest, User};
 use crate::prelude::*;
 
+/// Repositories used by this use-case.
 #[derive(Clone)]
 pub struct UpdateUserRepos {
+    /// User repository.
     pub user: Arc<dyn UserRepository>,
 }
 
+/// User update use-case structure.
 pub struct UpdateUser {
+    /// List of repositories used.
     repos: UpdateUserRepos,
 }
 
 impl UpdateUser {
+    /// Creates a new `UpdateUser` use-case instance.
+    ///
+    /// # Arguments
+    /// * `repos`: List of repositories used by this use-case.
+    ///
+    /// # Returns
+    /// A `UpdateUser` instance.
     pub fn new(repos: UpdateUserRepos) -> Self {
         Self { repos }
     }

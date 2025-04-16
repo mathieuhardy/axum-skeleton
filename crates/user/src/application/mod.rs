@@ -1,3 +1,5 @@
+//! List of use-cases used by the api layer.
+
 mod create_user;
 mod delete_user_by_id;
 mod get_user_by_id;

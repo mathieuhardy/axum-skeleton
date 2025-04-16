@@ -1,9 +1,18 @@
+//! Utilities functions for handling users in the database.
+
 use test_utils::rand::{random_email, random_string};
 
 use crate::domain::user::{User, UserRole};
 use crate::infrastructure::user::{DbUser, DbUserRole};
 use crate::prelude::*;
 
+/// Creates a new user in the database with the given role.
+///
+/// # Arguments
+/// * `role` - The role of the user to create.
+///
+/// # Returns
+/// A `Result` containing the created user or an error if the user could not be created.
 pub async fn create_user(
     role: UserRole,
     pool: &PgPool,

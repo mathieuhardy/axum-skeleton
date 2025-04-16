@@ -1,3 +1,5 @@
+//! HTTP endpoints for user management (mostly by an admin user).
+
 use axum::extract::{Path, Query};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;

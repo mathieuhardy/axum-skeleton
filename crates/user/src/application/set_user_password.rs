@@ -1,3 +1,5 @@
+//! Use-case for setting a user's password.
+
 use common_core::UseCase;
 use utils::hashing::{hash_password, verify};
 
@@ -5,16 +7,27 @@ use crate::domain::port::UserRepository;
 use crate::domain::user::PasswordUpdateRequest;
 use crate::prelude::*;
 
+/// Repositories used by this use-case.
 #[derive(Clone)]
 pub struct SetUserPasswordRepos {
+    /// User repository.
     pub user: Arc<dyn UserRepository>,
 }
 
+/// Password update use-case structure.
 pub struct SetUserPassword {
+    /// List of repositories used.
     repos: SetUserPasswordRepos,
 }
 
 impl SetUserPassword {
+    /// Creates a new `SetUserPassword` use-case instance.
+    ///
+    /// # Arguments
+    /// * `repos`: List of repositories used by this use-case.
+    ///
+    /// # Returns
+    /// A `SetUserPassword` instance.
     pub fn new(repos: SetUserPasswordRepos) -> Self {
         Self { repos }
     }

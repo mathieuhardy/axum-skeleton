@@ -4,6 +4,7 @@
 use axum::http::StatusCode;
 use thiserror::Error;
 
+use common_core::ApiError;
 use database::Error as DatabaseError;
 
 /// Helper for return types inside this crate.
@@ -64,11 +65,15 @@ pub enum Error {
 
 impl axum::response::IntoResponse for Error {
     fn into_response(self) -> axum::response::Response {
-        match self {
-            Self::Database(DatabaseError::NotFound) => StatusCode::NOT_FOUND.into_response(),
-            Self::Forbidden => StatusCode::FORBIDDEN.into_response(),
-            Self::Unauthorized => StatusCode::UNAUTHORIZED.into_response(),
-            _ => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
-        }
+        let message = self.to_string();
+
+        let (rc, code) = match self {
+            Self::Database(DatabaseError::NotFound) => (StatusCode::NOT_FOUND, "NOT_FOUND"),
+            Self::Forbidden => (StatusCode::FORBIDDEN, "FORBIDDEN"),
+            Self::Unauthorized => (StatusCode::UNAUTHORIZED, "UNAUTHORIZED"),
+            _ => (StatusCode::INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR"),
+        };
+
+        (rc, ApiError::new(code, message)).into_response()
     }
 }

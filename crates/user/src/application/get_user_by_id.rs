@@ -1,19 +1,32 @@
+//! Use-case for getting a user by ID.
+
 use common_core::UseCase;
 
 use crate::domain::port::UserRepository;
 use crate::domain::user::User;
 use crate::prelude::*;
 
+/// Repositories used by this use-case.
 #[derive(Clone)]
 pub struct GetUserByIdRepos {
+    /// User repository.
     pub user: Arc<dyn UserRepository>,
 }
 
+/// User fetching use-case structure.
 pub struct GetUserById {
+    /// List of repositories used.
     repos: GetUserByIdRepos,
 }
 
 impl GetUserById {
+    /// Creates a new `GetUserById` use-case instance.
+    ///
+    /// # Arguments
+    /// * `repos`: List of repositories used by this use-case.
+    ///
+    /// # Returns
+    /// A `GetUserById` instance.
     pub fn new(repos: GetUserByIdRepos) -> Self {
         Self { repos }
     }

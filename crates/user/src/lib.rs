@@ -1,3 +1,6 @@
+//! This crate contains the implementation of the user service. It allows to manage the list of
+//! users and allow users to register themselves.
+
 #![forbid(unsafe_code)]
 
 mod api;
