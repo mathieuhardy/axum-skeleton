@@ -6,10 +6,10 @@ edition = "2021"
 [dependencies]
 argon2 = { workspace = true, default-features = false, features = ["alloc", "password-hash", "rand"], optional = true }
 project-root = { workspace = true, default-features = false, optional = true }
+rand_core = { workspace = true, default-features = false, features = ["getrandom"], optional = true }
 thiserror = { workspace = true, default-features = false }
 tokio = { workspace = true, default-features = false, features = ["full"], optional = true }
 
 [features]
-# TODO: doesn't build when hashing enabled
 fs = ["project-root"]
-hashing = ["argon2", "tokio"]
+hashing = ["argon2", "rand_core", "tokio"]

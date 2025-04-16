@@ -2932,6 +2932,7 @@ version = "0.1.0"
 dependencies = [
  "argon2",
  "project-root",
+ "rand_core",
  "thiserror 2.0.12",
  "tokio",
 ]
