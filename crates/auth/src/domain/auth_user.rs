@@ -18,7 +18,7 @@ pub struct AuthCredentials {
 
     /// Password used during authentication.
     #[debug(skip)]
-    #[validate(custom = "validate_password")]
+    #[validate(custom(function = "validate_password"))]
     pub password: String,
 }
 
