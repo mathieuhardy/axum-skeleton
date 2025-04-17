@@ -4,6 +4,13 @@
 
 use std::error::Error;
 
+#[cfg(feature = "jemalloc")]
+use jemallocator::Jemalloc;
+
+#[cfg(feature = "jemalloc")]
+#[global_allocator]
+static GLOBAL: Jemalloc = Jemalloc;
+
 /// Entry point of the backend application. It loads environment variables,
 /// initializes the logging system and starts the server.
 ///

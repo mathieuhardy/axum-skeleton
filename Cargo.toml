@@ -29,6 +29,7 @@ derive_more = { version = "2.0.1", default-features = false }
 dotenvy = { version = "0.15.7", default-features = false }
 futures = { version = "0.3.31", default-features = false }
 http-body-util = { version = "0.1.1", default-features = false }
+jemallocator ={ version = "0.3.0", default-features = false }
 mime = { version = "0.3.17", default-features = false }
 mockall = { version = "0.13.1", default-features = false }
 project-root = { version = "0.2.2", default-features = false }

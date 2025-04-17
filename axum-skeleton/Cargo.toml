@@ -11,7 +11,11 @@ license-file = "LICENSE.txt"
 
 [dependencies]
 dotenvy = { workspace = true, default-features = false }
+jemallocator = { workspace = true, default-features = false, optional = true }
 tokio = { workspace = true, default-features = false, features = ["full"] }
 tracing-subscriber = { workspace = true, default-features = false, features = ["ansi", "env-filter", "fmt"]}
 
 server = { workspace = true, default-features = false, features = ["k8s", "sanity"] }
+
+[features]
+jemalloc = ["dep:jemallocator"]
