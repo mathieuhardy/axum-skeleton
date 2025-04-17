@@ -40,6 +40,8 @@
 - [OpenApi](https://docs.rs/okapi-operation/latest/okapi_operation/#example-using-axum-but-without-axum_integration-feature)
 - [Prometheus](https://docs.rs/axum-prometheus/latest/axum_prometheus/)
 - [Job queue](https://cetra3.github.io/blog/implementing-a-jobq)
+- [Workflow](https://github.com/bahdotsh/wrkflw)
+- [Memory allocation](https://leapcell.medium.com/optimizing-rust-performance-with-jemalloc-c18057532194)
 
 ### Websockets
 
