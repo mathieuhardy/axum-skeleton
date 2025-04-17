@@ -2,7 +2,6 @@
 
 use chrono::{DateTime, Utc};
 use futures::future::BoxFuture;
-use sqlx::postgres::{PgHasArrayType, PgTypeInfo};
 use sqlx::{FromRow, Type};
 
 use crate::domain::port::UserRepository;
@@ -22,12 +21,6 @@ pub enum DbUserRole {
     /// See `UserRole::Guest`.
     #[default]
     Guest,
-}
-
-impl PgHasArrayType for DbUserRole {
-    fn array_type_info() -> PgTypeInfo {
-        PgTypeInfo::with_name("_user_role")
-    }
 }
 
 impl From<DbUserRole> for UserRole {

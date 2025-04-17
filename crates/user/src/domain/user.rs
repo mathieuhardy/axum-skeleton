@@ -107,7 +107,7 @@ pub struct CreateUserRequest {
 
     /// See `User::password`.
     #[debug(skip)]
-    #[validate(custom = "validate_password")]
+    #[validate(custom(function = "validate_password"))]
     pub password: String,
 }
 
@@ -186,12 +186,12 @@ pub struct UpsertUserRequest {
 
     /// See `User::password`.
     #[debug(skip)]
-    #[validate(custom = "validate_password")]
+    #[validate(custom(function = "validate_password"))]
     pub password: Option<String>,
 
     /// Data from `UserRequest`
     #[serde(flatten)]
-    #[validate]
+    #[validate(nested)]
     pub user: UpdateUserRequest,
 }
 
@@ -224,6 +224,6 @@ pub struct PasswordUpdateRequest {
 
     /// New password to be set in database.
     #[debug(skip)]
-    #[validate(custom = "validate_password")]
+    #[validate(custom(function = "validate_password"))]
     pub new: String,
 }

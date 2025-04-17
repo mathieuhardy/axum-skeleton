@@ -2,7 +2,6 @@
 
 use axum_login::{AuthnBackend, UserId};
 use futures::future::BoxFuture;
-use sqlx::postgres::{PgHasArrayType, PgTypeInfo};
 use sqlx::{FromRow, Type};
 
 use crate::domain::auth_user::{AuthCredentials, AuthUser, AuthUserRole};
@@ -25,12 +24,6 @@ pub enum DbAuthUserRole {
     /// See `AuthUserRole::Guest`.
     #[default]
     Guest,
-}
-
-impl PgHasArrayType for DbAuthUserRole {
-    fn array_type_info() -> PgTypeInfo {
-        PgTypeInfo::with_name("_user_role")
-    }
 }
 
 impl From<DbAuthUserRole> for AuthUserRole {

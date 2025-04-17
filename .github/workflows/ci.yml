@@ -9,7 +9,7 @@ on:
 env:
   POSTGRES_USER: demo
   POSTGRES_PASSWORD: demo
-  POSTGRES_DB: axum_test
+  POSTGRES_DB: axum
   POSTGRES_HOST: localhost
   POSTGRES_PORT: 5432
 
@@ -160,6 +160,7 @@ jobs:
 
       - name: Run unit tests
         env:
-          DATABASE_URL: postgres://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}
+          # DATABASE_URL: postgres://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}
+          DATABASE_URL_TEST: postgres://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}
         run: |
           cargo nextest run --release --workspace --all-targets --all-features --locked
