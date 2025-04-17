@@ -1,7 +1,6 @@
 //! This crate provides test utilities for the other crates.
 
 #![forbid(unsafe_code)]
-#![feature(async_closure)]
 
 #[cfg(feature = "rand")]
 pub mod rand;

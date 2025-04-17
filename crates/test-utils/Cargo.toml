@@ -12,7 +12,7 @@ serde = { workspace = true, default-features = false, optional = true }
 serde_json = { workspace = true, default-features = false, optional = true }
 sqlx = { workspace = true, default-features = false, features = ["macros", "migrate", "postgres", "runtime-tokio", "tls-native-tls", "uuid"] }
 tokio = { workspace = true, default-features = false, features = ["full"], optional = true }
-tower = { workspace = true, default-features = false, optional = true }
+tower = { workspace = true, default-features = false, features = ["util"], optional = true }
 tracing = { workspace = true, default-features = false, features = ["attributes", "log", "std"], optional = true }
 tracing-subscriber = { workspace = true, default-features = false, features = ["ansi", "env-filter", "fmt"], optional = true }
 uuid = { workspace = true, default-features = false, features = ["v4"] }

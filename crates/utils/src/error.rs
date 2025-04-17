@@ -14,7 +14,7 @@ pub enum Error {
     Hashing(String),
 
     /// File or directory not found.
-    #[error("Path not found: {0}")]
+    #[error("Path not found: {0:?}")]
     PathNotFound(std::path::PathBuf),
 
     /// Generic filesystem error.
