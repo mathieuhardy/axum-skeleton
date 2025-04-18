@@ -25,7 +25,6 @@ security = { workspace = true, default-features = false }
 utils = { workspace = true, default-features = false, features = ["hashing"] }
 
 [dev-dependencies]
-rand = { workspace = true, default-features = false }
 mockall = { workspace = true, default-features = false }
 serial_test = { workspace = true, default-features = false }
 tokio = { workspace = true, default-features = false }
