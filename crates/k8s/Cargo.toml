@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = { workspace = true, default-features = false, features = ["http2"] }
+axum = { workspace = true, default-features = false, features = ["http1"] }
 
 common-core = { workspace = true, default-features = false }

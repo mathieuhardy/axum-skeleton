@@ -24,6 +24,7 @@ pub struct AuthCredentials {
 
 /// List of users roles.
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum AuthUserRole {
     /// User with all privileges.
     Admin,
