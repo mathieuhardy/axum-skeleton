@@ -1,12 +1,14 @@
 # ✅ TODO
 
+- tests: add verbose option in hurl script
+- tests: add arguments parsing in hurl script (getopt)
 - auth: add unit tests everywhere it's possible
 - auth: add email verification process
-- auth: add endpoints to manage the list of sessions (show, invalidate, etc).
+- auth: add endpoints to manage the list of sessions (show, invalidate, etc)
 - security: declare a structure for the password
 - user: add routes for self register: /api/users/profile
 - user: allow a user to self register
-- user: make password optional ?
+- user: make password optional
 - user: add route for password recovery
 
 - enable missing tests

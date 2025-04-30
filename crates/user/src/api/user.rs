@@ -61,17 +61,11 @@ pub async fn delete_user_by_id(
 #[instrument]
 #[axum::debug_handler(state = AppState)]
 pub async fn get_current_user(auth_user: AuthUser, DbPool(db): DbPool) -> ApiResult<Json<User>> {
-    if !auth_user.is_admin() {
-        return Err(Error::Forbidden);
-    }
-
     let repos = GetUserByIdRepos {
         user: Arc::new(SQLxUserRepository::new(db)),
     };
 
-    let user_id = auth_user.id;
-
-    let user = GetUserById::new(repos).handle(user_id).await?;
+    let user = GetUserById::new(repos).handle(auth_user.id).await?;
 
     Ok(Json(user))
 }

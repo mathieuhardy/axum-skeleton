@@ -9,6 +9,7 @@ use crate::prelude::*;
 
 /// List of users roles.
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum UserRole {
     /// User with all privileges.
     Admin,

@@ -1,3 +1,4 @@
 .env
+.hurl/
 target/
 tarpaulin-report.html

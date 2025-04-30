@@ -141,7 +141,7 @@ jobs:
         uses: moonrepo/setup-rust@v1
         with:
           cache-target: release
-          bins: cargo-nextest, sqlx-cli
+          bins: cargo-nextest, hurl, sqlx-cli
 
       - name: Install libpq
         run: |
@@ -160,7 +160,11 @@ jobs:
 
       - name: Run unit tests
         env:
-          # DATABASE_URL: postgres://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}
           DATABASE_URL_TEST: postgres://${{ env.POSTGRES_USER }}:${{ env.POSTGRES_PASSWORD }}@${{ env.POSTGRES_HOST }}:${{ env.POSTGRES_PORT }}/${{ env.POSTGRES_DB }}
         run: |
           cargo nextest run --release --workspace --all-targets --all-features --locked
+
+      - name: Run API tests
+        run: |
+          cargo build --release --workspace --all-targets --all-features --locked
+          ./scripts/tests/run_api_tests.sh ${{ env.POSTGRES_DB }}
