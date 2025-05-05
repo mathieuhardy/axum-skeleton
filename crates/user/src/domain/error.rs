@@ -13,6 +13,10 @@ pub type ApiResult<T> = Result<T, Error>;
 #[derive(Debug, Error)]
 pub enum Error {
     /// Generic filesystem error.
+    #[error(transparent)]
+    Auth(#[from] auth::Error),
+
+    /// Generic filesystem error.
     #[error("Forbidden")]
     Forbidden,
 
@@ -29,15 +33,15 @@ pub enum Error {
     NotFound,
 
     /// Generic SQLx error.
-    #[error("{0}")]
+    #[error(transparent)]
     SQLx(#[from] sqlx::Error),
 
     /// Generic utils error.
-    #[error("{0}")]
+    #[error(transparent)]
     Utils(#[from] utils::error::Error),
 
     /// Validation error.
-    #[error("Unprocessable entity")]
+    #[error(transparent)]
     Validation(#[from] validator::ValidationErrors),
 }
 

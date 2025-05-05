@@ -12,12 +12,20 @@ pub type ApiResult<T> = Result<T, Error>;
 /// Enumerates the possible errors used in this crate.
 #[derive(Debug, Error)]
 pub enum Error {
-    /// Internal server error.
+    /// Internal server error. TODO: remove ?
     #[error("Internal server error")]
     Internal,
 
+    /// The user session is not found.
+    #[error(transparent)]
+    Session(#[from] tower_sessions::session::Error),
+
+    /// The tower session is not found.
+    #[error("Missing Tower session")]
+    SessionNotFound,
+
     /// Generic SQLx error.
-    #[error("{0}")]
+    #[error(transparent)]
     SQLx(#[from] sqlx::Error),
 
     /// Cannot authorize a user.

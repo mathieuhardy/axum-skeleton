@@ -1,21 +1,20 @@
 //! Use-case for login a user.
 
-use axum_login::{AuthSession, AuthnBackend};
 use std::marker::PhantomData;
-use tracing::{event, Level};
 
 use common_core::UseCase;
 
-use crate::domain::port::AuthRepository;
+use crate::domain::auth::{Auth, AuthCredentials};
+use crate::domain::port::AuthStore;
 use crate::prelude::*;
 
 /// Login use-case structure.
-pub struct Login<T> {
-    /// Phantom data used to use the T parameter in the struct.
-    _marker: PhantomData<T>,
+pub(crate) struct Login<Store> {
+    /// Phantom data used to use the `Store` parameter in the struct.
+    _marker: PhantomData<Store>,
 }
 
-impl<T> Login<T> {
+impl<Store> Login<Store> {
     /// Creates a `Login` use-case instance.
     ///
     /// # Returns
@@ -27,39 +26,21 @@ impl<T> Login<T> {
     }
 }
 
-impl<T> UseCase for Login<T>
+impl<Store> UseCase for Login<Store>
 where
-    T: AuthnBackend + AuthRepository,
+    Store: AuthStore,
 {
-    type Args = (AuthSession<T>, T::Credentials);
+    type Args = (Auth<Store>, AuthCredentials);
     type Output = ();
     type Error = Error;
 
     async fn handle(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        let (mut auth_session, credentials) = args;
+        let (mut auth, credentials) = args;
 
-        // Try to authenticate the user
-        let user = match auth_session.authenticate(credentials).await {
-            Ok(Some(user)) => user,
-
-            Ok(None) => {
-                event!(Level::ERROR, "Invalid credentials");
-
-                return Err(Error::Unauthorized);
-            }
-
-            Err(_) => {
-                return Err(Error::Unauthorized);
-            }
-        };
+        // Try to authenticate the user (i.e. check if user exists and password is correct)
+        let user = auth.authenticate(credentials).await?;
 
         // Create the session for this user
-        if auth_session.login(&user).await.is_err() {
-            return Err(Error::Internal);
-        }
-
-        event!(Level::INFO, "Successfully logged in as {:?}", user);
-
-        Ok(())
+        auth.login(&user.id).await
     }
 }

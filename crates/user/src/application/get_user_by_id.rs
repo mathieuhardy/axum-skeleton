@@ -2,33 +2,33 @@
 
 use common_core::UseCase;
 
-use crate::domain::port::UserRepository;
+use crate::domain::port::UserStore;
 use crate::domain::user::User;
 use crate::prelude::*;
 
-/// Repositories used by this use-case.
+/// Stores used by this use-case.
 #[derive(Clone)]
-pub struct GetUserByIdRepos {
-    /// User repository.
-    pub user: Arc<dyn UserRepository>,
+pub struct GetUserByIdStores {
+    /// User store.
+    pub user: Arc<dyn UserStore>,
 }
 
 /// User fetching use-case structure.
 pub struct GetUserById {
-    /// List of repositories used.
-    repos: GetUserByIdRepos,
+    /// List of stores used.
+    stores: GetUserByIdStores,
 }
 
 impl GetUserById {
     /// Creates a new `GetUserById` use-case instance.
     ///
     /// # Arguments
-    /// * `repos`: List of repositories used by this use-case.
+    /// * `stores`: List of stores used by this use-case.
     ///
     /// # Returns
     /// A `GetUserById` instance.
-    pub fn new(repos: GetUserByIdRepos) -> Self {
-        Self { repos }
+    pub fn new(stores: GetUserByIdStores) -> Self {
+        Self { stores }
     }
 }
 
@@ -39,7 +39,7 @@ impl UseCase for GetUserById {
 
     async fn handle(&self, user_id: Self::Args) -> Result<Self::Output, Self::Error> {
         if !self
-            .repos
+            .stores
             .user
             .exists(user_id)
             .await
@@ -48,7 +48,7 @@ impl UseCase for GetUserById {
             return Err(Error::NotFound);
         }
 
-        self.repos.user.get_by_id(user_id).await
+        self.stores.user.get_by_id(user_id).await
     }
 }
 
@@ -58,11 +58,11 @@ mod tests {
 
     use test_utils::rand::random_id;
 
-    use crate::domain::port::MockUserRepository;
+    use crate::domain::port::MockUserStore;
 
     #[tokio::test]
     async fn test_get_user_by_id_not_found() {
-        let mut repo_user = MockUserRepository::new();
+        let mut repo_user = MockUserStore::new();
 
         let user_id = random_id();
 
@@ -71,17 +71,17 @@ mod tests {
             Box::pin(async move { Ok(false) })
         });
 
-        let repos = GetUserByIdRepos {
+        let stores = GetUserByIdStores {
             user: Arc::new(repo_user),
         };
 
-        let res = GetUserById::new(repos).handle(user_id).await;
+        let res = GetUserById::new(stores).handle(user_id).await;
         assert!(matches!(res, Err(Error::NotFound)));
     }
 
     #[tokio::test]
     async fn test_get_user_by_id_nominal() {
-        let mut repo_user = MockUserRepository::new();
+        let mut repo_user = MockUserStore::new();
 
         let user_id = random_id();
 
@@ -95,11 +95,11 @@ mod tests {
             Box::pin(async move { Ok(User::default()) })
         });
 
-        let repos = GetUserByIdRepos {
+        let stores = GetUserByIdStores {
             user: Arc::new(repo_user),
         };
 
-        let res = GetUserById::new(repos).handle(user_id).await;
+        let res = GetUserById::new(stores).handle(user_id).await;
         assert!(res.is_ok());
     }
 }

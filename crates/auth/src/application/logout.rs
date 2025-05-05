@@ -1,21 +1,20 @@
 //! Use-case for logout a user.
 
-use axum_login::{AuthSession, AuthnBackend};
 use std::marker::PhantomData;
-use tracing::{event, Level};
 
 use common_core::UseCase;
 
-use crate::domain::port::AuthRepository;
+use crate::domain::auth::Auth;
+use crate::domain::port::AuthStore;
 use crate::prelude::*;
 
 /// Logout use-case structure.
-pub struct Logout<T> {
-    /// Phantom data used to use the T parameter in the struct.
-    _marker: PhantomData<T>,
+pub(crate) struct Logout<Store> {
+    /// Phantom data used to use the `Store` parameter in the struct.
+    _marker: PhantomData<Store>,
 }
 
-impl<T> Logout<T> {
+impl<Store> Logout<Store> {
     /// Creates a `Logout` use-case instance.
     ///
     /// # Returns
@@ -27,23 +26,15 @@ impl<T> Logout<T> {
     }
 }
 
-impl<T> UseCase for Logout<T>
+impl<Store> UseCase for Logout<Store>
 where
-    T: AuthnBackend + AuthRepository,
+    Store: AuthStore,
 {
-    type Args = AuthSession<T>;
+    type Args = Auth<Store>;
     type Output = ();
     type Error = Error;
 
-    async fn handle(&self, mut auth_session: Self::Args) -> Result<Self::Output, Self::Error> {
-        match auth_session.logout().await {
-            Ok(_) => {
-                event!(Level::INFO, "Successfully logged out");
-
-                Ok(())
-            }
-
-            Err(_) => Err(Error::Internal),
-        }
+    async fn handle(&self, mut auth: Self::Args) -> Result<Self::Output, Self::Error> {
+        auth.logout().await
     }
 }

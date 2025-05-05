@@ -1,15 +1,11 @@
-//! SQLx implementation of the `AuthRepository` trait.
+//! SQLx implementation of the `AuthStore` trait.
 
-use axum_login::{AuthnBackend, UserId};
 use futures::future::BoxFuture;
 use sqlx::{FromRow, Type};
 
-use crate::domain::auth_user::{AuthCredentials, AuthUser, AuthUserRole};
-use crate::domain::port::AuthRepository;
+use crate::domain::auth_user::{AuthUser, AuthUserRole};
+use crate::domain::port::AuthStore;
 use crate::prelude::*;
-
-/// Authentication session type for SQLx.
-pub type SQLxAuthSession = axum_login::AuthSession<SQLxAuthRepository>;
 
 /// List of users roles in the DB enum.
 #[derive(Clone, Debug, Default, Deserialize, Serialize, Type)]
@@ -74,24 +70,25 @@ impl From<DbAuthUser> for AuthUser {
     }
 }
 
-/// SLQx's implementation of the `AuthRepository` trait.
+/// SLQx's implementation of the `AuthStore` trait.
 #[derive(Clone, Debug)]
-pub struct SQLxAuthRepository {
+pub struct SQLxAuthStore {
     /// Database connection pool.
     db: PgPool,
 }
 
-impl SQLxAuthRepository {
-    /// Creates a new instance of the SQLx authentication repository.
+impl SQLxAuthStore {
+    /// Creates a new instance of the SQLx authentication store.
     #[must_use]
     pub fn new(db: &PgPool) -> Self {
         Self { db: db.clone() }
     }
 }
 
-impl AuthRepository for SQLxAuthRepository {
-    fn find_user_by_email(&self, email: String) -> BoxFuture<'static, Result<AuthUser, Error>> {
+impl AuthStore for SQLxAuthStore {
+    fn find_user_by_email(&self, email: &str) -> BoxFuture<'static, Result<AuthUser, Error>> {
         let db = self.db.clone();
+        let email = email.to_string();
 
         Box::pin(async move {
             let user = sqlx::query_file_as!(DbAuthUser, "sql/find_user_by_email.sql", email)
@@ -102,8 +99,9 @@ impl AuthRepository for SQLxAuthRepository {
         })
     }
 
-    fn get_user_by_id(&self, user_id: Uuid) -> BoxFuture<'static, Result<AuthUser, Error>> {
+    fn get_user_by_id(&self, user_id: &Uuid) -> BoxFuture<'static, Result<AuthUser, Error>> {
         let db = self.db.clone();
+        let user_id = *user_id;
 
         Box::pin(async move {
             let user = sqlx::query_file_as!(DbAuthUser, "sql/get_user_by_id.sql", user_id)
@@ -112,32 +110,6 @@ impl AuthRepository for SQLxAuthRepository {
 
             Ok(user.into())
         })
-    }
-}
-
-#[async_trait]
-impl AuthnBackend for SQLxAuthRepository {
-    type User = AuthUser;
-    type Credentials = AuthCredentials;
-    type Error = Error;
-
-    async fn authenticate(
-        &self,
-        credentials: Self::Credentials,
-    ) -> Result<Option<Self::User>, Self::Error> {
-        // Try to find the user in database, return Unauthorized if not found.
-        let user = self.find_user_by_email(credentials.email.clone()).await?;
-
-        // Verify password
-        match utils::hashing::verify(&credentials.password, &user.password).await {
-            Ok(true) => Ok(Some(user)),
-            Ok(false) => Ok(None),
-            _ => Err(Error::Unauthorized),
-        }
-    }
-
-    async fn get_user(&self, user_id: &UserId<Self>) -> Result<Option<Self::User>, Self::Error> {
-        Ok(Some(self.get_user_by_id(*user_id).await?))
     }
 }
 
@@ -154,7 +126,7 @@ mod tests {
     async fn test_repo_find_by_email() -> Result<(), Box<dyn std::error::Error>> {
         let db = setup_test_database().await?;
 
-        let repo = SQLxAuthRepository::new(&db);
+        let repo = SQLxAuthStore::new(&db);
 
         let auth_user = AuthUser {
             email: random_email(),
@@ -164,10 +136,10 @@ mod tests {
 
         let _ = create_user(&auth_user, &db).await?;
 
-        let user = repo.find_user_by_email(auth_user.email.clone()).await?;
+        let user = repo.find_user_by_email(&auth_user.email).await?;
         assert_eq!(user.email, auth_user.email);
 
-        let res = repo.find_user_by_email(random_email()).await;
+        let res = repo.find_user_by_email(&random_email()).await;
         assert!(res.is_err());
 
         Ok(())
@@ -177,7 +149,7 @@ mod tests {
     async fn test_repo_get_by_id() -> Result<(), Box<dyn std::error::Error>> {
         let db = setup_test_database().await?;
 
-        let repo = SQLxAuthRepository::new(&db);
+        let repo = SQLxAuthStore::new(&db);
 
         let auth_user = AuthUser {
             email: random_email(),
@@ -187,113 +159,11 @@ mod tests {
 
         let user = create_user(&auth_user, &db).await?;
 
-        let fetched = repo.get_user_by_id(user.id).await?;
+        let fetched = repo.get_user_by_id(&user.id).await?;
         assert_eq!(fetched.id, user.id);
 
-        let res = repo.get_user_by_id(random_id()).await;
+        let res = repo.get_user_by_id(&random_id()).await;
         assert!(res.is_err());
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_repo_authenticate_not_found() -> Result<(), Box<dyn std::error::Error>> {
-        let db = setup_test_database().await?;
-
-        let repo = SQLxAuthRepository::new(&db);
-
-        let res = repo
-            .authenticate(AuthCredentials {
-                email: random_email(),
-                password: random_password(),
-            })
-            .await;
-
-        assert!(matches!(res, Err(Error::SQLx(_))));
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_repo_authenticate_invalid_password() -> Result<(), Box<dyn std::error::Error>> {
-        let db = setup_test_database().await?;
-
-        let repo = SQLxAuthRepository::new(&db);
-
-        let auth_user = AuthUser {
-            email: random_email(),
-            password: random_password(),
-            ..Default::default()
-        };
-
-        let _ = create_user(&auth_user, &db).await?;
-
-        let res = repo
-            .authenticate(AuthCredentials {
-                email: auth_user.email.clone(),
-                password: random_password(),
-            })
-            .await;
-
-        assert!(matches!(res, Ok(None)));
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_repo_authenticate_nominal() -> Result<(), Box<dyn std::error::Error>> {
-        let db = setup_test_database().await?;
-
-        let repo = SQLxAuthRepository::new(&db);
-
-        let auth_user = AuthUser {
-            email: random_email(),
-            password: random_password(),
-            ..Default::default()
-        };
-
-        let _ = create_user(&auth_user, &db).await?;
-
-        let res = repo
-            .authenticate(AuthCredentials {
-                email: auth_user.email.clone(),
-                password: auth_user.password.clone(),
-            })
-            .await;
-
-        assert!(matches!(res, Ok(Some(_))));
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_repo_get_user_not_found() -> Result<(), Box<dyn std::error::Error>> {
-        let db = setup_test_database().await?;
-
-        let repo = SQLxAuthRepository::new(&db);
-
-        let res = repo.get_user(&random_id()).await;
-        assert!(res.is_err());
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_repo_get_user_nominal() -> Result<(), Box<dyn std::error::Error>> {
-        let db = setup_test_database().await?;
-
-        let repo = SQLxAuthRepository::new(&db);
-
-        let auth_user = AuthUser {
-            email: random_email(),
-            password: random_password(),
-            ..Default::default()
-        };
-
-        let auth_user = create_user(&auth_user, &db).await?;
-
-        let res = repo.get_user(&auth_user.id).await;
-        assert!(matches!(res, Ok(Some(_))));
 
         Ok(())
     }

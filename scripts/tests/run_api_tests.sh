@@ -6,6 +6,28 @@ set -euo pipefail
 # Arguments
 # ------------------------------------------------------------------------------
 
+verbose=0
+
+params="$(getopt -o v -- "${@}")"
+eval set -- "${params}"
+
+while [ "$#" -gt 0 ]
+do
+    case "${1}" in
+    -v)
+        verbose=$((verbose + 1))
+        shift
+        ;;
+    --)
+        shift
+        break
+        ;;
+     *)
+        shift
+        ;;
+    esac
+done
+
 db_name="${1:-axum_test}"
 mode="${2:-debug}"
 
@@ -103,6 +125,15 @@ echo -e "${PURPLE} done${NC}"
 
 echo -e "${PURPLE}Running tests...${NC}"
 
+hurl_verbose=""
+if [[ ${verbose} -eq 1 ]]
+then
+    hurl_verbose="--verbose"
+elif [[ ${verbose} -eq 2 ]]
+then
+    hurl_verbose="--very-verbose"
+fi
+
 for hurl_file in $(find . -name "*.hurl")
 do
     if [[ ! -f "${hurl_file}" ]]
@@ -115,7 +146,7 @@ do
 
     echo -e "${YELLOW}→ Running ${test_name}...${NC}"
 
-    if hurl --variables-file "${HURL_ENV}" "${hurl_file}" >"${log_file}" 2>&1
+    if hurl ${hurl_verbose} --variables-file "${HURL_ENV}" "${hurl_file}" >"${log_file}" 2>&1
     then
         echo -e "  ${GREEN}✔ Passed${NC}"
         PASSED_TESTS+=("$hurl_file")
@@ -146,7 +177,7 @@ then
     echo -e "\n${RED}✘ Failed: ${#FAILED_TESTS[@]}${NC}"
     for t in "${FAILED_TESTS[@]}"; do
         echo -e " ${t}"
-        echo -e "   ➤ Rerun: hurl --variables-file "${HURL_ENV}" ${t}"
+        echo -e "   ➤ Rerun: hurl ${hurl_verbose} --variables-file "${HURL_ENV}" ${t}"
     done
     exit 1
 else

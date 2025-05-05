@@ -13,6 +13,7 @@ serde = { workspace = true, default-features = false }
 sqlx = { workspace = true, default-features = false }
 thiserror = { workspace = true, default-features = false }
 tracing = { workspace = true, default-features = false }
+tower-sessions = { workspace = true, default-features = false }
 uuid = { workspace = true, default-features = false, features = ["serde"] }
 validator = { workspace = true, default-features = false, features = ["derive"] }
 

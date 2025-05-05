@@ -1,10 +1,10 @@
-//! SQLx implementation of the UserRepository trait.
+//! SQLx implementation of the UserStore trait.
 
 use chrono::{DateTime, Utc};
 use futures::future::BoxFuture;
 use sqlx::{FromRow, Type};
 
-use crate::domain::port::UserRepository;
+use crate::domain::port::UserStore;
 use crate::domain::user::{User, UserData, UserFilters, UserRole};
 use crate::prelude::*;
 
@@ -87,27 +87,27 @@ impl From<DbUser> for User {
     }
 }
 
-/// SQLx version of the UserRepository trait.
-pub struct SQLxUserRepository {
+/// SQLx version of the UserStore trait.
+pub struct SQLxUserStore {
     /// Database connection pool.
     db: PgPool,
 }
 
-impl SQLxUserRepository {
-    /// Creates a new SQLxUserRepository instance.
+impl SQLxUserStore {
+    /// Creates a new SQLxUserStore instance.
     ///
     /// # Arguments
     /// * `db` - The database connection pool.
     ///
     /// # Returns
-    /// A new instance of SQLxUserRepository.
+    /// A new instance of SQLxUserStore.
     #[must_use]
     pub fn new(db: PgPool) -> Self {
         Self { db }
     }
 }
 
-impl UserRepository for SQLxUserRepository {
+impl UserStore for SQLxUserStore {
     fn exists(&self, user_id: Uuid) -> BoxFuture<'static, Result<bool, Error>> {
         let db = self.db.clone();
 
@@ -237,7 +237,7 @@ mod tests {
     #[tokio::test]
     async fn test_user_exists() -> Result<(), Box<dyn std::error::Error>> {
         let db = setup_test_database().await?;
-        let repo = SQLxUserRepository::new(db.clone());
+        let repo = SQLxUserStore::new(db.clone());
 
         assert!(!repo.exists(random_id()).await?);
 
@@ -250,7 +250,7 @@ mod tests {
     #[tokio::test]
     async fn test_delete_by_id() -> Result<(), Box<dyn std::error::Error>> {
         let db = setup_test_database().await?;
-        let repo = SQLxUserRepository::new(db.clone());
+        let repo = SQLxUserStore::new(db.clone());
 
         let user = create_user(UserRole::Admin, &db).await?;
         assert!(repo.get_by_id(user.id).await.is_ok());
@@ -264,7 +264,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_by_id() -> Result<(), Box<dyn std::error::Error>> {
         let db = setup_test_database().await?;
-        let repo = SQLxUserRepository::new(db.clone());
+        let repo = SQLxUserStore::new(db.clone());
 
         assert!(repo.get_by_id(random_id()).await.is_err());
 
@@ -278,7 +278,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_by_filters() -> Result<(), Box<dyn std::error::Error>> {
         let db = setup_test_database().await?;
-        let repo = SQLxUserRepository::new(db.clone());
+        let repo = SQLxUserStore::new(db.clone());
 
         let user_1 = create_user(UserRole::Admin, &db).await?;
         let user_2 = create_user(UserRole::Guest, &db).await?;
@@ -333,7 +333,7 @@ mod tests {
     #[tokio::test]
     async fn test_create() -> Result<(), Box<dyn std::error::Error>> {
         let db = setup_test_database().await?;
-        let repo = SQLxUserRepository::new(db.clone());
+        let repo = SQLxUserStore::new(db.clone());
 
         let user = repo
             .create(UserData {
@@ -354,7 +354,7 @@ mod tests {
     #[tokio::test]
     async fn test_update() -> Result<(), Box<dyn std::error::Error>> {
         let db = setup_test_database().await?;
-        let repo = SQLxUserRepository::new(db.clone());
+        let repo = SQLxUserStore::new(db.clone());
 
         let user = create_user(UserRole::Admin, &db).await?;
 
@@ -379,7 +379,7 @@ mod tests {
     #[tokio::test]
     async fn test_set_password() -> Result<(), Box<dyn std::error::Error>> {
         let db = setup_test_database().await?;
-        let repo = SQLxUserRepository::new(db.clone());
+        let repo = SQLxUserStore::new(db.clone());
 
         let user = create_user(UserRole::Admin, &db).await?;
         let password = random_password();

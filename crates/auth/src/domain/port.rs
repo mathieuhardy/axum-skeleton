@@ -1,13 +1,13 @@
-//! Repository port for the authentication module
+//! Store port for the authentication module
 
 use futures::future::BoxFuture;
 
 use crate::domain::auth_user::AuthUser;
 use crate::prelude::*;
 
-/// Authentication repository APIs.
+/// Authentication store APIs.
 #[cfg_attr(test, mockall::automock)]
-pub trait AuthRepository: Send + Sync {
+pub trait AuthStore: Send + Sync {
     /// Find a user by its email.
     ///
     /// # Arguments
@@ -15,7 +15,7 @@ pub trait AuthRepository: Send + Sync {
     ///
     /// # Returns
     /// A result containing the user if found, or an error.
-    fn find_user_by_email(&self, email: String) -> BoxFuture<'static, Result<AuthUser, Error>>;
+    fn find_user_by_email(&self, email: &str) -> BoxFuture<'static, Result<AuthUser, Error>>;
 
     /// Find a user by its ID.
     ///
@@ -24,5 +24,5 @@ pub trait AuthRepository: Send + Sync {
     ///
     /// # Returns
     /// A result containing the user if found, or an error.
-    fn get_user_by_id(&self, user_id: Uuid) -> BoxFuture<'static, Result<AuthUser, Error>>;
+    fn get_user_by_id(&self, user_id: &Uuid) -> BoxFuture<'static, Result<AuthUser, Error>>;
 }

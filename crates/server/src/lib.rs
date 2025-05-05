@@ -108,7 +108,7 @@ pub async fn app(
     event!(Level::INFO, "🔻 Compression enabled");
 
     // Authentication layer
-    let authentication = layers::auth::authentication_layer(config, &pg_pool);
+    let authentication = layers::auth::authentication_session_layer(config);
 
     event!(Level::INFO, "👤 Authentication enabled");
 
@@ -130,7 +130,7 @@ pub async fn app(
     // Create router
     let mut router = Router::new()
         .fallback(handler_404)
-        .nest("/", routes::build(config)?)
+        .nest("/", routes::build(config, state.clone())?)
         .with_state(state);
 
     router = setup_favicon(router)?;
