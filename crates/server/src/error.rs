@@ -18,15 +18,15 @@ pub enum Error {
     Axum(#[source] std::io::Error),
 
     /// Error during the loading of the server configuration.
-    #[error("{0}")]
+    #[error(transparent)]
     Configuration(#[from] config::ConfigError),
 
     /// Database read/write error.
-    #[error("{0}")]
+    #[error(transparent)]
     Database(#[from] DatabaseError),
 
     /// Generic filesystem error.
-    #[error("{0}")]
+    #[error(transparent)]
     Filesystem(#[from] utils::error::Error),
 
     /// Generic filesystem error.
@@ -39,7 +39,7 @@ pub enum Error {
 
     /// Generic sanity error.
     #[cfg(feature = "sanity")]
-    #[error("{0}")]
+    #[error(transparent)]
     Sanity(#[from] sanity::Error),
 
     /// Generic socket error.
@@ -47,7 +47,7 @@ pub enum Error {
     Socket(#[source] std::io::Error),
 
     /// Generic SQLx error.
-    #[error("{0}")]
+    #[error(transparent)]
     SQLx(#[from] sqlx::Error),
 
     /// Unexpected error that should never happen.

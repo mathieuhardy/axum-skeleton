@@ -1,13 +1,13 @@
-//! User repository trait.
+//! User store trait.
 
 use futures::future::BoxFuture;
 
 use crate::domain::user::{User, UserData, UserFilters};
 use crate::prelude::*;
 
-/// User repository APIs.
+/// User store APIs.
 #[cfg_attr(test, mockall::automock)]
-pub trait UserRepository: Send + Sync {
+pub trait UserStore: Send + Sync {
     /// Check if a user exists in the database.
     ///
     /// # Arguments

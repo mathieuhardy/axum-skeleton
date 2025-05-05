@@ -9,5 +9,6 @@ use common_core::AppState;
 /// # Returns
 /// An Axum router.
 pub fn router() -> Router<AppState> {
+    // List all crates that provide APIs
     Router::new().nest("/users", user::router())
 }

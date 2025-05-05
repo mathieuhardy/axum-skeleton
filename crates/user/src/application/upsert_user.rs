@@ -3,33 +3,33 @@
 use common_core::UseCase;
 use utils::hashing::hash_password;
 
-use crate::domain::port::UserRepository;
+use crate::domain::port::UserStore;
 use crate::domain::user::{UpsertUserRequest, User, UserData};
 use crate::prelude::*;
 
-/// Repositories used by this use-case.
+/// Stores used by this use-case.
 #[derive(Clone)]
-pub struct UpsertUserRepos {
-    /// User repository.
-    pub user: Arc<dyn UserRepository>,
+pub struct UpsertUserStores {
+    /// User store.
+    pub user: Arc<dyn UserStore>,
 }
 
 /// User creation/update use-case structure.
 pub struct UpsertUser {
-    /// List of repositories used.
-    repos: UpsertUserRepos,
+    /// List of stores used.
+    stores: UpsertUserStores,
 }
 
 impl UpsertUser {
     /// Creates a new `UpsertUser` use-case instance.
     ///
     /// # Arguments
-    /// * `repos`: List of repositories used by this use-case.
+    /// * `stores`: List of stores used by this use-case.
     ///
     /// # Returns
     /// A `UpsertUser` instance.
-    pub fn new(repos: UpsertUserRepos) -> Self {
-        Self { repos }
+    pub fn new(stores: UpsertUserStores) -> Self {
+        Self { stores }
     }
 }
 
@@ -40,7 +40,7 @@ impl UseCase for UpsertUser {
 
     async fn handle(&self, request: Self::Args) -> Result<Self::Output, Self::Error> {
         match request.user_id {
-            Some(user_id) => self.repos.user.update(user_id, request.into()).await,
+            Some(user_id) => self.stores.user.update(user_id, request.into()).await,
 
             None => {
                 // Creation
@@ -51,7 +51,7 @@ impl UseCase for UpsertUser {
                     ..request.into()
                 };
 
-                self.repos.user.create(data).await
+                self.stores.user.create(data).await
             }
         }
     }
@@ -64,25 +64,25 @@ mod tests {
     use security::password::{set_checks, Checks};
     use test_utils::rand::{random_email, random_id, random_string};
 
-    use crate::domain::port::MockUserRepository;
+    use crate::domain::port::MockUserStore;
     use crate::domain::user::{UpdateUserRequest, UserRole};
 
     #[tokio::test]
     async fn test_upsert_user_create_nominal() {
         set_checks(Checks::default());
 
-        let mut repo_user = MockUserRepository::new();
+        let mut repo_user = MockUserStore::new();
 
         repo_user
             .expect_create()
             .times(1)
             .returning(move |_| Box::pin(async move { Ok(User::default()) }));
 
-        let repos = UpsertUserRepos {
+        let stores = UpsertUserStores {
             user: Arc::new(repo_user),
         };
 
-        let res = UpsertUser::new(repos.clone())
+        let res = UpsertUser::new(stores.clone())
             .handle(UpsertUserRequest {
                 password: Some("".to_string()),
                 user: UpdateUserRequest {
@@ -101,20 +101,20 @@ mod tests {
     async fn test_upsert_user_update_nominal() {
         set_checks(Checks::default());
 
-        let mut repo_user = MockUserRepository::new();
+        let mut repo_user = MockUserStore::new();
 
         repo_user
             .expect_update()
             .times(1)
             .returning(move |_, _| Box::pin(async move { Ok(User::default()) }));
 
-        let repos = UpsertUserRepos {
+        let stores = UpsertUserStores {
             user: Arc::new(repo_user),
         };
 
         let user_id = random_id();
 
-        let res = UpsertUser::new(repos.clone())
+        let res = UpsertUser::new(stores.clone())
             .handle(UpsertUserRequest {
                 user_id: Some(user_id),
                 password: Some(String::new()),

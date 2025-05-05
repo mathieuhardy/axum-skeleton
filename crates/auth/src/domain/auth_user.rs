@@ -1,26 +1,8 @@
 //! Authentication user related entities.
 
-use axum_login::AuthUser as AxumAuthUser;
 use validator::Validate;
 
-use security::password::validate_password;
-
 use crate::prelude::*;
-
-/// Structure used to store the credentials that must be provided by a user to check it's
-/// existence. This should match a form displayed to the user where he can enter his email and
-/// password.
-#[derive(Clone, Deserialize, Serialize, Validate, derive_more::Debug)]
-pub struct AuthCredentials {
-    /// Email used during authentication.
-    #[validate(email)]
-    pub email: String,
-
-    /// Password used during authentication.
-    #[debug(skip)]
-    #[validate(custom(function = "validate_password"))]
-    pub password: String,
-}
 
 /// List of users roles.
 #[derive(Clone, Debug, Default, PartialEq, Deserialize, Serialize)]
@@ -73,16 +55,12 @@ impl AuthUser {
     pub fn is(&self, id: &Uuid) -> bool {
         self.id == *id
     }
-}
 
-impl AxumAuthUser for AuthUser {
-    type Id = Uuid;
-
-    fn id(&self) -> Self::Id {
-        self.id
-    }
-
-    fn session_auth_hash(&self) -> &[u8] {
+    /// Returns a vector of u8 representing the hash of the user.
+    ///
+    /// # Returns
+    /// A slice of u8 representing the hash of the user.
+    pub fn hash(&self) -> &[u8] {
         // We're using the password as a unique hash so that if the user changes its password,
         // the session is invalidated.
         self.password.as_bytes()
@@ -93,54 +71,7 @@ impl AxumAuthUser for AuthUser {
 mod tests {
     use test_utils::rand::*;
 
-    use security::password::{set_checks, Checks};
-
     use super::*;
-
-    #[tokio::test]
-    async fn test_credentials_validation_email() -> Result<(), Box<dyn std::error::Error>> {
-        set_checks(Checks::default());
-
-        let credentials = AuthCredentials {
-            email: random_email(),
-            password: random_password(),
-        };
-
-        assert!(credentials.validate().is_ok());
-
-        let credentials = AuthCredentials {
-            email: random_string(),
-            password: random_password(),
-        };
-
-        assert!(credentials.validate().is_err());
-
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_credentials_validation_pasword() -> Result<(), Box<dyn std::error::Error>> {
-        set_checks(Checks {
-            min_length: 8,
-            ..Checks::default()
-        });
-
-        let credentials = AuthCredentials {
-            email: random_email(),
-            password: random_password(),
-        };
-
-        assert!(credentials.validate().is_ok());
-
-        let credentials = AuthCredentials {
-            email: random_email(),
-            password: String::new(),
-        };
-
-        assert!(credentials.validate().is_err());
-
-        Ok(())
-    }
 
     #[tokio::test]
     async fn test_auth_user_is_admin() -> Result<(), Box<dyn std::error::Error>> {
@@ -186,19 +117,6 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_auth_user_id() -> Result<(), Box<dyn std::error::Error>> {
-        let auth_user = AuthUser {
-            id: random_id(),
-            role: AuthUserRole::Admin,
-            ..Default::default()
-        };
-
-        assert_eq!(auth_user.id(), auth_user.id);
-
-        Ok(())
-    }
-
-    #[tokio::test]
     async fn test_auth_user_hash() -> Result<(), Box<dyn std::error::Error>> {
         let auth_user = AuthUser {
             id: random_id(),
@@ -208,7 +126,7 @@ mod tests {
 
         let bytes = auth_user.password.as_bytes();
 
-        assert_eq!(auth_user.session_auth_hash(), bytes);
+        assert_eq!(auth_user.hash(), bytes);
 
         Ok(())
     }

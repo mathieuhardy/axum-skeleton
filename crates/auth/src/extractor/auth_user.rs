@@ -1,35 +1,63 @@
-//! Extractor used to obtain the `AuthUser` from the `AuthSession`.
+//! Extractor used to obtain the `Auth` object that contains a `AuthUser`.
 //! This allows to obtain information of the caller of a request in order to check its accesses
 //! later.
 
 use async_trait::async_trait;
 use axum::extract::{FromRef, FromRequestParts};
 use axum::http::request::Parts;
-use axum::http::StatusCode;
-use axum::RequestPartsExt;
+use tower_sessions::Session;
+use tracing::{event, Level};
 
 use common_core::AppState;
 
+use crate::domain::auth::Auth;
 use crate::domain::auth_user::AuthUser;
-use crate::infrastructure::SQLxAuthSession;
+use crate::domain::error::Error;
+use crate::domain::port::AuthStore;
+use crate::infrastructure::SQLxAuthStore;
 
+// TODO: use generic
 #[async_trait]
-impl<S> FromRequestParts<S> for AuthUser
+impl<S> FromRequestParts<S> for Auth<SQLxAuthStore>
 where
-    AppState: FromRef<S>,
     S: Send + Sync,
+    AppState: FromRef<S>,
 {
-    type Rejection = StatusCode;
+    type Rejection = Error;
 
-    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
-        let auth_session = parts
-            .extract::<SQLxAuthSession>()
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        // Fetch user information from the session
+        let session = Session::from_request_parts(parts, state)
             .await
-            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            .map_err(|_| Error::SessionNotFound)?;
 
-        match auth_session.user {
-            Some(user) => Ok(user),
-            None => Err(StatusCode::INTERNAL_SERVER_ERROR),
-        }
+        let user: Option<AuthUser> = session.get(Self::KEY).await?;
+
+        // Get handle to the user store
+        let AppState { db, .. } = AppState::from_ref(state);
+        let store = SQLxAuthStore::new(&db);
+
+        // Fetch user from store (in case it has changed since session creation)
+        let user = if let Some(session_user) = user {
+            let user = store.get_user_by_id(&session_user.id).await?;
+
+            if user.hash() != session_user.hash() {
+                event!(Level::WARN, "User hash mismatch: invalidate session");
+
+                session.flush().await?;
+
+                return Err(Error::Unauthorized);
+            }
+
+            Some(user)
+        } else {
+            None
+        };
+
+        Ok(Auth {
+            user,
+            session,
+            store,
+        })
     }
 }

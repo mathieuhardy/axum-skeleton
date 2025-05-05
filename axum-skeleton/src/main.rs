@@ -7,6 +7,7 @@ use std::error::Error;
 #[cfg(feature = "jemalloc")]
 use jemallocator::Jemalloc;
 
+/// Global variable used by the jemalloc allocator.
 #[cfg(feature = "jemalloc")]
 #[global_allocator]
 static GLOBAL: Jemalloc = Jemalloc;

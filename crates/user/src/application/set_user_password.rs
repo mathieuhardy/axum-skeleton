@@ -3,33 +3,33 @@
 use common_core::UseCase;
 use utils::hashing::{hash_password, verify};
 
-use crate::domain::port::UserRepository;
+use crate::domain::port::UserStore;
 use crate::domain::user::PasswordUpdateRequest;
 use crate::prelude::*;
 
-/// Repositories used by this use-case.
+/// Stores used by this use-case.
 #[derive(Clone)]
-pub struct SetUserPasswordRepos {
-    /// User repository.
-    pub user: Arc<dyn UserRepository>,
+pub struct SetUserPasswordStores {
+    /// User store.
+    pub user: Arc<dyn UserStore>,
 }
 
 /// Password update use-case structure.
 pub struct SetUserPassword {
-    /// List of repositories used.
-    repos: SetUserPasswordRepos,
+    /// List of stores used.
+    stores: SetUserPasswordStores,
 }
 
 impl SetUserPassword {
     /// Creates a new `SetUserPassword` use-case instance.
     ///
     /// # Arguments
-    /// * `repos`: List of repositories used by this use-case.
+    /// * `stores`: List of stores used by this use-case.
     ///
     /// # Returns
     /// A `SetUserPassword` instance.
-    pub fn new(repos: SetUserPasswordRepos) -> Self {
-        Self { repos }
+    pub fn new(stores: SetUserPasswordStores) -> Self {
+        Self { stores }
     }
 }
 
@@ -41,7 +41,7 @@ impl UseCase for SetUserPassword {
     async fn handle(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         let (user_id, request) = args;
 
-        let user = self.repos.user.get_by_id(user_id).await?;
+        let user = self.stores.user.get_by_id(user_id).await?;
 
         if !verify(&request.current, &user.password).await? {
             return Err(Error::InvalidPassword);
@@ -49,7 +49,10 @@ impl UseCase for SetUserPassword {
 
         let password = hash_password(&request.new)?;
 
-        self.repos.user.set_user_password(user_id, password).await?;
+        self.stores
+            .user
+            .set_user_password(user_id, password)
+            .await?;
 
         Ok(())
     }
@@ -62,14 +65,14 @@ mod tests {
     use security::password::{set_checks, Checks};
     use test_utils::rand::*;
 
-    use crate::domain::port::MockUserRepository;
+    use crate::domain::port::MockUserStore;
     use crate::domain::user::User;
 
     #[tokio::test]
     async fn test_set_user_password_validation() {
         set_checks(Checks::default());
 
-        let mut repo_user = MockUserRepository::new();
+        let mut repo_user = MockUserStore::new();
 
         repo_user.expect_get_by_id().times(1).returning(move |_| {
             Box::pin(async move {
@@ -80,14 +83,14 @@ mod tests {
             })
         });
 
-        let repos = SetUserPasswordRepos {
+        let stores = SetUserPasswordStores {
             user: Arc::new(repo_user),
         };
 
         let user_id = random_id();
 
         // Invalid current password
-        let res = SetUserPassword::new(repos.clone())
+        let res = SetUserPassword::new(stores.clone())
             .handle((
                 user_id,
                 PasswordUpdateRequest {
@@ -103,7 +106,7 @@ mod tests {
     async fn test_set_user_password_nominal() {
         set_checks(Checks::default());
 
-        let mut repo_user = MockUserRepository::new();
+        let mut repo_user = MockUserStore::new();
 
         let user_id = random_id();
         let password = random_password();
@@ -128,11 +131,11 @@ mod tests {
             .times(1)
             .returning(move |_, _| Box::pin(async move { Ok(()) }));
 
-        let repos = SetUserPasswordRepos {
+        let stores = SetUserPasswordStores {
             user: Arc::new(repo_user),
         };
 
-        let res = SetUserPassword::new(repos.clone())
+        let res = SetUserPassword::new(stores.clone())
             .handle((user_id, PasswordUpdateRequest { current, new }))
             .await;
         assert!(res.is_ok());

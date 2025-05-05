@@ -14,7 +14,7 @@ pub enum Error {
     Env(#[source] std::env::VarError),
 
     /// SQLx migration error.
-    #[error("{0}")]
+    #[error(transparent)]
     Migration(#[from] sqlx::migrate::MigrateError),
 
     /// No record found in database.
@@ -22,10 +22,10 @@ pub enum Error {
     NotFound,
 
     /// Generic Redis error.
-    #[error("{0}")]
+    #[error(transparent)]
     Redis(#[from] bb8_redis::redis::RedisError),
 
     /// Generic SQLx error.
-    #[error("{0}")]
+    #[error(transparent)]
     SQLx(#[from] sqlx::Error),
 }

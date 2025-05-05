@@ -18,12 +18,12 @@ pub enum Error {
     PathNotFound(std::path::PathBuf),
 
     /// Generic filesystem error.
-    #[error("{0}")]
+    #[error(transparent)]
     Filesystem(#[from] std::io::Error),
 
     /// Generic tokio task joining error.
     #[cfg(feature = "hashing")]
-    #[error("{0}")]
+    #[error(transparent)]
     TaskJoin(#[from] tokio::task::JoinError),
 
     /// Unexpected error that should never happen.

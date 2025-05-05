@@ -7,7 +7,7 @@ components of the application. This allows to easily replace any part, test them
 easiy and even to use them in other applications.
 
 That doen't mean that all crates follow the hexagonal architecture. For example,
-the `utils` crate is a simple library and doesn't need a repository or any API.
+the `utils` crate is a simple library and doesn't need a store or any API.
 
 We can list utility crates:
 

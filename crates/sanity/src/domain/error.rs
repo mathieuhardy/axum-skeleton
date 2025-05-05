@@ -10,10 +10,10 @@ pub type ApiResult<T> = Result<T, Error>;
 #[derive(Debug, Error)]
 pub enum Error {
     /// Error during the loading of the sanity configuration.
-    #[error("{0}")]
+    #[error(transparent)]
     Configuration(#[from] config::ConfigError),
 
     /// Generic filesystem error.
-    #[error("{0}")]
+    #[error(transparent)]
     Filesystem(#[from] utils::error::Error),
 }

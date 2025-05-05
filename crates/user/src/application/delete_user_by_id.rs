@@ -2,32 +2,32 @@
 
 use common_core::UseCase;
 
-use crate::domain::port::UserRepository;
+use crate::domain::port::UserStore;
 use crate::prelude::*;
 
-/// Repositories used by this use-case.
+/// Stores used by this use-case.
 #[derive(Clone)]
-pub struct DeleteUserByIdRepos {
-    /// User repository.
-    pub user: Arc<dyn UserRepository>,
+pub struct DeleteUserByIdStores {
+    /// User store.
+    pub user: Arc<dyn UserStore>,
 }
 
 /// User deletion use-case structure.
 pub struct DeleteUserById {
-    /// List of repositories used.
-    repos: DeleteUserByIdRepos,
+    /// List of stores used.
+    stores: DeleteUserByIdStores,
 }
 
 impl DeleteUserById {
     /// Creates a new `DeleteUserById` use-case instance.
     ///
     /// # Arguments
-    /// * `repos`: List of repositories used by this use-case.
+    /// * `stores`: List of stores used by this use-case.
     ///
     /// # Returns
     /// A `DeleteUserById` instance.
-    pub fn new(repos: DeleteUserByIdRepos) -> Self {
-        Self { repos }
+    pub fn new(stores: DeleteUserByIdStores) -> Self {
+        Self { stores }
     }
 }
 
@@ -38,7 +38,7 @@ impl UseCase for DeleteUserById {
 
     async fn handle(&self, user_id: Self::Args) -> Result<Self::Output, Self::Error> {
         if !self
-            .repos
+            .stores
             .user
             .exists(user_id)
             .await
@@ -47,7 +47,7 @@ impl UseCase for DeleteUserById {
             return Err(Error::NotFound);
         }
 
-        self.repos.user.delete_by_id(user_id).await
+        self.stores.user.delete_by_id(user_id).await
     }
 }
 
@@ -57,11 +57,11 @@ mod tests {
 
     use test_utils::rand::random_id;
 
-    use crate::domain::port::MockUserRepository;
+    use crate::domain::port::MockUserStore;
 
     #[tokio::test]
     async fn test_delete_user_by_id_not_found() {
-        let mut repo_user = MockUserRepository::new();
+        let mut repo_user = MockUserStore::new();
 
         let user_id = random_id();
 
@@ -70,17 +70,17 @@ mod tests {
             Box::pin(async move { Ok(false) })
         });
 
-        let repos = DeleteUserByIdRepos {
+        let stores = DeleteUserByIdStores {
             user: Arc::new(repo_user),
         };
 
-        let res = DeleteUserById::new(repos).handle(user_id).await;
+        let res = DeleteUserById::new(stores).handle(user_id).await;
         assert!(matches!(res, Err(Error::NotFound)));
     }
 
     #[tokio::test]
     async fn test_delete_user_by_id_nominal() {
-        let mut repo_user = MockUserRepository::new();
+        let mut repo_user = MockUserStore::new();
 
         let user_id = random_id();
 
@@ -97,11 +97,11 @@ mod tests {
                 Box::pin(async move { Ok(()) })
             });
 
-        let repos = DeleteUserByIdRepos {
+        let stores = DeleteUserByIdStores {
             user: Arc::new(repo_user),
         };
 
-        let res = DeleteUserById::new(repos).handle(user_id).await;
+        let res = DeleteUserById::new(stores).handle(user_id).await;
         assert!(res.is_ok());
     }
 }
