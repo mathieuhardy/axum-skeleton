@@ -184,7 +184,10 @@ mod tests {
 
     #[tokio::test]
     async fn test_credentials_validation_email() -> Result<(), Box<dyn std::error::Error>> {
-        set_checks(Checks::default());
+        set_checks(Checks {
+            min_length: 8,
+            ..Checks::default()
+        });
 
         let credentials = AuthCredentials {
             email: random_email(),

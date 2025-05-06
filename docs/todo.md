@@ -1,6 +1,5 @@
 # ✅ TODO
 
-- auth: add unit tests everywhere it's possible
 - auth: add email verification process
 - auth: add endpoints to manage the list of sessions (show, invalidate, etc)
 - security: declare a structure for the password
