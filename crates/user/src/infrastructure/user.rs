@@ -4,6 +4,8 @@ use chrono::{DateTime, Utc};
 use futures::future::BoxFuture;
 use sqlx::{FromRow, Type};
 
+use security::password::Password;
+
 use crate::domain::port::UserStore;
 use crate::domain::user::{User, UserData, UserFilters, UserRole};
 use crate::prelude::*;
@@ -80,7 +82,7 @@ impl From<DbUser> for User {
             last_name: db_user.last_name.unwrap_or_default(),
             email: db_user.email,
             role: db_user.role.into(),
-            password: db_user.password,
+            password: Password::from(db_user.password),
             created_at: db_user.created_at,
             updated_at: db_user.updated_at,
         }
@@ -177,7 +179,7 @@ impl UserStore for SQLxUserStore {
                 data.last_name,
                 data.email,
                 role as DbUserRole,
-                data.password
+                data.password.as_str()
             )
             .fetch_one(&db)
             .await?;
@@ -199,7 +201,7 @@ impl UserStore for SQLxUserStore {
                 data.last_name,
                 data.email,
                 role as DbUserRole,
-                data.password
+                data.password.as_str()
             )
             .fetch_one(&db)
             .await?;
@@ -211,12 +213,12 @@ impl UserStore for SQLxUserStore {
     fn set_user_password(
         &self,
         user_id: Uuid,
-        password: String,
+        password: Password,
     ) -> BoxFuture<'static, Result<(), Error>> {
         let db = self.db.clone();
 
         Box::pin(async move {
-            sqlx::query_file!("sql/set_password.sql", user_id, password)
+            sqlx::query_file!("sql/set_password.sql", user_id, password.as_str())
                 .execute(&db)
                 .await?;
 
@@ -341,7 +343,7 @@ mod tests {
                 last_name: Some(random_string()),
                 email: random_string(),
                 role: UserRole::Normal,
-                password: random_string(),
+                password: random_password(),
             })
             .await?;
 

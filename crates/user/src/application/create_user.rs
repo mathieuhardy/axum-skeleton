@@ -1,7 +1,6 @@
 //! Use-case for creating a user.
 
 use common_core::UseCase;
-use utils::hashing::hash_password;
 
 use crate::domain::port::UserStore;
 use crate::domain::user::{CreateUserRequest, User, UserData};
@@ -40,7 +39,7 @@ impl UseCase for CreateUser {
 
     async fn handle(&self, request: Self::Args) -> Result<Self::Output, Self::Error> {
         let data = UserData {
-            password: hash_password(&request.password)?,
+            password: request.password.hashed()?,
             ..request.into()
         };
 

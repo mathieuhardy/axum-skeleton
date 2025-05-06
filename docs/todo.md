@@ -2,7 +2,6 @@
 
 - auth: add email verification process
 - auth: add endpoints to manage the list of sessions (show, invalidate, etc)
-- security: declare a structure for the password
 - user: add routes for self register: /api/users/profile
 - user: allow a user to self register
 - user: make password optional

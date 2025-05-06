@@ -9,3 +9,5 @@ pub mod filesystem;
 
 #[cfg(feature = "hashing")]
 pub mod hashing;
+
+pub use error::Error;

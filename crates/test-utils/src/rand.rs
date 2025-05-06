@@ -3,6 +3,8 @@
 
 use uuid::Uuid;
 
+use security::password::Password;
+
 /// Generates a random `Uuid`.
 ///
 /// # Returns
@@ -35,6 +37,6 @@ pub fn random_email() -> String {
 /// # Returns
 /// A random `String` password value.
 #[inline(always)]
-pub fn random_password() -> String {
-    format!("A0#{}", random_string())
+pub fn random_password() -> Password {
+    Password::from(format!("A0#{}", random_string()))
 }

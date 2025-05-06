@@ -4,5 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+serde = { workspace = true, default-features = false }
+thiserror = { workspace = true, default-features = false }
 tracing = { workspace = true, default-features = false }
 validator= { workspace = true, default-features = false }
+
+utils = { workspace = true, default-features = false, features = ["hashing"] }

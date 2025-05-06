@@ -1,7 +1,6 @@
 //! Use-case for setting a user's password.
 
 use common_core::UseCase;
-use utils::hashing::{hash_password, verify};
 
 use crate::domain::port::UserStore;
 use crate::domain::user::PasswordUpdateRequest;
@@ -43,15 +42,13 @@ impl UseCase for SetUserPassword {
 
         let user = self.stores.user.get_by_id(user_id).await?;
 
-        if !verify(&request.current, &user.password).await? {
+        if !request.current.matches(&user.password).await? {
             return Err(Error::InvalidPassword);
         }
 
-        let password = hash_password(&request.new)?;
-
         self.stores
             .user
-            .set_user_password(user_id, password)
+            .set_user_password(user_id, request.new.hashed()?)
             .await?;
 
         Ok(())
@@ -77,7 +74,7 @@ mod tests {
         repo_user.expect_get_by_id().times(1).returning(move |_| {
             Box::pin(async move {
                 Ok(User {
-                    password: hash_password(&random_password())?,
+                    password: random_password().hashed()?,
                     ..Default::default()
                 })
             })
@@ -94,7 +91,7 @@ mod tests {
             .handle((
                 user_id,
                 PasswordUpdateRequest {
-                    current: random_string(),
+                    current: random_password(),
                     ..Default::default()
                 },
             ))
@@ -111,16 +108,14 @@ mod tests {
         let user_id = random_id();
         let password = random_password();
         let current = password.clone();
-        let new = random_string();
+        let new = random_password();
 
         repo_user.expect_get_by_id().times(1).returning(move |_| {
             let password = password.clone();
 
             Box::pin(async move {
-                let hashed = hash_password(&password)?;
-
                 Ok(User {
-                    password: hashed,
+                    password: password.hashed()?,
                     ..Default::default()
                 })
             })

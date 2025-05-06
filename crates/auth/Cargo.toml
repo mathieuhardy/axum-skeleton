@@ -20,7 +20,6 @@ common-core = { workspace = true, default-features = false }
 common-web = { workspace = true, default-features = false }
 database = { workspace = true, default-features = false }
 security = { workspace = true, default-features = false }
-utils = { workspace = true, default-features = false, features = ["hashing"] }
 
 [dev-dependencies]
 mockall = { workspace = true, default-features = false }

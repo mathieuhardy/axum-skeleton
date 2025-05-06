@@ -3,6 +3,8 @@
 use futures::future::BoxFuture;
 use sqlx::{FromRow, Type};
 
+use security::password::Password;
+
 use crate::domain::auth_user::{AuthUser, AuthUserRole};
 use crate::domain::port::AuthStore;
 use crate::prelude::*;
@@ -65,7 +67,7 @@ impl From<DbAuthUser> for AuthUser {
             id: db_user.id,
             email: db_user.email,
             role: db_user.role.into(),
-            password: db_user.password,
+            password: Password::from(db_user.password),
         }
     }
 }

@@ -3,7 +3,7 @@
 use chrono::{DateTime, Utc};
 use validator::Validate;
 
-use security::password::validate_password;
+use security::password::Password;
 
 use crate::prelude::*;
 
@@ -58,7 +58,7 @@ pub struct User {
 
     /// Password of the user (hashed of course).
     #[debug(skip)]
-    pub password: String,
+    pub password: Password,
 
     /// Date of record's creation.
     pub created_at: DateTime<Utc>,
@@ -83,7 +83,7 @@ pub struct UserData {
     pub role: UserRole,
 
     /// See `User::password`.
-    pub password: String,
+    pub password: Password,
 }
 
 /// Structure used by HTTP endpoint to query an update in the database.
@@ -108,8 +108,8 @@ pub struct CreateUserRequest {
 
     /// See `User::password`.
     #[debug(skip)]
-    #[validate(custom(function = "validate_password"))]
-    pub password: String,
+    #[validate(nested)]
+    pub password: Password,
 }
 
 impl From<CreateUserRequest> for UserData {
@@ -172,7 +172,7 @@ impl From<UpdateUserRequest> for UserData {
             },
             email: request.email.clone(),
             role: request.role.clone(),
-            password: String::new(),
+            password: Password::default(),
         }
     }
 }
@@ -187,8 +187,8 @@ pub struct UpsertUserRequest {
 
     /// See `User::password`.
     #[debug(skip)]
-    #[validate(custom(function = "validate_password"))]
-    pub password: Option<String>,
+    #[validate(nested)]
+    pub password: Option<Password>,
 
     /// Data from `UserRequest`
     #[serde(flatten)]
@@ -221,10 +221,10 @@ impl From<UpsertUserRequest> for UserData {
 pub struct PasswordUpdateRequest {
     /// Current password of the user. Not validated as it will be simply compared with the entry in
     /// database before updating.
-    pub current: String,
+    pub current: Password,
 
     /// New password to be set in database.
     #[debug(skip)]
-    #[validate(custom(function = "validate_password"))]
-    pub new: String,
+    #[validate(nested)]
+    pub new: Password,
 }

@@ -16,6 +16,7 @@ use tower::util::ServiceExt;
 use tracing::subscriber::DefaultGuard;
 
 use auth::AuthCredentials;
+use security::password::Password;
 use server::app;
 use server::config::{Config, Environment};
 
@@ -150,12 +151,12 @@ impl TestClient {
     ///
     /// # Arguments
     /// * `user` - User to be logged as.
-    pub async fn login(&mut self, email: &str, password: &str) {
+    pub async fn login(&mut self, email: &str, password: &Password) {
         self.post("/login")
             .cookie_store(true)
             .json(&AuthCredentials {
                 email: email.to_string(),
-                password: password.to_string(),
+                password: password.to_owned(),
             })
             .send()
             .await;

@@ -18,6 +18,7 @@ pub async fn create_user(
     pool: &PgPool,
 ) -> Result<AuthUser, Box<dyn std::error::Error>> {
     let role: DbAuthUserRole = user.role.clone().into();
+    let password = user.password.hashed()?;
 
     let user = sqlx::query_as!(
         DbAuthUser,
@@ -31,7 +32,7 @@ pub async fn create_user(
             password",
         user.email.clone(),
         role as DbAuthUserRole,
-        utils::hashing::hash_password(&user.password)?,
+        password.as_str(),
     )
     .fetch_one(pool)
     .await?;
