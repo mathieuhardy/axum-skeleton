@@ -2,6 +2,8 @@
 
 use validator::Validate;
 
+use security::password::Password;
+
 use crate::prelude::*;
 
 /// List of users roles.
@@ -33,7 +35,7 @@ pub struct AuthUser {
 
     /// Password of the user (hashed of course).
     #[debug(skip)]
-    pub password: String,
+    pub password: Password,
 }
 
 impl AuthUser {

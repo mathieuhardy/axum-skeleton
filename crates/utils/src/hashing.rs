@@ -6,41 +6,41 @@ use argon2::{Argon2, PasswordHasher};
 
 use crate::error::*;
 
-/// Hash a given password using Argon2id algorithm.
+/// Hash a given string using Argon2id algorithm.
 ///
 /// # Arguments
-/// * `password` - Input string to be hashed.
+/// * `value` - Input string to be hashed.
 ///
 /// # Returns
-/// The hashed password or an error.
-pub fn hash_password(password: &str) -> Res<String> {
+/// The hashed string or an error.
+pub fn hash_string(value: &str) -> Res<String> {
     let salt = SaltString::generate(&mut OsRng);
     let argon2 = Argon2::default();
-    let password_hash = argon2
-        .hash_password(password.as_bytes(), &salt)
+    let hash = argon2
+        .hash_password(value.as_bytes(), &salt)
         .map_err(|e| Error::Hashing(e.to_string()))?
         .to_string();
 
-    Ok(password_hash)
+    Ok(hash)
 }
 
-/// Verifies that a password matches a hashed password.
+/// Verifies that a string matches a hashed string.
 ///
 /// # Arguments
-/// * `password` - Password to be checked.
-/// * `hashed` - Hashed password to compare with.
+/// * `value` - String to be checked.
+/// * `hashed` - Hashed string to compare with.
 ///
 /// # Returns
-/// A result containing the bool that tell if the passwords matches.
-pub async fn verify(password: &str, hashed: &str) -> Res<bool> {
-    let password = password.to_owned();
+/// A result containing the bool that tell if the strings matches.
+pub async fn verify(value: &str, hashed: &str) -> Res<bool> {
+    let value = value.to_owned();
     let hashed = hashed.to_owned();
 
     tokio::task::spawn_blocking(move || {
-        let hash = PasswordHash::new(&hashed).map_err(|e| Error::Hashing(e.to_string()))?;
+        let hash = PasswordHash::new(hashed.as_str()).map_err(|e| Error::Hashing(e.to_string()))?;
 
         Ok(Argon2::default()
-            .verify_password(password.as_bytes(), &hash)
+            .verify_password(value.as_bytes(), &hash)
             .is_ok())
     })
     .await?

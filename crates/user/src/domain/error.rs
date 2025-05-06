@@ -32,13 +32,13 @@ pub enum Error {
     #[error("NotFound")]
     NotFound,
 
+    /// Security error.
+    #[error(transparent)]
+    Security(#[from] security::Error),
+
     /// Generic SQLx error.
     #[error(transparent)]
     SQLx(#[from] sqlx::Error),
-
-    /// Generic utils error.
-    #[error(transparent)]
-    Utils(#[from] utils::error::Error),
 
     /// Validation error.
     #[error(transparent)]

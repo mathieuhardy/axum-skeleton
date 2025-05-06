@@ -1,7 +1,6 @@
 //! Use-case for upserting a user.
 
 use common_core::UseCase;
-use utils::hashing::hash_password;
 
 use crate::domain::port::UserStore;
 use crate::domain::user::{UpsertUserRequest, User, UserData};
@@ -47,7 +46,7 @@ impl UseCase for UpsertUser {
                 let password = request.password.as_ref().ok_or(Error::MissingPassword)?;
 
                 let data = UserData {
-                    password: hash_password(password)?,
+                    password: password.hashed()?,
                     ..request.into()
                 };
 
@@ -61,7 +60,7 @@ impl UseCase for UpsertUser {
 mod tests {
     use super::*;
 
-    use security::password::{set_checks, Checks};
+    use security::password::{set_checks, Checks, Password};
     use test_utils::rand::{random_email, random_id, random_string};
 
     use crate::domain::port::MockUserStore;
@@ -84,7 +83,7 @@ mod tests {
 
         let res = UpsertUser::new(stores.clone())
             .handle(UpsertUserRequest {
-                password: Some("".to_string()),
+                password: Some(Password::default()),
                 user: UpdateUserRequest {
                     first_name: random_string(),
                     last_name: random_string(),
@@ -117,7 +116,7 @@ mod tests {
         let res = UpsertUser::new(stores.clone())
             .handle(UpsertUserRequest {
                 user_id: Some(user_id),
-                password: Some(String::new()),
+                password: Some(Password::default()),
                 user: UpdateUserRequest {
                     first_name: random_string(),
                     last_name: random_string(),

@@ -1,3 +1,5 @@
+//! Authentication related entities.
+
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use axum::middleware::Next;
@@ -8,7 +10,7 @@ use tracing::{event, Level};
 use uuid::Uuid;
 use validator::Validate;
 
-use security::password::validate_password;
+use security::password::Password;
 
 use crate::domain::auth_user::AuthUser;
 use crate::domain::error::Error;
@@ -25,8 +27,8 @@ pub struct AuthCredentials {
 
     /// Password used during authentication.
     #[debug(skip)]
-    #[validate(custom(function = "validate_password"))]
-    pub password: String,
+    #[validate(nested)]
+    pub password: Password,
 }
 
 /// Structure used to store all needed information for authentication.
@@ -85,7 +87,7 @@ where
             .map_err(|_| Error::UserNotFound)?;
 
         // Verify password
-        match utils::hashing::verify(&credentials.password, &user.password).await {
+        match credentials.password.matches(&user.password).await {
             Ok(true) => Ok(user),
 
             Ok(false) => {
@@ -222,7 +224,7 @@ mod tests {
 
         let credentials = AuthCredentials {
             email: random_email(),
-            password: String::new(),
+            password: Password::default(),
         };
 
         assert!(credentials.validate().is_err());

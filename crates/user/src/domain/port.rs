@@ -2,6 +2,8 @@
 
 use futures::future::BoxFuture;
 
+use security::password::Password;
+
 use crate::domain::user::{User, UserData, UserFilters};
 use crate::prelude::*;
 
@@ -75,6 +77,6 @@ pub trait UserStore: Send + Sync {
     fn set_user_password(
         &self,
         user_id: Uuid,
-        password: String,
+        password: Password,
     ) -> BoxFuture<'static, Result<(), Error>>;
 }

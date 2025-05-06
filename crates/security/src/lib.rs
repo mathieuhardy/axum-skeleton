@@ -3,3 +3,8 @@
 #![forbid(unsafe_code)]
 
 pub mod password;
+
+mod error;
+mod prelude;
+
+pub use crate::error::Error;
