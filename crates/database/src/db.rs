@@ -1,7 +1,11 @@
 //! Databases connections initialization
 
 use bb8_redis::RedisConnectionManager;
-use sqlx::postgres::{PgPool, PgPoolOptions};
+use sqlx::postgres::{PgConnectOptions, PgPool, PgPoolOptions};
+use sqlx::ConnectOptions;
+use std::str::FromStr;
+use std::time::Duration;
+use tracing::log::LevelFilter;
 
 use common_core::RedisPool;
 
@@ -22,9 +26,13 @@ pub async fn initialize(
     // PostgresSQL
     let db_url = std::env::var(db_env_variable.unwrap_or("DATABASE_URL")).map_err(Error::Env)?;
 
+    let options = PgConnectOptions::from_str(&db_url)?
+        .log_statements(LevelFilter::Off)
+        .log_slow_statements(LevelFilter::Warn, Duration::from_secs(1));
+
     let pg_pool = PgPoolOptions::new()
         .max_connections(8)
-        .connect(&db_url)
+        .connect_with(options)
         .await?;
 
     sqlx::migrate!().run(&pg_pool).await?;

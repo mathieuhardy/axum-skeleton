@@ -1,8 +1,6 @@
 # ✅ TODO
 
 - remove axum-login
-- remove sqlx logs
-- tests: add arguments parsing in hurl script (getopt)
 - auth: add unit tests everywhere it's possible
 - auth: add email verification process
 - auth: add endpoints to manage the list of sessions (show, invalidate, etc)
