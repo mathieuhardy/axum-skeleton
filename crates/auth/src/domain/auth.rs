@@ -204,7 +204,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_credentials_validation_pasword() -> Result<(), Box<dyn std::error::Error>> {
+    async fn test_credentials_validation_password() -> Result<(), Box<dyn std::error::Error>> {
         set_checks(Checks {
             min_length: 8,
             ..Checks::default()

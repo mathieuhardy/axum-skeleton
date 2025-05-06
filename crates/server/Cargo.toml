@@ -6,7 +6,6 @@ edition = "2021"
 [dependencies]
 async-trait = { workspace = true, default-features = false }
 axum = { workspace = true, default-features = false, features = ["form", "http1", "json", "macros", "query", "tokio"] }
-axum-login = { workspace = true, default-features = false }
 config = { workspace = true, default-features = false, features = ["yaml"] }
 derive_more = { workspace = true, default-features = false }
 serde = { workspace = true, default-features = false, features = ["derive"] }
@@ -25,7 +24,7 @@ tower-http = { workspace = true, default-features = false, features = [
     "timeout",
     "trace"
 ] }
-tower-sessions = { workspace = true, default-features = false, features = ["signed"] }
+tower-sessions = { workspace = true, default-features = false, features = ["axum-core", "memory-store", "signed"] }
 tracing = { workspace = true, default-features = false, features = ["attributes", "log", "std"] }
 uuid = { workspace = true, default-features = false }
 

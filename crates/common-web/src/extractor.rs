@@ -15,9 +15,9 @@ pub struct FormOrJson<T>(pub T);
 impl<S, T> FromRequest<S> for FormOrJson<T>
 where
     S: Send + Sync,
+    T: 'static,
     Json<T>: FromRequest<()>,
     Form<T>: FromRequest<()>,
-    T: 'static,
 {
     type Rejection = Response;
 
