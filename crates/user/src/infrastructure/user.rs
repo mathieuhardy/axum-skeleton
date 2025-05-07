@@ -1,13 +1,15 @@
 //! SQLx implementation of the UserStore trait.
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Duration, Utc};
 use futures::future::BoxFuture;
+use sqlx::types::Json;
 use sqlx::{FromRow, Type};
 
 use security::password::Password;
 
 use crate::domain::port::UserStore;
 use crate::domain::user::{User, UserData, UserFilters, UserRole};
+use crate::domain::user_confirmation::UserConfirmation;
 use crate::prelude::*;
 
 /// List of users roles in the DB enum.
@@ -72,11 +74,14 @@ pub struct DbUser {
 
     /// See `User::updated_at`.
     pub updated_at: DateTime<Utc>,
+
+    /// See `User::pending_confirmation`.
+    pub pending_confirmation: Option<Json<UserConfirmation>>,
 }
 
 impl From<DbUser> for User {
     fn from(db_user: DbUser) -> Self {
-        User {
+        Self {
             id: db_user.id,
             first_name: db_user.first_name.unwrap_or_default(),
             last_name: db_user.last_name.unwrap_or_default(),
@@ -85,6 +90,7 @@ impl From<DbUser> for User {
             password: Password::from(db_user.password),
             created_at: db_user.created_at,
             updated_at: db_user.updated_at,
+            pending_confirmation: db_user.pending_confirmation.map(|e| e.0.into()),
         }
     }
 }
@@ -167,11 +173,18 @@ impl UserStore for SQLxUserStore {
         })
     }
 
-    fn create(&self, data: UserData) -> BoxFuture<'static, Result<User, Error>> {
+    fn create(
+        &self,
+        data: UserData,
+        confirmation_timeout_hours: Duration,
+    ) -> BoxFuture<'static, Result<User, Error>> {
         let db = self.db.clone();
         let role: DbUserRole = data.role.into();
 
         Box::pin(async move {
+            // Use transaction here so that we don't end up with a user without confirmation asked
+            let mut transaction = db.begin().await?;
+
             let user = sqlx::query_file_as!(
                 DbUser,
                 "sql/create.sql",
@@ -181,10 +194,31 @@ impl UserStore for SQLxUserStore {
                 role as DbUserRole,
                 data.password.as_str()
             )
-            .fetch_one(&db)
+            .fetch_one(&mut *transaction)
             .await?;
 
-            Ok(user.into())
+            // TODO: should be moved to use-case as soon as transaction is supported there
+            let confirmation = if confirmation_timeout_hours.num_hours() > 0 {
+                let confirmation = sqlx::query_file_as!(
+                    UserConfirmation,
+                    "sql/create_confirmation.sql",
+                    user.id,
+                    Utc::now() + confirmation_timeout_hours,
+                )
+                .fetch_one(&mut *transaction)
+                .await?;
+
+                Some(confirmation)
+            } else {
+                None
+            };
+
+            transaction.commit().await?;
+
+            let mut user: User = user.into();
+            user.pending_confirmation = confirmation;
+
+            Ok(user)
         })
     }
 
@@ -338,13 +372,16 @@ mod tests {
         let repo = SQLxUserStore::new(db.clone());
 
         let user = repo
-            .create(UserData {
-                first_name: Some(random_string()),
-                last_name: Some(random_string()),
-                email: random_string(),
-                role: UserRole::Normal,
-                password: random_password(),
-            })
+            .create(
+                UserData {
+                    first_name: Some(random_string()),
+                    last_name: Some(random_string()),
+                    email: random_string(),
+                    role: UserRole::Normal,
+                    password: random_password(),
+                },
+                chrono::Duration::zero(),
+            )
             .await?;
 
         let fetched = repo.get_by_id(user.id).await?;

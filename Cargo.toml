@@ -4,9 +4,12 @@ members = [
   "axum-skeleton-worker",
   "crates/auth",
   "crates/common-core",
+  "crates/common-state",
   "crates/common-web",
+  "crates/configuration",
   "crates/database",
   "crates/k8s",
+  "crates/mailer",
   "crates/sanity",
   "crates/security",
   "crates/server",
@@ -55,9 +58,12 @@ validator = { version = "0.20.0", default-features = false }
 
 auth = { path = "crates/auth", default-features = false }
 common-core = { path = "crates/common-core", default-features = false }
+common-state = { path = "crates/common-state", default-features = false }
 common-web = { path = "crates/common-web", default-features = false }
+configuration = { path = "crates/configuration", default-features = false }
 database = { path = "crates/database", default-features = false }
 k8s = { path = "crates/k8s", default-features = false }
+mailer = { path = "crates/mailer", default-features = false }
 sanity = { path = "crates/sanity", default-features = false }
 security = { path = "crates/security", default-features = false }
 server = { path = "crates/server", default-features = false }

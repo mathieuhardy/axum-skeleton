@@ -20,4 +20,4 @@ sqlx = { workspace = true, default-features = false, features = [
 thiserror = { workspace = true, default-features = false }
 tracing = { workspace = true, default-features = false, features = ["attributes", "log", "std"] }
 
-common-core = { workspace = true, default-features = false }
+common-state = { workspace = true, default-features = false }

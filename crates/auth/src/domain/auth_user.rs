@@ -36,6 +36,9 @@ pub struct AuthUser {
     /// Password of the user (hashed of course).
     #[debug(skip)]
     pub password: Password,
+
+    /// Email confirmed.
+    pub email_confirmed: bool,
 }
 
 impl AuthUser {
@@ -56,6 +59,14 @@ impl AuthUser {
     /// `true` if the user matches the ID provided.
     pub fn is(&self, id: &Uuid) -> bool {
         self.id == *id
+    }
+
+    /// Checks if the user has confirmed its email.
+    ///
+    /// # Returns
+    /// `true` if the user has confirmed its email.
+    pub fn is_email_confirmed(&self) -> bool {
+        self.email_confirmed
     }
 
     /// Returns a vector of u8 representing the hash of the user.
@@ -114,6 +125,21 @@ mod tests {
 
         assert!(auth_user.is(&auth_user.id));
         assert!(!auth_user.is(&random_id()));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_auth_user_is_email_confirmed() -> Result<(), Box<dyn std::error::Error>> {
+        let auth_user = AuthUser::default();
+        assert!(!auth_user.is_email_confirmed());
+
+        let auth_user = AuthUser {
+            email_confirmed: true,
+            ..Default::default()
+        };
+
+        assert!(auth_user.is_email_confirmed());
 
         Ok(())
     }

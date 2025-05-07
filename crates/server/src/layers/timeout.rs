@@ -3,7 +3,7 @@
 use std::time::Duration;
 use tower_http::timeout::TimeoutLayer;
 
-use crate::config::Config;
+use configuration::Config;
 
 /// Gets the layer used to configure the routes timeout.
 ///

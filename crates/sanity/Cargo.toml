@@ -10,5 +10,5 @@ serde = { workspace = true, default-features = false, features = ["derive"] }
 thiserror = { workspace = true, default-features = false }
 tower-http = { workspace = true, default-features = false, features = ["fs", "redirect"] }
 
-common-core = { workspace = true, default-features = false }
+common-state = { workspace = true, default-features = false }
 utils = { workspace = true, default-features = false, features = ["fs"] }

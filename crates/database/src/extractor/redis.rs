@@ -7,7 +7,7 @@ use axum::http::StatusCode;
 use bb8::PooledConnection;
 use bb8_redis::RedisConnectionManager;
 
-use common_core::AppState;
+use common_state::AppState;
 
 /// Redis connection extractor.
 ///

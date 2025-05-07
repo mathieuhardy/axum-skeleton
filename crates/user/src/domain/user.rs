@@ -5,6 +5,7 @@ use validator::Validate;
 
 use security::password::Password;
 
+use crate::domain::user_confirmation::UserConfirmation;
 use crate::prelude::*;
 
 /// List of users roles.
@@ -65,6 +66,16 @@ pub struct User {
 
     /// Date of record's last update.
     pub updated_at: DateTime<Utc>,
+
+    /// User confirmation information.
+    pub pending_confirmation: Option<UserConfirmation>,
+}
+
+impl User {
+    /// Checks if the user has confirmed its email.
+    pub fn is_email_confirmed(&self) -> bool {
+        self.pending_confirmation.is_none()
+    }
 }
 
 /// Data structure passed to database queries when inserting or updating entries.

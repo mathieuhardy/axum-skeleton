@@ -28,8 +28,9 @@ pub async fn create_user(
         RETURNING
             id,
             email,
-            role AS \"role: _\",
-            password",
+            role AS \"role!: _\",
+            password,
+            TRUE AS \"email_confirmed!: _\"",
         user.email.clone(),
         role as DbAuthUserRole,
         password.as_str(),

@@ -6,7 +6,7 @@ use axum::http::request::Parts;
 use axum::http::StatusCode;
 use sqlx::postgres::PgPool;
 
-use common_core::AppState;
+use common_state::AppState;
 
 /// PostgreSQL pool extractor.
 ///

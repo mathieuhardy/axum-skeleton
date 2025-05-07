@@ -8,7 +8,7 @@ use axum::http::request::Parts;
 use tower_sessions::Session;
 use tracing::{event, Level};
 
-use common_core::AppState;
+use common_state::AppState;
 
 use crate::domain::auth::Auth;
 use crate::domain::auth_user::AuthUser;

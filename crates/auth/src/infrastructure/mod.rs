@@ -59,6 +59,9 @@ pub struct DbAuthUser {
     /// See `User::password`.
     #[debug(skip)]
     pub password: String,
+
+    /// See `User::email_confirmed`.
+    pub email_confirmed: bool,
 }
 
 impl From<DbAuthUser> for AuthUser {
@@ -68,6 +71,7 @@ impl From<DbAuthUser> for AuthUser {
             email: db_user.email,
             role: db_user.role.into(),
             password: Password::from(db_user.password),
+            email_confirmed: db_user.email_confirmed,
         }
     }
 }

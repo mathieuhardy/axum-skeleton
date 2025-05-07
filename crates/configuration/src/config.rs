@@ -6,7 +6,7 @@ use std::fmt;
 
 use utils::filesystem::{relative_path, root_relative_path};
 
-use crate::prelude::*;
+use crate::error::*;
 
 /// Name of the development environment.
 const DEVELOPMENT: &str = "development";
@@ -27,7 +27,7 @@ const DEFAULT_ENVIRONMENT: &str = DEVELOPMENT;
 const BASE_CONFIG: &str = "base.yml";
 
 /// Structure that contains all settings of the application.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct ApplicationSettings {
     /// Host name of the server.
     pub host: String,
@@ -40,7 +40,7 @@ pub struct ApplicationSettings {
 }
 
 /// Structure that contains all CORS settings.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct CorsSettings {
     /// Allowed methods.
     pub methods: Vec<String>,
@@ -53,21 +53,28 @@ pub struct CorsSettings {
 }
 
 /// Structure that contains all passwords settings.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct PasswordSettings {
     /// Allowed methods.
     pub pattern: PasswordPatternSettings,
 }
 
 /// Structure that contains all sessions settings.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct SessionsSettings {
     /// Timeout for the user session.
     pub timeout_in_hours: u32,
 }
 
+/// Structure that contains all sessions settings.
+#[derive(Clone, Debug, Deserialize)]
+pub struct AuthSettings {
+    /// Timeout for the user's email confirmation.
+    pub email_confirmation_timeout_hours: u32,
+}
+
 /// Structure that contains all passwords's pattern settings.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct PasswordPatternSettings {
     /// Must contains at least one digit.
     pub digit: bool,
@@ -92,7 +99,7 @@ pub struct PasswordPatternSettings {
 }
 
 /// Global configuration structure.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     /// Application settings.
     pub application: ApplicationSettings,
@@ -108,6 +115,9 @@ pub struct Config {
 
     /// Sessions configuration.
     pub sessions: SessionsSettings,
+
+    /// Authentication configuration.
+    pub auth: AuthSettings,
 }
 
 /// Possible environment values.
@@ -159,7 +169,7 @@ impl TryFrom<Environment> for Config {
 
     fn try_from(environment: Environment) -> Result<Self, Self::Error> {
         let config_dir = relative_path("config/server")
-            .or(root_relative_path("crates/server/config"))
+            .or(root_relative_path("crates/configuration/data"))
             .map_err(Error::Filesystem)?;
 
         let config = config::Config::builder()

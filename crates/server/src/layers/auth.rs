@@ -4,7 +4,7 @@
 
 use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
 
-use crate::config::Config;
+use configuration::Config;
 
 /// Gets the Axum layer used to enable authentication in the HTTP server.
 ///

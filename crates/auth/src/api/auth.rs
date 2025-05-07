@@ -6,7 +6,8 @@ use axum::Router;
 use tracing::instrument;
 use validator::Validate;
 
-use common_core::{AppState, UseCase};
+use common_core::UseCase;
+use common_state::AppState;
 use common_web::extractor::FormOrJson;
 
 use crate::application::{Login, Logout};

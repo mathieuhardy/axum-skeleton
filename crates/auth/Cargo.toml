@@ -17,6 +17,7 @@ uuid = { workspace = true, default-features = false, features = ["serde"] }
 validator = { workspace = true, default-features = false, features = ["derive"] }
 
 common-core = { workspace = true, default-features = false }
+common-state = { workspace = true, default-features = false }
 common-web = { workspace = true, default-features = false }
 database = { workspace = true, default-features = false }
 security = { workspace = true, default-features = false }

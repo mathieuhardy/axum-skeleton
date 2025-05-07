@@ -4,7 +4,7 @@ mod auth;
 
 use axum::Router;
 
-use common_core::AppState;
+use common_state::AppState;
 
 /// Builds a router for the authorization crate.
 ///
