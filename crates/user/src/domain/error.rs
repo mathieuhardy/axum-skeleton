@@ -16,9 +16,17 @@ pub enum Error {
     #[error(transparent)]
     Auth(#[from] auth::Error),
 
+    /// Generic environment variable error.
+    #[error(transparent)]
+    Env(#[from] std::env::VarError),
+
     /// Generic filesystem error.
     #[error("Forbidden")]
     Forbidden,
+
+    /// Generic mailer variable error.
+    #[error(transparent)]
+    Mailer(#[from] mailer::Error),
 
     /// Invalid password
     #[error("Invalid password")]
@@ -51,10 +59,13 @@ impl axum::response::IntoResponse for Error {
 
         let (rc, code) = match self {
             Self::Forbidden | Self::InvalidPassword => (StatusCode::FORBIDDEN, "FORBIDDEN"),
+
             Self::NotFound => (StatusCode::NOT_FOUND, "NOT_FOUND"),
+
             Self::Validation(_) | Self::MissingPassword => {
                 (StatusCode::UNPROCESSABLE_ENTITY, "UNPROCESSABLE_ENTITY")
             }
+
             _ => (StatusCode::INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR"),
         };
 

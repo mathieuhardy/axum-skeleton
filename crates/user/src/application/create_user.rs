@@ -1,6 +1,11 @@
 //! Use-case for creating a user.
 
+use chrono::Duration;
+
+use auth::AuthStore;
 use common_core::UseCase;
+use configuration::Config;
+use mailer::MailerProvider;
 
 use crate::domain::port::UserStore;
 use crate::domain::user::{CreateUserRequest, User, UserData};
@@ -11,10 +16,19 @@ use crate::prelude::*;
 pub struct CreateUserStores {
     /// User store.
     pub user: Arc<dyn UserStore>,
+
+    /// Mailer provider.
+    pub mailer: Arc<dyn MailerProvider>,
+
+    /// Auth store.
+    pub auth: Arc<dyn AuthStore>,
 }
 
 /// User creation use-case structure.
 pub struct CreateUser {
+    /// Application configuration.
+    config: Config,
+
     /// List of stores used.
     stores: CreateUserStores,
 }
@@ -27,8 +41,8 @@ impl CreateUser {
     ///
     /// # Returns
     /// A `CreateUser` instance.
-    pub fn new(stores: CreateUserStores) -> Self {
-        Self { stores }
+    pub fn new(config: Config, stores: CreateUserStores) -> Self {
+        Self { config, stores }
     }
 }
 
@@ -37,13 +51,37 @@ impl UseCase for CreateUser {
     type Output = User;
     type Error = Error;
 
+    // TODO: to be done in the same transaction
     async fn handle(&self, request: Self::Args) -> Result<Self::Output, Self::Error> {
+        // User creation
         let data = UserData {
             password: request.password.hashed()?,
             ..request.into()
         };
 
-        self.stores.user.create(data).await
+        let mut user = self.stores.user.create(data).await?;
+
+        // Create user confirmation
+        let confirmation_timeout_hours =
+            Duration::hours(self.config.auth.email_confirmation_timeout_hours.into());
+
+        let confirmation = self
+            .stores
+            .auth
+            .create_user_confirmation(&user.id, &confirmation_timeout_hours)
+            .await?;
+
+        user.pending_confirmation = Some(confirmation.clone());
+
+        // Send the email confirmation
+        let redirect_url = std::env::var("FRONTEND_URL")?;
+
+        self.stores
+            .mailer
+            .send_email_confirmation(&user.email, &confirmation.id, &redirect_url)
+            .await?;
+
+        Ok(user)
     }
 }
 
@@ -51,6 +89,9 @@ impl UseCase for CreateUser {
 mod tests {
     use super::*;
 
+    use auth::{AuthUserConfirmation, MockAuthStore};
+    use configuration::Config;
+    use mailer::MockMailerProvider;
     use security::password::{set_checks, Checks};
     use test_utils::rand::*;
 
@@ -58,21 +99,45 @@ mod tests {
     use crate::domain::user::UserRole;
 
     #[tokio::test]
-    async fn test_create_user_nominal() {
+    async fn test_create_user_nominal() -> Result<(), Box<dyn std::error::Error>> {
+        dotenvy::dotenv()?;
+
         set_checks(Checks::default());
 
-        let mut repo_user = MockUserStore::new();
+        let mut user_store = MockUserStore::new();
+        let mut mailer = MockMailerProvider::new();
+        let mut auth_store = MockAuthStore::new();
 
-        repo_user
-            .expect_create()
+        user_store.expect_create().times(1).returning(move |_| {
+            Box::pin(async move {
+                let user = User {
+                    pending_confirmation: Some(AuthUserConfirmation::default()),
+                    ..Default::default()
+                };
+
+                Ok(user)
+            })
+        });
+
+        auth_store
+            .expect_create_user_confirmation()
             .times(1)
-            .returning(move |_| Box::pin(async move { Ok(User::default()) }));
+            .returning(move |_, _| Box::pin(async move { Ok(AuthUserConfirmation::default()) }));
+
+        mailer
+            .expect_send_email_confirmation()
+            .times(1)
+            .returning(move |_, _, _| Box::pin(async move { Ok(()) }));
+
+        let config = Config::new()?;
 
         let stores = CreateUserStores {
-            user: Arc::new(repo_user),
+            user: Arc::new(user_store),
+            mailer: Arc::new(mailer),
+            auth: Arc::new(auth_store),
         };
 
-        let res = CreateUser::new(stores.clone())
+        let res = CreateUser::new(config, stores.clone())
             .handle(CreateUserRequest {
                 first_name: random_string(),
                 last_name: random_string(),
@@ -82,5 +147,7 @@ mod tests {
             })
             .await;
         assert!(res.is_ok());
+
+        Ok(())
     }
 }

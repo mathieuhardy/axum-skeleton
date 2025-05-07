@@ -4,19 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-async-trait = { workspace = true, default-features = false }
 axum = { workspace = true, default-features = false, features = ["json"] }
-bb8 = { workspace = true, default-features = false }
-bb8-redis = { workspace = true, default-features = false }
-serde = { workspace = true, default-features = false }
-sqlx = { workspace = true, default-features = false, features = [
-    "chrono",
-    "macros",
-    "migrate",
-    "postgres",
-    "runtime-tokio",
-    "tls-native-tls",
-    "uuid"
-] }
-tracing = { workspace = true, default-features = false }
-validator= { workspace = true, default-features = false }
+serde = { workspace = true, default-features = false, features = ["derive"] }

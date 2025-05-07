@@ -67,7 +67,7 @@ COPY --from=builder /app/target/release/axum-skeleton .
 
 # Configurations
 COPY --from=builder /app/crates/sanity/config ./config/sanity
-COPY --from=builder /app/crates/server/config ./config/server
+COPY --from=builder /app/crates/configuration/data ./config/server
 
 # Data
 COPY --from=builder /app/crates/sanity/data/dashboard ./data/sanity/dashboard

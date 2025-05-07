@@ -26,3 +26,6 @@ password:
 
 sessions:
   timeout_in_hours: 24
+
+auth:
+  email_confirmation_timeout_hours: 24

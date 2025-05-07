@@ -9,14 +9,14 @@ use axum::Router;
 use tracing::{event, Level};
 
 use auth::require_authentication;
-use common_core::AppState;
+use common_state::AppState;
+use configuration::Config;
 
-use crate::config::Config;
 use crate::error::ApiResult;
 
 #[cfg(debug_assertions)]
 #[cfg(feature = "sanity")]
-use crate::config::Environment;
+use configuration::Environment;
 
 /// Builds a router for the entire application.
 ///

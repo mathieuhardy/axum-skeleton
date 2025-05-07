@@ -69,9 +69,9 @@ mod tests {
     async fn test_set_user_password_validation() {
         set_checks(Checks::default());
 
-        let mut repo_user = MockUserStore::new();
+        let mut user_store = MockUserStore::new();
 
-        repo_user.expect_get_by_id().times(1).returning(move |_| {
+        user_store.expect_get_by_id().times(1).returning(move |_| {
             Box::pin(async move {
                 Ok(User {
                     password: random_password().hashed()?,
@@ -81,7 +81,7 @@ mod tests {
         });
 
         let stores = SetUserPasswordStores {
-            user: Arc::new(repo_user),
+            user: Arc::new(user_store),
         };
 
         let user_id = random_id();
@@ -103,14 +103,14 @@ mod tests {
     async fn test_set_user_password_nominal() {
         set_checks(Checks::default());
 
-        let mut repo_user = MockUserStore::new();
+        let mut user_store = MockUserStore::new();
 
         let user_id = random_id();
         let password = random_password();
         let current = password.clone();
         let new = random_password();
 
-        repo_user.expect_get_by_id().times(1).returning(move |_| {
+        user_store.expect_get_by_id().times(1).returning(move |_| {
             let password = password.clone();
 
             Box::pin(async move {
@@ -121,13 +121,13 @@ mod tests {
             })
         });
 
-        repo_user
+        user_store
             .expect_set_user_password()
             .times(1)
             .returning(move |_, _| Box::pin(async move { Ok(()) }));
 
         let stores = SetUserPasswordStores {
-            user: Arc::new(repo_user),
+            user: Arc::new(user_store),
         };
 
         let res = SetUserPassword::new(stores.clone())

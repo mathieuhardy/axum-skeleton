@@ -8,7 +8,7 @@ use crate::domain::user::{User, UserData, UserFilters};
 use crate::prelude::*;
 
 /// User store APIs.
-#[cfg_attr(test, mockall::automock)]
+#[cfg_attr(any(test, feature = "mock"), mockall::automock)]
 pub trait UserStore: Send + Sync {
     /// Check if a user exists in the database.
     ///

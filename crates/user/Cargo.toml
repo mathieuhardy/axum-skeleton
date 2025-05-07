@@ -9,6 +9,7 @@ axum = { workspace = true, default-features = false, features = ["form", "http1"
 chrono = { workspace = true, default-features = false, features = ["serde"] }
 derive_more = { workspace = true, default-features = false, features = ["debug", "deref"] }
 futures = { workspace = true, default-features = false }
+mockall = { workspace = true, default-features = false, optional = true }
 serde = { workspace = true, default-features = false, features = ["derive"] }
 sqlx = { workspace = true, default-features = false, features = ["macros", "postgres"] }
 thiserror = { workspace = true, default-features = false }
@@ -18,15 +19,24 @@ validator = { workspace = true, default-features = false, features = ["derive"] 
 
 auth = { workspace = true, default-features = false }
 common-core = { workspace = true, default-features = false }
+common-state = { workspace = true, default-features = false }
 common-web = { workspace = true, default-features = false }
+configuration = { workspace = true, default-features = false }
 database = { workspace = true, default-features = false }
+mailer = { workspace = true, default-features = false }
 security = { workspace = true, default-features = false }
 
 [dev-dependencies]
+dotenvy = { workspace = true, default-features = false }
 mockall = { workspace = true, default-features = false }
 serial_test = { workspace = true, default-features = false }
 tokio = { workspace = true, default-features = false }
 urlencoding = { workspace = true, default-features = false }
 
+auth = { workspace = true, default-features = false, features = ["mock"] }
+mailer = { workspace = true, default-features = false, features = ["mock"] }
 test-utils = { workspace = true, default-features = false, features = ["database", "derives", "rand", "runner", "server"] }
 test-utils-derives = { workspace = true, default-features = false }
+
+[features]
+mock = ["mockall"]

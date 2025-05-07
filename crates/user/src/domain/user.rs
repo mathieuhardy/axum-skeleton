@@ -3,6 +3,7 @@
 use chrono::{DateTime, Utc};
 use validator::Validate;
 
+use auth::AuthUserConfirmation;
 use security::password::Password;
 
 use crate::prelude::*;
@@ -65,6 +66,16 @@ pub struct User {
 
     /// Date of record's last update.
     pub updated_at: DateTime<Utc>,
+
+    /// User confirmation information.
+    pub pending_confirmation: Option<AuthUserConfirmation>,
+}
+
+impl User {
+    /// Checks if the user has confirmed its email.
+    pub fn is_email_confirmed(&self) -> bool {
+        self.pending_confirmation.is_none()
+    }
 }
 
 /// Data structure passed to database queries when inserting or updating entries.

@@ -1,11 +1,12 @@
 //! SQLx implementation of the `AuthStore` trait.
 
+use chrono::{Duration, Utc};
 use futures::future::BoxFuture;
 use sqlx::{FromRow, Type};
 
 use security::password::Password;
 
-use crate::domain::auth_user::{AuthUser, AuthUserRole};
+use crate::domain::auth_user::{AuthUser, AuthUserConfirmation, AuthUserRole};
 use crate::domain::port::AuthStore;
 use crate::prelude::*;
 
@@ -59,6 +60,9 @@ pub struct DbAuthUser {
     /// See `User::password`.
     #[debug(skip)]
     pub password: String,
+
+    /// See `User::email_confirmed`.
+    pub email_confirmed: bool,
 }
 
 impl From<DbAuthUser> for AuthUser {
@@ -68,12 +72,13 @@ impl From<DbAuthUser> for AuthUser {
             email: db_user.email,
             role: db_user.role.into(),
             password: Password::from(db_user.password),
+            email_confirmed: db_user.email_confirmed,
         }
     }
 }
 
 /// SLQx's implementation of the `AuthStore` trait.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct SQLxAuthStore {
     /// Database connection pool.
     db: PgPool,
@@ -113,6 +118,78 @@ impl AuthStore for SQLxAuthStore {
             Ok(user.into())
         })
     }
+
+    fn get_user_confirmation_by_id(
+        &self,
+        id: &Uuid,
+    ) -> BoxFuture<'static, Result<AuthUserConfirmation, Error>> {
+        let db = self.db.clone();
+        let id = *id;
+
+        Box::pin(async move {
+            let confirmation = sqlx::query_file_as!(
+                AuthUserConfirmation,
+                "sql/get_user_confirmation_by_id.sql",
+                id
+            )
+            .fetch_one(&db)
+            .await?;
+
+            Ok(confirmation)
+        })
+    }
+
+    fn delete_user_confirmation_by_id(&self, id: &Uuid) -> BoxFuture<'static, Result<(), Error>> {
+        let db = self.db.clone();
+        let id = *id;
+
+        Box::pin(async move {
+            sqlx::query_file!("sql/delete_user_confirmation_by_id.sql", id)
+                .execute(&db)
+                .await?;
+
+            Ok(())
+        })
+    }
+
+    fn delete_user_confirmation_by_user_id(
+        &self,
+        user_id: &Uuid,
+    ) -> BoxFuture<'static, Result<(), Error>> {
+        let db = self.db.clone();
+        let user_id = *user_id;
+
+        Box::pin(async move {
+            sqlx::query_file!("sql/delete_user_confirmation_by_user_id.sql", user_id)
+                .execute(&db)
+                .await?;
+
+            Ok(())
+        })
+    }
+
+    fn create_user_confirmation(
+        &self,
+        user_id: &Uuid,
+        confirmation_timeout_hours: &Duration,
+    ) -> BoxFuture<'static, Result<AuthUserConfirmation, Error>> {
+        let db = self.db.clone();
+        let user_id = *user_id;
+        let confirmation_timeout_hours = *confirmation_timeout_hours;
+
+        Box::pin(async move {
+            let confirmation = sqlx::query_file_as!(
+                AuthUserConfirmation,
+                "sql/create_user_confirmation.sql",
+                user_id,
+                Utc::now() + confirmation_timeout_hours
+            )
+            .fetch_one(&db)
+            .await?;
+
+            Ok(confirmation)
+        })
+    }
 }
 
 #[cfg(test)]
@@ -125,7 +202,7 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn test_repo_find_by_email() -> Result<(), Box<dyn std::error::Error>> {
+    async fn test_find_by_email() -> Result<(), Box<dyn std::error::Error>> {
         let db = setup_test_database().await?;
 
         let repo = SQLxAuthStore::new(&db);
@@ -148,7 +225,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_repo_get_by_id() -> Result<(), Box<dyn std::error::Error>> {
+    async fn test_get_by_id() -> Result<(), Box<dyn std::error::Error>> {
         let db = setup_test_database().await?;
 
         let repo = SQLxAuthStore::new(&db);

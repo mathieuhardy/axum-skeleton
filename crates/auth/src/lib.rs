@@ -36,6 +36,10 @@ mod tests;
 // Exports
 pub use api::router;
 pub use domain::auth::{require_authentication, Auth, AuthCredentials};
-pub use domain::auth_user::{AuthUser, AuthUserRole};
+pub use domain::auth_user::{AuthUser, AuthUserConfirmation, AuthUserRole};
 pub use domain::error::Error;
+pub use domain::port::AuthStore;
 pub use infrastructure::SQLxAuthStore;
+
+#[cfg(feature = "mock")]
+pub use domain::port::MockAuthStore;

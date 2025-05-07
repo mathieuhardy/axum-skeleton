@@ -1,14 +1,16 @@
 -- ID of the user to find
 
 SELECT
-    id,
-    first_name,
-    last_name,
-    email,
-    role AS "role: _",
-    password,
-    created_at,
-    updated_at
-FROM users
-WHERE id = $1
+    u.id,
+    u.first_name,
+    u.last_name,
+    u.email,
+    u.role AS "role!: _",
+    u.password,
+    u.created_at,
+    u.updated_at,
+    TO_JSONB(uc) AS "pending_confirmation: _"
+FROM users u
+LEFT JOIN user_confirmations uc ON uc.user_id = u.id
+WHERE u.id = $1
 LIMIT 1;

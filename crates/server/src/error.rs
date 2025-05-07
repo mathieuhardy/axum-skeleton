@@ -19,7 +19,7 @@ pub enum Error {
 
     /// Error during the loading of the server configuration.
     #[error(transparent)]
-    Configuration(#[from] config::ConfigError),
+    Configuration(#[from] configuration::Error),
 
     /// Database read/write error.
     #[error(transparent)]

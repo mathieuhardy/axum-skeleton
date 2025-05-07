@@ -52,7 +52,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_user_by_id_nominal() {
-        let mut repo_user = MockUserStore::new();
+        let mut user_store = MockUserStore::new();
 
         let filters = UserFilters {
             first_name: Some(random_string()),
@@ -61,7 +61,7 @@ mod tests {
             role: Some(UserRole::Guest),
         };
 
-        repo_user
+        user_store
             .expect_get_by_filters()
             .times(1)
             .returning(move |filters| {
@@ -70,7 +70,7 @@ mod tests {
             });
 
         let stores = GetUsersByFiltersStores {
-            user: Arc::new(repo_user),
+            user: Arc::new(user_store),
         };
 
         let res = GetUsersByFilters::new(stores).handle(filters).await;

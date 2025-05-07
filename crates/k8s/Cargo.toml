@@ -6,4 +6,4 @@ edition = "2021"
 [dependencies]
 axum = { workspace = true, default-features = false, features = ["http1"] }
 
-common-core = { workspace = true, default-features = false }
+common-state = { workspace = true, default-features = false }

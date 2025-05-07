@@ -134,11 +134,16 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "axum",
+ "chrono",
  "common-core",
+ "common-state",
  "common-web",
+ "configuration",
  "database",
  "derive_more",
+ "dotenvy",
  "futures",
+ "mailer",
  "mockall",
  "security",
  "serde",
@@ -405,14 +410,20 @@ dependencies = [
 name = "common-core"
 version = "0.1.0"
 dependencies = [
+ "axum",
+ "serde",
+]
+
+[[package]]
+name = "common-state"
+version = "0.1.0"
+dependencies = [
  "async-trait",
  "axum",
  "bb8",
  "bb8-redis",
- "serde",
+ "configuration",
  "sqlx",
- "tracing",
- "validator",
 ]
 
 [[package]]
@@ -441,6 +452,18 @@ dependencies = [
  "serde",
  "winnow",
  "yaml-rust2",
+]
+
+[[package]]
+name = "configuration"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "common-core",
+ "config",
+ "serde",
+ "thiserror 2.0.12",
+ "utils",
 ]
 
 [[package]]
@@ -582,7 +605,7 @@ dependencies = [
  "axum",
  "bb8",
  "bb8-redis",
- "common-core",
+ "common-state",
  "sqlx",
  "thiserror 2.0.12",
  "tracing",
@@ -1303,7 +1326,7 @@ name = "k8s"
 version = "0.1.0"
 dependencies = [
  "axum",
- "common-core",
+ "common-state",
 ]
 
 [[package]]
@@ -1365,6 +1388,18 @@ name = "log"
 version = "0.4.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13dc2df351e3202783a1fe0d44375f7295ffb4049267b0f3018346dc122a1d94"
+
+[[package]]
+name = "mailer"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "common-core",
+ "futures",
+ "mockall",
+ "thiserror 2.0.12",
+ "uuid",
+]
 
 [[package]]
 name = "matchers"
@@ -1973,7 +2008,7 @@ name = "sanity"
 version = "0.1.0"
 dependencies = [
  "axum",
- "common-core",
+ "common-state",
  "config",
  "serde",
  "thiserror 2.0.12",
@@ -2130,7 +2165,9 @@ dependencies = [
  "auth",
  "axum",
  "common-core",
+ "common-state",
  "config",
+ "configuration",
  "database",
  "derive_more",
  "k8s",
@@ -2533,6 +2570,7 @@ version = "0.1.0"
 dependencies = [
  "auth",
  "axum",
+ "configuration",
  "dotenvy",
  "http-body-util",
  "mime",
@@ -2962,10 +3000,14 @@ dependencies = [
  "axum",
  "chrono",
  "common-core",
+ "common-state",
  "common-web",
+ "configuration",
  "database",
  "derive_more",
+ "dotenvy",
  "futures",
+ "mailer",
  "mockall",
  "security",
  "serde",

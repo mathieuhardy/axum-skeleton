@@ -62,17 +62,17 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_user_by_id_not_found() {
-        let mut repo_user = MockUserStore::new();
+        let mut user_store = MockUserStore::new();
 
         let user_id = random_id();
 
-        repo_user.expect_exists().times(1).returning(move |id| {
+        user_store.expect_exists().times(1).returning(move |id| {
             assert_eq!(id, user_id);
             Box::pin(async move { Ok(false) })
         });
 
         let stores = GetUserByIdStores {
-            user: Arc::new(repo_user),
+            user: Arc::new(user_store),
         };
 
         let res = GetUserById::new(stores).handle(user_id).await;
@@ -81,22 +81,22 @@ mod tests {
 
     #[tokio::test]
     async fn test_get_user_by_id_nominal() {
-        let mut repo_user = MockUserStore::new();
+        let mut user_store = MockUserStore::new();
 
         let user_id = random_id();
 
-        repo_user.expect_exists().times(1).returning(move |id| {
+        user_store.expect_exists().times(1).returning(move |id| {
             assert_eq!(id, user_id);
             Box::pin(async move { Ok(true) })
         });
 
-        repo_user.expect_get_by_id().times(1).returning(move |id| {
+        user_store.expect_get_by_id().times(1).returning(move |id| {
             assert_eq!(id, user_id);
             Box::pin(async move { Ok(User::default()) })
         });
 
         let stores = GetUserByIdStores {
-            user: Arc::new(repo_user),
+            user: Arc::new(user_store),
         };
 
         let res = GetUserById::new(stores).handle(user_id).await;
