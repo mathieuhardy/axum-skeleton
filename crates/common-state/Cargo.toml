@@ -1,0 +1,13 @@
+[package]
+name = "common-state"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-trait = { workspace = true, default-features = false }
+axum = { workspace = true, default-features = false }
+bb8 = { workspace = true, default-features = false }
+bb8-redis = { workspace = true, default-features = false }
+sqlx = { workspace = true, default-features = false, features = ["postgres"] }
+
+configuration = { workspace = true, default-features = false }

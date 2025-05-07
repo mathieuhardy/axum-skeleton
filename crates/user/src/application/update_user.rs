@@ -58,15 +58,15 @@ mod tests {
     async fn test_upsert_user_update_nominal() {
         set_checks(Checks::default());
 
-        let mut repo_user = MockUserStore::new();
+        let mut user_store = MockUserStore::new();
 
-        repo_user
+        user_store
             .expect_update()
             .times(1)
             .returning(move |_, _| Box::pin(async move { Ok(User::default()) }));
 
         let stores = UpdateUserStores {
-            user: Arc::new(repo_user),
+            user: Arc::new(user_store),
         };
 
         let user_id = random_id();

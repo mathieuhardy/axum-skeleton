@@ -4,7 +4,7 @@
 
 use tower_sessions::{Expiry, MemoryStore, SessionManagerLayer};
 
-use crate::config::Config;
+use configuration::Config;
 
 /// Gets the Axum layer used to enable authentication in the HTTP server.
 ///
@@ -15,7 +15,7 @@ use crate::config::Config;
 /// The authentication layer.
 pub fn authentication_session_layer(config: &Config) -> SessionManagerLayer<MemoryStore> {
     // Session storage backend
-    // TODO: use reddis to store the values
+    // TODO: use Redis to store the values
     let session_store = MemoryStore::default();
 
     // Session layer

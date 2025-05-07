@@ -12,6 +12,26 @@ pub type ApiResult<T> = Result<T, Error>;
 /// Enumerates the possible errors used in this crate.
 #[derive(Debug, Error)]
 pub enum Error {
+    /// The user has not confirmed his email.
+    #[error("User's confirmation link is expired")]
+    ConfirmationLinkExpired,
+
+    /// The user has not confirmed his email.
+    #[error("User email is not found")]
+    ConfirmationNotFound,
+
+    /// The user has not confirmed his email.
+    #[error("User email is not confirmed")]
+    EmailNotConfirmed,
+
+    /// Generic environment variable error.
+    #[error(transparent)]
+    Env(#[from] std::env::VarError),
+
+    /// Generic mailer variable error.
+    #[error(transparent)]
+    Mailer(#[from] mailer::Error),
+
     /// The user session is not found.
     #[error(transparent)]
     Session(#[from] tower_sessions::session::Error),
@@ -42,6 +62,9 @@ impl axum::response::IntoResponse for Error {
         let message = self.to_string();
 
         let (rc, code) = match self {
+            Self::ConfirmationLinkExpired => (StatusCode::FORBIDDEN, "CONFIRMATION_LINK_EXPIRED"),
+            Self::ConfirmationNotFound => (StatusCode::NOT_FOUND, "CONFIRMATION_NOT_FOUND"),
+            Self::EmailNotConfirmed => (StatusCode::UNAUTHORIZED, "EMAIL_NOT_CONFIRMED"),
             Self::Unauthorized => (StatusCode::UNAUTHORIZED, "UNAUTHORIZED"),
             Self::UserNotFound => (StatusCode::UNAUTHORIZED, "USER_NOT_FOUND"),
             Self::Validation(_) => (StatusCode::UNPROCESSABLE_ENTITY, "UNPROCESSABLE_ENTITY"),

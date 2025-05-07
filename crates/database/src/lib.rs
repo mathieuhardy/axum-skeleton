@@ -18,4 +18,4 @@ pub use db::initialize;
 pub use error::Error;
 
 // Re-exports
-pub use common_core::RedisPool;
+pub use common_state::RedisPool;

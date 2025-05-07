@@ -4,7 +4,7 @@ use axum::http::StatusCode;
 use axum::routing::get;
 use axum::Router;
 
-use common_core::AppState;
+use common_state::AppState;
 
 /// Builds an Axum router.
 ///

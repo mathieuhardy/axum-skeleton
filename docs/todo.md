@@ -1,15 +1,65 @@
 # ✅ TODO
 
-- auth: add email verification process
 - auth: add endpoints to manage the list of sessions (show, invalidate, etc)
+
+- passwordless:
+    - user login with email only
+    - backend generate a one-time token
+    - backend send by email a link (frontend url + token)
+    - frontend call login endpoint with the token and the email
+    - backend check the token and email
+    - backend creates a user account
+    - backend creates a session
+
+- TOTP:
+    - user login with email only
+    - backend generate a TOTP
+    - backend send by email a link (frontend url + totp)
+    - frontend call login endpoint with the totp and the email
+    - backend check the totp and email
+    - backend creates a user account
+    - backend creates a session
+
+- OAuth:
+    - add endpoint like this: GET /oauth/callback?code=abc123&state=random_nonce
+    - bakend exchange the code for an access token
+
+    ```
+    POST https://oauth2.googleapis.com/token
+    {
+      code: "abc123",
+      client_id: YOUR_CLIENT_ID,
+      client_secret: YOUR_SECRET,
+      redirect_uri: "https://yourapp.com/oauth/callback",
+      grant_type: "authorization_code"
+    }
+    ```
+    
+    - backend get user info from the provider
+
+    ```
+    GET https://www.googleapis.com/oauth2/v3/userinfo
+    Authorization: Bearer ACCESS_TOKEN
+    ```
+
+    - backend matches or create the user account
+    - backend creates a session
+
+
+
+- user: split user and admin endpoints
 - user: add routes for self register: /api/users/profile
-- user: allow a user to self register
 - user: make password optional
 - user: add route for password recovery
+    - generate a one-time token (in a dedicated table)
+    - set expiration to 15 minutes
+    - send the token with frontend url as a link by email
+    - add endpoint that updates password receiving the new password and the token
+    - validation of the token
+    - update the password
 
-- enable missing tests
-- add missing tracing events for all errors
-- allow testing endpoints using mock if possible
+- global: use transaction
+- global: add missing tracing events for all errors
 
 - Redis
 - OpenApi

@@ -2,8 +2,10 @@
 
 use chrono::{DateTime, Utc};
 use futures::future::BoxFuture;
+use sqlx::types::Json;
 use sqlx::{FromRow, Type};
 
+use auth::AuthUserConfirmation;
 use security::password::Password;
 
 use crate::domain::port::UserStore;
@@ -72,11 +74,14 @@ pub struct DbUser {
 
     /// See `User::updated_at`.
     pub updated_at: DateTime<Utc>,
+
+    /// See `User::pending_confirmation`.
+    pub pending_confirmation: Option<Json<AuthUserConfirmation>>,
 }
 
 impl From<DbUser> for User {
     fn from(db_user: DbUser) -> Self {
-        User {
+        Self {
             id: db_user.id,
             first_name: db_user.first_name.unwrap_or_default(),
             last_name: db_user.last_name.unwrap_or_default(),
@@ -85,6 +90,7 @@ impl From<DbUser> for User {
             password: Password::from(db_user.password),
             created_at: db_user.created_at,
             updated_at: db_user.updated_at,
+            pending_confirmation: db_user.pending_confirmation.map(|e| e.0),
         }
     }
 }
