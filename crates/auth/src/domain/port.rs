@@ -2,7 +2,7 @@
 
 use futures::future::BoxFuture;
 
-use crate::domain::auth_user::AuthUser;
+use crate::domain::auth_user::{AuthUser, AuthUserConfirmation};
 use crate::prelude::*;
 
 /// Authentication store APIs.
@@ -25,4 +25,25 @@ pub trait AuthStore: Send + Sync {
     /// # Returns
     /// A result containing the user if found, or an error.
     fn get_user_by_id(&self, user_id: &Uuid) -> BoxFuture<'static, Result<AuthUser, Error>>;
+
+    /// Find a user's confirmation by its ID.
+    ///
+    /// # Arguments
+    /// * `id`: User's confirmation ID.
+    ///
+    /// # Returns
+    /// A result containing the confirmation if found, or an error.
+    fn get_user_confirmation_by_id(
+        &self,
+        id: &Uuid,
+    ) -> BoxFuture<'static, Result<AuthUserConfirmation, Error>>;
+
+    /// Deletes a user's confirmation by its ID.
+    ///
+    /// # Arguments
+    /// * `id`: User's confirmation ID.
+    ///
+    /// # Returns
+    /// An empty result.
+    fn delete_user_confirmation_by_id(&self, id: &Uuid) -> BoxFuture<'static, Result<(), Error>>;
 }

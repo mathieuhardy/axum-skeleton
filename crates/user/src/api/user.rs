@@ -1,6 +1,6 @@
 //! HTTP endpoints for user management (mostly by an admin user).
 
-use axum::extract::{Path, Query};
+use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::routing::{delete, get, patch, post, put};
@@ -8,9 +8,11 @@ use axum::{Json, Router};
 use validator::Validate;
 
 use auth::{Auth, SQLxAuthStore};
-use common_core::{AppState, UseCase};
+use common_core::UseCase;
+use common_state::AppState;
 use common_web::extractor::FormOrJson;
 use database::extractor::DbPool;
+use mailer::FakeMailer;
 
 use crate::application::*;
 use crate::domain::user::{
@@ -121,6 +123,7 @@ pub async fn get_users_by_filters(
 pub async fn create_user(
     auth: Auth<SQLxAuthStore>,
     DbPool(db): DbPool,
+    State(state): State<AppState>,
     FormOrJson(request): FormOrJson<CreateUserRequest>,
 ) -> ApiResult<impl IntoResponse> {
     if !auth.try_user()?.is_admin() {
@@ -131,9 +134,12 @@ pub async fn create_user(
 
     let stores = CreateUserStores {
         user: Arc::new(SQLxUserStore::new(db)),
+        mailer: Arc::new(FakeMailer::new()),
     };
 
-    let user = CreateUser::new(stores).handle(request).await?;
+    let user = CreateUser::new(state.config, stores)
+        .handle(request)
+        .await?;
 
     Ok((StatusCode::CREATED, Json(user)))
 }
@@ -144,6 +150,7 @@ pub async fn create_user(
 pub async fn upsert_user(
     auth: Auth<SQLxAuthStore>,
     DbPool(db): DbPool,
+    State(state): State<AppState>,
     FormOrJson(request): FormOrJson<UpsertUserRequest>,
 ) -> ApiResult<impl IntoResponse> {
     let user = auth.try_user()?;
@@ -176,7 +183,9 @@ pub async fn upsert_user(
         user: Arc::new(SQLxUserStore::new(db)),
     };
 
-    let user = UpsertUser::new(stores).handle(request).await?;
+    let user = UpsertUser::new(state.config, stores)
+        .handle(request)
+        .await?;
 
     Ok((rc, Json(user)))
 }

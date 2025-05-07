@@ -6,7 +6,8 @@ use axum::Router;
 use tracing::instrument;
 use validator::Validate;
 
-use common_core::{AppState, UseCase};
+use common_core::UseCase;
+use common_state::AppState;
 use common_web::extractor::FormOrJson;
 
 use crate::application::{Login, Logout};
@@ -25,16 +26,6 @@ pub(crate) fn router() -> Router<AppState> {
 }
 
 /// Login handler.
-///
-/// # Arguments
-/// * `auth_session`: Authentication session.
-/// * `credentials`: User's credentials to authenticate.
-///
-/// # Returns
-/// One of these HTTP codes:
-///   - 200: OK,
-///   - 401: UNAUTHORIZED,
-///   - 500: INTERNAL_SERVER_ERROR.
 #[instrument]
 #[axum::debug_handler(state = AppState)]
 pub(crate) async fn login(
@@ -47,14 +38,6 @@ pub(crate) async fn login(
 }
 
 /// Logout handler.
-//
-/// # Arguments
-/// * `auth_session`: Current user session.
-///
-/// # Returns
-/// One of these HTTP codes:
-///   - 200: OK,
-///   - 500: INTERNAL_SERVER_ERROR.
 #[instrument]
 #[axum::debug_handler(state = AppState)]
 pub(crate) async fn logout(auth: Auth<SQLxAuthStore>) -> impl IntoResponse {

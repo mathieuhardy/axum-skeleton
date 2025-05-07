@@ -37,8 +37,13 @@ where
     async fn handle(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         let (mut auth, credentials) = args;
 
-        // Try to authenticate the user (i.e. check if user exists and password is correct)
+        // Try to authenticate the user (i.e. check if user exists and password are correct)
         let user = auth.authenticate(credentials).await?;
+
+        // Check if the user is verified
+        if !user.is_email_confirmed() {
+            return Err(Error::EmailNotConfirmed);
+        }
 
         // Create the session for this user
         auth.login(&user.id).await

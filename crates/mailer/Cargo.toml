@@ -1,0 +1,16 @@
+[package]
+name = "mailer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = { workspace = true, default-features = false, features = ["form", "http1", "json", "macros", "query", "tokio"] }
+futures = { workspace = true, default-features = false }
+mockall = { workspace = true, default-features = false, optional = true }
+thiserror = { workspace = true, default-features = false }
+uuid = { workspace = true, default-features = false }
+
+common-core = { workspace = true, default-features = false }
+
+[features]
+mock = ["mockall"]

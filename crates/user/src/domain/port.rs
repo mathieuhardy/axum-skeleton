@@ -1,5 +1,6 @@
 //! User store trait.
 
+use chrono::Duration;
 use futures::future::BoxFuture;
 
 use security::password::Password;
@@ -8,7 +9,7 @@ use crate::domain::user::{User, UserData, UserFilters};
 use crate::prelude::*;
 
 /// User store APIs.
-#[cfg_attr(test, mockall::automock)]
+#[cfg_attr(any(test, feature = "mock"), mockall::automock)]
 pub trait UserStore: Send + Sync {
     /// Check if a user exists in the database.
     ///
@@ -51,10 +52,15 @@ pub trait UserStore: Send + Sync {
     ///
     /// # Arguments
     /// * `data` - The data of the user to create.
+    /// * `confirmation_timeout_hours` - The timeout in hours after which the user confirmation expires.
     ///
     /// # Returns
     /// A `Result` containing the created user or an error if the creation failed.
-    fn create(&self, data: UserData) -> BoxFuture<'static, Result<User, Error>>;
+    fn create(
+        &self,
+        data: UserData,
+        confirmation_timeout: Duration,
+    ) -> BoxFuture<'static, Result<User, Error>>;
 
     /// Update an existing user in the database.
     ///

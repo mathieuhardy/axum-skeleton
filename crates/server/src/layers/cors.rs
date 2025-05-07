@@ -5,7 +5,8 @@ use axum::http::Method;
 use std::str::FromStr;
 use tower_http::cors::CorsLayer;
 
-use crate::config::Config;
+use configuration::Config;
+
 use crate::prelude::*;
 
 /// Builds a CORS layer for Axum server using values defined in the

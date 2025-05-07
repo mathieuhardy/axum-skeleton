@@ -29,8 +29,10 @@ tracing = { workspace = true, default-features = false, features = ["attributes"
 uuid = { workspace = true, default-features = false }
 
 auth = { workspace = true, default-features = false }
+configuration = { workspace = true, default-features = false }
 database = { workspace = true, default-features = false }
 common-core = { workspace = true, default-features = false }
+common-state = { workspace = true, default-features = false }
 k8s = { workspace = true, default-features = false, optional = true }
 sanity = { workspace = true, default-features = false, optional = true }
 security = { workspace = true, default-features = false }

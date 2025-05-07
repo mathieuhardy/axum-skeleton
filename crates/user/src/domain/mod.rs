@@ -1,5 +1,6 @@
-//! List of entities and traists used in this crate.
+//! List of entities and traits used in this crate.
 
 pub(crate) mod error;
 pub(crate) mod port;
 pub(crate) mod user;
+pub(crate) mod user_confirmation;

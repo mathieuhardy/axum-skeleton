@@ -16,9 +16,9 @@ use tower::util::ServiceExt;
 use tracing::subscriber::DefaultGuard;
 
 use auth::AuthCredentials;
+use configuration::{Config, Environment};
 use security::password::Password;
 use server::app;
-use server::config::{Config, Environment};
 
 use crate::database::initialize_database;
 

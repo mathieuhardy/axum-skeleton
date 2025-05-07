@@ -7,7 +7,7 @@ use std::str::FromStr;
 use std::time::Duration;
 use tracing::log::LevelFilter;
 
-use common_core::RedisPool;
+use common_state::RedisPool;
 
 use crate::prelude::*;
 

@@ -75,12 +75,14 @@ trap cleanup SIGINT SIGTERM SIGQUIT SIGHUP SIGKILL ERR
 # Start the server
 # ------------------------------------------------------------------------------
 
-echo -ne "${PURPLE}Starting axum-skeleton...${NC}"
-
 # If in release mode, expect the binary to be already built (CI mode)
 if [[ "${mode}" == "debug" ]]
 then
+    echo -ne "${PURPLE}Building axum-skeleton...${NC}"
+
     cargo build -p axum-skeleton 1>/dev/null 2>&1
+
+    echo -e "${PURPLE} done${NC}"
 elif [[ "${mode}" == "release" ]]
 then
     if [[ ! -e ./target/release/axum-skeleton ]]
@@ -92,6 +94,8 @@ else
     echo "Error: Invalid mode. Use 'debug' or 'release'."
     exit 1
 fi
+
+echo -ne "${PURPLE}Starting axum-skeleton...${NC}"
 
 ./target/${mode}/axum-skeleton > "${SERVER_LOG_FILE}" 2>&1 &
 SERVER_PID=$!

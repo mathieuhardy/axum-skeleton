@@ -4,7 +4,6 @@
 #![forbid(unsafe_code)]
 #![feature(stmt_expr_attributes)]
 
-pub mod config;
 pub mod layers;
 
 pub(crate) mod error;
@@ -16,18 +15,18 @@ use axum::response::IntoResponse;
 use axum::Router;
 use tokio::signal;
 
-use common_core::AppState;
+use common_state::AppState;
+use configuration::Config;
 use security::password::{set_checks, Checks};
 use utils::filesystem::{relative_path, root_relative_path};
 
-use crate::config::Config;
 use crate::prelude::*;
 
 /// Starts the server application.
 ///
 /// # Returns
 /// An empty Result.
-pub async fn start(config: Option<crate::config::Config>) -> ApiResult<()> {
+pub async fn start(config: Option<Config>) -> ApiResult<()> {
     // Load configuration
     let config = match config {
         Some(config) => config,
@@ -123,7 +122,7 @@ pub async fn app(
     let tracing_layer = layers::tracing::tracing_layer();
 
     // State shared between handlers
-    let state = AppState::new(pg_pool, redis_pool);
+    let state = AppState::new(config.clone(), pg_pool, redis_pool);
 
     event!(Level::INFO, "📦 State configured");
 

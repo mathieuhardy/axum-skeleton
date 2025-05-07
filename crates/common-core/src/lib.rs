@@ -2,8 +2,8 @@
 
 #![forbid(unsafe_code)]
 
-pub mod domain;
+mod error;
+mod use_case;
 
-pub use domain::error::ApiError;
-pub use domain::state::{AppState, RedisPool};
-pub use domain::use_case::UseCase;
+pub use error::ApiError;
+pub use use_case::UseCase;

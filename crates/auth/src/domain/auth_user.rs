@@ -1,5 +1,6 @@
 //! Authentication user related entities.
 
+use chrono::{DateTime, Utc};
 use validator::Validate;
 
 use security::password::Password;
@@ -36,6 +37,9 @@ pub struct AuthUser {
     /// Password of the user (hashed of course).
     #[debug(skip)]
     pub password: Password,
+
+    /// Email confirmed.
+    pub email_confirmed: bool,
 }
 
 impl AuthUser {
@@ -58,6 +62,14 @@ impl AuthUser {
         self.id == *id
     }
 
+    /// Checks if the user has confirmed its email.
+    ///
+    /// # Returns
+    /// `true` if the user has confirmed its email.
+    pub fn is_email_confirmed(&self) -> bool {
+        self.email_confirmed
+    }
+
     /// Returns a vector of u8 representing the hash of the user.
     ///
     /// # Returns
@@ -66,6 +78,29 @@ impl AuthUser {
         // We're using the password as a unique hash so that if the user changes its password,
         // the session is invalidated.
         self.password.as_bytes()
+    }
+}
+
+/// Needed field to handle authentication of a user.
+#[derive(Clone, Default, PartialEq, Deserialize, Serialize, Validate, derive_more::Debug)]
+pub struct AuthUserConfirmation {
+    /// Unique record identifier.
+    pub id: Uuid,
+
+    /// User's ID.
+    pub user_id: Uuid,
+
+    /// Date of expiration of the token.
+    pub expires_at: DateTime<Utc>,
+}
+
+impl AuthUserConfirmation {
+    /// Checks if the confirmation is expired.
+    ///
+    /// # Returns
+    /// `true` if the confirmation is expired, `false` otherwise.
+    pub fn is_expired(&self) -> bool {
+        self.expires_at < Utc::now()
     }
 }
 
@@ -114,6 +149,21 @@ mod tests {
 
         assert!(auth_user.is(&auth_user.id));
         assert!(!auth_user.is(&random_id()));
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_auth_user_is_email_confirmed() -> Result<(), Box<dyn std::error::Error>> {
+        let auth_user = AuthUser::default();
+        assert!(!auth_user.is_email_confirmed());
+
+        let auth_user = AuthUser {
+            email_confirmed: true,
+            ..Default::default()
+        };
+
+        assert!(auth_user.is_email_confirmed());
 
         Ok(())
     }
