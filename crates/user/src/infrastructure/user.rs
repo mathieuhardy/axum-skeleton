@@ -6,7 +6,7 @@ use sqlx::types::Json;
 use sqlx::{FromRow, Type};
 
 use auth::AuthUserConfirmation;
-use database::Db;
+use database::SharedDb;
 use security::password::Password;
 
 use crate::domain::port::UserStore;
@@ -99,7 +99,7 @@ impl From<DbUser> for User {
 /// SQLx version of the UserStore trait.
 pub struct SQLxUserStore {
     /// Database connection pool.
-    db: Db,
+    db: SharedDb,
 }
 
 impl SQLxUserStore {
@@ -111,7 +111,7 @@ impl SQLxUserStore {
     /// # Returns
     /// A new instance of SQLxUserStore.
     #[must_use]
-    pub fn new(db: Db) -> Self {
+    pub fn new(db: SharedDb) -> Self {
         Self { db }
     }
 }
@@ -122,7 +122,7 @@ impl UserStore for SQLxUserStore {
 
         Box::pin(async move {
             let res = sqlx::query_file_scalar!("sql/exists.sql", user_id)
-                .fetch_one(&db.0)
+                .fetch_one(db.lock().await.clone())
                 .await
                 .is_ok();
 
@@ -135,7 +135,7 @@ impl UserStore for SQLxUserStore {
 
         Box::pin(async move {
             sqlx::query_file!("sql/delete_by_id.sql", user_id)
-                .execute(&db.0)
+                .execute(db.lock().await.clone())
                 .await?;
 
             Ok(())
@@ -147,7 +147,7 @@ impl UserStore for SQLxUserStore {
 
         Box::pin(async move {
             let user = sqlx::query_file_as!(DbUser, "sql/get_by_id.sql", user_id)
-                .fetch_one(&db.0)
+                .fetch_one(db.lock().await.clone())
                 .await?;
 
             Ok(user.into())
@@ -167,7 +167,7 @@ impl UserStore for SQLxUserStore {
                 filters.email,
                 role as Option<DbUserRole>,
             )
-            .fetch_all(&db.0)
+            .fetch_all(db.lock().await.clone())
             .await?;
 
             Ok(users.into_iter().map(User::from).collect())
@@ -188,7 +188,7 @@ impl UserStore for SQLxUserStore {
                 role as DbUserRole,
                 data.password.as_str()
             )
-            .fetch_one(&db.0)
+            .fetch_one(db.lock().await.clone())
             .await?;
 
             Ok(user.into())
@@ -210,7 +210,7 @@ impl UserStore for SQLxUserStore {
                 role as DbUserRole,
                 data.password.as_str()
             )
-            .fetch_one(&db.0)
+            .fetch_one(db.lock().await.clone())
             .await?;
 
             Ok(user.into())
@@ -226,7 +226,7 @@ impl UserStore for SQLxUserStore {
 
         Box::pin(async move {
             sqlx::query_file!("sql/set_password.sql", user_id, password.as_str())
-                .execute(&db.0)
+                .execute(db.lock().await.clone())
                 .await?;
 
             Ok(())

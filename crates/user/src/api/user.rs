@@ -49,6 +49,8 @@ pub(crate) async fn delete_user_by_id(
         return Err(Error::Forbidden);
     }
 
+    let db = db.into_shared();
+
     let stores = DeleteUserByIdStores {
         user: SQLxUserStore::new(db),
     };
@@ -62,6 +64,8 @@ pub(crate) async fn delete_user_by_id(
 #[instrument]
 #[axum::debug_handler(state = AppState)]
 pub(crate) async fn get_current_user(auth: Auth, db: Db) -> ApiResult<impl IntoResponse> {
+    let db = db.into_shared();
+
     let stores = GetUserByIdStores {
         user: SQLxUserStore::new(db),
     };
@@ -83,6 +87,8 @@ pub(crate) async fn get_user_by_id(
         return Err(Error::Forbidden);
     }
 
+    let db = db.into_shared();
+
     let stores = GetUserByIdStores {
         user: SQLxUserStore::new(db),
     };
@@ -103,6 +109,8 @@ pub(crate) async fn get_users_by_filters(
     if !auth.try_user()?.is_admin() {
         return Err(Error::Forbidden);
     }
+
+    let db = db.into_shared();
 
     let stores = GetUsersByFiltersStores {
         user: SQLxUserStore::new(db),
@@ -127,6 +135,8 @@ pub(crate) async fn create_user(
     }
 
     request.validate()?;
+
+    let db = db.into_shared();
 
     let stores = CreateUserStores {
         user: SQLxUserStore::new(db.clone()),
@@ -176,6 +186,8 @@ pub(crate) async fn upsert_user(
         }
     };
 
+    let db = db.into_shared();
+
     let stores = UpsertUserStores {
         user: SQLxUserStore::new(db.clone()),
         mailer: FakeMailer::new(),
@@ -195,8 +207,8 @@ pub(crate) async fn upsert_user(
 #[axum::debug_handler(state = AppState)]
 pub(crate) async fn update_user(
     auth: Auth,
-    Path(user_id): Path<Uuid>,
     db: Db,
+    Path(user_id): Path<Uuid>,
     FormOrJson(request): FormOrJson<UpdateUserRequest>,
 ) -> ApiResult<impl IntoResponse> {
     let user = auth.try_user()?;
@@ -206,6 +218,8 @@ pub(crate) async fn update_user(
     }
 
     request.validate()?;
+
+    let db = db.into_shared();
 
     let stores = UpdateUserStores {
         user: SQLxUserStore::new(db),
@@ -222,8 +236,8 @@ pub(crate) async fn update_user(
 #[axum::debug_handler(state = AppState)]
 pub(crate) async fn set_user_password(
     auth: Auth,
-    Path(user_id): Path<Uuid>,
     db: Db,
+    Path(user_id): Path<Uuid>,
     FormOrJson(request): FormOrJson<PasswordUpdateRequest>,
 ) -> ApiResult<impl IntoResponse> {
     if !auth.try_user()?.is(&user_id) {
@@ -231,6 +245,8 @@ pub(crate) async fn set_user_password(
     }
 
     request.validate()?;
+
+    let db = db.into_shared();
 
     let stores = SetUserPasswordStores {
         user: SQLxUserStore::new(db),

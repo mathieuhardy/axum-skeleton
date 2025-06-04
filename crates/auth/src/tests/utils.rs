@@ -1,6 +1,6 @@
 //! All utilities needed to implement tests in this crate.
 
-use database::Db;
+use database::SharedDb;
 
 use crate::domain::auth_user::AuthUser;
 use crate::infrastructure::{DbAuthUser, DbAuthUserRole};
@@ -13,7 +13,11 @@ use crate::infrastructure::{DbAuthUser, DbAuthUserRole};
 ///
 /// # Returns
 /// A result containing the created user as `AuthUser`.
-pub async fn create_user(user: &AuthUser, db: &Db) -> Result<AuthUser, Box<dyn std::error::Error>> {
+pub async fn create_user(
+    user: &AuthUser,
+    db: &SharedDb,
+) -> Result<AuthUser, Box<dyn std::error::Error>> {
+    let db = db.lock().await;
     let role: DbAuthUserRole = user.role.clone().into();
     let password = user.password.hashed()?;
 
@@ -32,7 +36,7 @@ pub async fn create_user(user: &AuthUser, db: &Db) -> Result<AuthUser, Box<dyn s
         role as DbAuthUserRole,
         password.as_str(),
     )
-    .fetch_one(&db.0)
+    .fetch_one(db.clone())
     .await?;
 
     Ok(user.into())

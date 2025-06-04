@@ -20,6 +20,10 @@ pub enum Error {
     #[error("User email is not found")]
     ConfirmationNotFound,
 
+    /// Generic database variable error.
+    #[error(transparent)]
+    Database(#[from] database::Error),
+
     /// The user has not confirmed his email.
     #[error("User email is not confirmed")]
     EmailNotConfirmed,
