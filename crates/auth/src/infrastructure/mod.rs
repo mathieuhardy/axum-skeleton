@@ -4,14 +4,14 @@ use chrono::{Duration, Utc};
 use futures::future::BoxFuture;
 use sqlx::{FromRow, Type};
 
-use database::Db;
+use database::SharedDb;
 use security::password::Password;
 
 use crate::domain::auth_user::{AuthUser, AuthUserConfirmation, AuthUserRole};
 use crate::domain::port::AuthStore;
 use crate::prelude::*;
 
-/// List of users roles in the DB enum.
+/// List of users roles.
 #[derive(Clone, Debug, Default, Deserialize, Serialize, Type)]
 #[sqlx(type_name = "user_role", rename_all = "lowercase")]
 pub(crate) enum DbAuthUserRole {
@@ -82,13 +82,19 @@ impl From<DbAuthUser> for AuthUser {
 #[derive(Debug)]
 pub struct SQLxAuthStore {
     /// Database connection pool.
-    db: Db,
+    db: SharedDb,
 }
 
 impl SQLxAuthStore {
     /// Creates a new instance of the SQLx authentication store.
+    ///
+    /// # Arguments
+    /// * `db`: Database handle.
+    ///
+    /// # Returns
+    /// A new instance of `SQLxAuthStore`.
     #[must_use]
-    pub fn new(db: &Db) -> Self {
+    pub fn new(db: &SharedDb) -> Self {
         Self { db: db.clone() }
     }
 }
@@ -100,7 +106,7 @@ impl AuthStore for SQLxAuthStore {
 
         Box::pin(async move {
             let user = sqlx::query_file_as!(DbAuthUser, "sql/find_user_by_email.sql", email)
-                .fetch_one(&db.0)
+                .fetch_one(db.lock().await.clone())
                 .await?;
 
             Ok(user.into())
@@ -113,7 +119,7 @@ impl AuthStore for SQLxAuthStore {
 
         Box::pin(async move {
             let user = sqlx::query_file_as!(DbAuthUser, "sql/get_user_by_id.sql", user_id)
-                .fetch_one(&db.0)
+                .fetch_one(db.lock().await.clone())
                 .await?;
 
             Ok(user.into())
@@ -133,7 +139,7 @@ impl AuthStore for SQLxAuthStore {
                 "sql/get_user_confirmation_by_id.sql",
                 id
             )
-            .fetch_one(&db.0)
+            .fetch_one(db.lock().await.clone())
             .await?;
 
             Ok(confirmation)
@@ -146,7 +152,7 @@ impl AuthStore for SQLxAuthStore {
 
         Box::pin(async move {
             sqlx::query_file!("sql/delete_user_confirmation_by_id.sql", id)
-                .execute(&db.0)
+                .execute(db.lock().await.clone())
                 .await?;
 
             Ok(())
@@ -162,7 +168,7 @@ impl AuthStore for SQLxAuthStore {
 
         Box::pin(async move {
             sqlx::query_file!("sql/delete_user_confirmation_by_user_id.sql", user_id)
-                .execute(&db.0)
+                .execute(db.lock().await.clone())
                 .await?;
 
             Ok(())
@@ -185,7 +191,7 @@ impl AuthStore for SQLxAuthStore {
                 user_id,
                 Utc::now() + confirmation_timeout_hours
             )
-            .fetch_one(&db.0)
+            .fetch_one(db.lock().await.clone())
             .await?;
 
             Ok(confirmation)

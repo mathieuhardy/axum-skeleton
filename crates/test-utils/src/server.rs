@@ -16,7 +16,7 @@ use tracing::subscriber::DefaultGuard;
 
 use auth::AuthCredentials;
 use configuration::{Config, Environment};
-use database::Db;
+use database::SharedDb;
 use security::password::Password;
 use server::app;
 
@@ -26,7 +26,7 @@ use crate::database::initialize_database;
 #[derive(Debug)]
 pub struct TestClient {
     /// Database connection if needed for tests.
-    pub db: Db,
+    pub db: SharedDb,
 
     /// Router application to be tested.
     app: Router,
