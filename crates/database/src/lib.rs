@@ -7,15 +7,12 @@
 #![forbid(unsafe_code)]
 
 // Modules
-pub mod extractor;
-
-mod db;
 mod domain;
+mod extractor;
 mod prelude;
 
 // Exports
-pub use db::initialize;
-pub use domain::db::Db;
+pub use domain::db::{initialize, Db, SharedDb};
 pub use domain::error::Error;
 
 // Re-exports

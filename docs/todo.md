@@ -1,6 +1,7 @@
 # ✅ TODO
 
 - global: avoid code in files mod.rs
+- user: use transaction when needed
 
 - auth: add endpoints to manage the list of sessions (show, invalidate, etc)
 
@@ -60,7 +61,7 @@
     - validation of the token
     - update the password
 
-- global: use transaction
+- global: use hexa folder in more crates
 - global: add missing tracing events for all errors
 - hooks: fix issue
 

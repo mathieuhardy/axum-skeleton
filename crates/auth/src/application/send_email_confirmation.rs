@@ -4,6 +4,7 @@ use chrono::Duration;
 
 use common_core::UseCase;
 use configuration::Config;
+use database::SharedDb;
 use mailer::MailerProvider;
 
 use crate::domain::auth_user::AuthUser;
@@ -34,6 +35,9 @@ where
 
     /// List of stores used.
     stores: SendEmailConfirmationStores<A, B>,
+
+    /// Database handle.
+    db: SharedDb,
 }
 
 impl<A, B> SendEmailConfirmation<A, B>
@@ -45,8 +49,8 @@ where
     ///
     /// # Returns
     /// A `SendEmailConfirmation` instance.
-    pub fn new(config: Config, stores: SendEmailConfirmationStores<A, B>) -> Self {
-        Self { config, stores }
+    pub fn new(config: Config, stores: SendEmailConfirmationStores<A, B>, db: SharedDb) -> Self {
+        Self { config, stores, db }
     }
 }
 
@@ -64,6 +68,9 @@ where
             Duration::hours(self.config.auth.email_confirmation_timeout_hours.into());
 
         if confirmation_timeout_hours.num_hours() > 0 {
+            // Start a new transaction to avoid creating a user without confirmation
+            self.db.lock().await.start_transaction().await?;
+
             // Delete existing confirmation if any
             self.stores
                 .auth
@@ -78,13 +85,15 @@ where
                 .await?;
 
             // Send the email confirmation
-            // TODO: to be done in the same transaction as the user creation
             let redirect_url = std::env::var("FRONTEND_URL")?;
 
             self.stores
                 .mailer
                 .send_email_confirmation(&user.email, &confirmation.id, &redirect_url)
                 .await?;
+
+            // Commit the changes
+            self.db.lock().await.commit_transaction().await?;
         }
 
         Ok(())
@@ -97,13 +106,14 @@ mod tests {
 
     use configuration::Config;
     use mailer::MockMailerProvider;
+    use test_utils::database::setup_test_database;
 
     use crate::domain::auth_user::AuthUserConfirmation;
     use crate::domain::port::MockAuthStore;
 
     #[tokio::test]
     async fn test_send_email_confirmation_nominal() -> Result<(), Box<dyn std::error::Error>> {
-        dotenvy::dotenv()?;
+        let db = setup_test_database().await?;
 
         let mut mailer = MockMailerProvider::new();
         let mut auth_store = MockAuthStore::new();
@@ -132,7 +142,7 @@ mod tests {
 
         let user = AuthUser::default();
 
-        let res = SendEmailConfirmation::new(config, stores)
+        let res = SendEmailConfirmation::new(config, stores, db)
             .handle(user)
             .await;
         assert!(res.is_ok());
