@@ -40,6 +40,6 @@ pub(crate) async fn login(
 /// Logout handler.
 #[instrument]
 #[axum::debug_handler(state = AppState)]
-pub(crate) async fn logout(auth: Auth<SQLxAuthStore>) -> impl IntoResponse {
+pub(crate) async fn logout(auth: Auth<SQLxAuthStore>) -> ApiResult<impl IntoResponse> {
     Logout::new().handle(auth).await
 }

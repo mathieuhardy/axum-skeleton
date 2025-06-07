@@ -116,7 +116,7 @@ impl SQLxUserStore {
 }
 
 impl UserStore for SQLxUserStore {
-    fn exists(&self, user_id: Uuid) -> BoxFuture<'static, Result<bool, Error>> {
+    fn exists(&self, user_id: Uuid) -> BoxFuture<'static, ApiResult<bool>> {
         let db = self.db.clone();
 
         Box::pin(async move {
@@ -129,7 +129,7 @@ impl UserStore for SQLxUserStore {
         })
     }
 
-    fn delete_by_id(&self, user_id: Uuid) -> BoxFuture<'static, Result<(), Error>> {
+    fn delete_by_id(&self, user_id: Uuid) -> BoxFuture<'static, ApiResult<()>> {
         let db = self.db.clone();
 
         Box::pin(async move {
@@ -141,7 +141,7 @@ impl UserStore for SQLxUserStore {
         })
     }
 
-    fn get_by_id(&self, user_id: Uuid) -> BoxFuture<'static, Result<User, Error>> {
+    fn get_by_id(&self, user_id: Uuid) -> BoxFuture<'static, ApiResult<User>> {
         let db = self.db.clone();
 
         Box::pin(async move {
@@ -153,7 +153,7 @@ impl UserStore for SQLxUserStore {
         })
     }
 
-    fn get_by_filters(&self, filters: UserFilters) -> BoxFuture<'static, Result<Vec<User>, Error>> {
+    fn get_by_filters(&self, filters: UserFilters) -> BoxFuture<'static, ApiResult<Vec<User>>> {
         let db = self.db.clone();
         let role = filters.role.map(Into::into);
 
@@ -173,7 +173,7 @@ impl UserStore for SQLxUserStore {
         })
     }
 
-    fn create(&self, data: UserData) -> BoxFuture<'static, Result<User, Error>> {
+    fn create(&self, data: UserData) -> BoxFuture<'static, ApiResult<User>> {
         let db = self.db.clone();
         let role: DbUserRole = data.role.into();
 
@@ -194,7 +194,7 @@ impl UserStore for SQLxUserStore {
         })
     }
 
-    fn update(&self, user_id: Uuid, data: UserData) -> BoxFuture<'static, Result<User, Error>> {
+    fn update(&self, user_id: Uuid, data: UserData) -> BoxFuture<'static, ApiResult<User>> {
         let db = self.db.clone();
         let role: DbUserRole = data.role.into();
 
@@ -220,7 +220,7 @@ impl UserStore for SQLxUserStore {
         &self,
         user_id: Uuid,
         password: Password,
-    ) -> BoxFuture<'static, Result<(), Error>> {
+    ) -> BoxFuture<'static, ApiResult<()>> {
         let db = self.db.clone();
 
         Box::pin(async move {

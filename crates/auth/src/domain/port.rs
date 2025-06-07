@@ -16,7 +16,7 @@ pub trait AuthStore: Send + Sync {
     ///
     /// # Returns
     /// A result containing the user if found, or an error.
-    fn find_user_by_email(&self, email: &str) -> BoxFuture<'static, Result<AuthUser, Error>>;
+    fn find_user_by_email(&self, email: &str) -> BoxFuture<'static, ApiResult<AuthUser>>;
 
     /// Find a user by its ID.
     ///
@@ -25,7 +25,7 @@ pub trait AuthStore: Send + Sync {
     ///
     /// # Returns
     /// A result containing the user if found, or an error.
-    fn get_user_by_id(&self, user_id: &Uuid) -> BoxFuture<'static, Result<AuthUser, Error>>;
+    fn get_user_by_id(&self, user_id: &Uuid) -> BoxFuture<'static, ApiResult<AuthUser>>;
 
     /// Find a user's confirmation by its ID.
     ///
@@ -37,7 +37,7 @@ pub trait AuthStore: Send + Sync {
     fn get_user_confirmation_by_id(
         &self,
         id: &Uuid,
-    ) -> BoxFuture<'static, Result<AuthUserConfirmation, Error>>;
+    ) -> BoxFuture<'static, ApiResult<AuthUserConfirmation>>;
 
     /// Deletes a user's confirmation by its ID.
     ///
@@ -46,7 +46,7 @@ pub trait AuthStore: Send + Sync {
     ///
     /// # Returns
     /// An empty result.
-    fn delete_user_confirmation_by_id(&self, id: &Uuid) -> BoxFuture<'static, Result<(), Error>>;
+    fn delete_user_confirmation_by_id(&self, id: &Uuid) -> BoxFuture<'static, ApiResult<()>>;
 
     /// Deletes a user's confirmation by its user ID.
     ///
@@ -58,7 +58,7 @@ pub trait AuthStore: Send + Sync {
     fn delete_user_confirmation_by_user_id(
         &self,
         user_id: &Uuid,
-    ) -> BoxFuture<'static, Result<(), Error>>;
+    ) -> BoxFuture<'static, ApiResult<()>>;
 
     /// Creates an email confirmation entry for a user.
     ///
@@ -72,5 +72,5 @@ pub trait AuthStore: Send + Sync {
         &self,
         user_id: &Uuid,
         confirmation_timeout_hours: &Duration,
-    ) -> BoxFuture<'static, Result<AuthUserConfirmation, Error>>;
+    ) -> BoxFuture<'static, ApiResult<AuthUserConfirmation>>;
 }
