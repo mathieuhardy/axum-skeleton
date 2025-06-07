@@ -7,19 +7,27 @@ use crate::domain::user::User;
 use crate::prelude::*;
 
 /// Stores used by this use-case.
-#[derive(Clone)]
-pub struct GetUserByIdStores {
+pub struct GetUserByIdStores<A>
+where
+    A: UserStore,
+{
     /// User store.
-    pub user: Arc<dyn UserStore>,
+    pub user: A,
 }
 
 /// User fetching use-case structure.
-pub struct GetUserById {
+pub struct GetUserById<A>
+where
+    A: UserStore,
+{
     /// List of stores used.
-    stores: GetUserByIdStores,
+    stores: GetUserByIdStores<A>,
 }
 
-impl GetUserById {
+impl<A> GetUserById<A>
+where
+    A: UserStore,
+{
     /// Creates a new `GetUserById` use-case instance.
     ///
     /// # Arguments
@@ -27,12 +35,15 @@ impl GetUserById {
     ///
     /// # Returns
     /// A `GetUserById` instance.
-    pub fn new(stores: GetUserByIdStores) -> Self {
+    pub fn new(stores: GetUserByIdStores<A>) -> Self {
         Self { stores }
     }
 }
 
-impl UseCase for GetUserById {
+impl<A> UseCase for GetUserById<A>
+where
+    A: UserStore,
+{
     type Args = Uuid;
     type Output = User;
     type Error = Error;
@@ -71,9 +82,7 @@ mod tests {
             Box::pin(async move { Ok(false) })
         });
 
-        let stores = GetUserByIdStores {
-            user: Arc::new(user_store),
-        };
+        let stores = GetUserByIdStores { user: user_store };
 
         let res = GetUserById::new(stores).handle(user_id).await;
         assert!(matches!(res, Err(Error::NotFound)));
@@ -95,9 +104,7 @@ mod tests {
             Box::pin(async move { Ok(User::default()) })
         });
 
-        let stores = GetUserByIdStores {
-            user: Arc::new(user_store),
-        };
+        let stores = GetUserByIdStores { user: user_store };
 
         let res = GetUserById::new(stores).handle(user_id).await;
         assert!(res.is_ok());

@@ -4,7 +4,6 @@ use axum::extract::{Query, State};
 use axum::response::IntoResponse;
 use axum::routing::post;
 use axum::Router;
-use std::sync::Arc;
 use tracing::instrument;
 use uuid::Uuid;
 
@@ -46,7 +45,7 @@ pub(crate) async fn confirm_email(
     DbPool(db): DbPool,
 ) -> ApiResult<impl IntoResponse> {
     let stores = ConfirmEmailStores {
-        auth: Arc::new(SQLxAuthStore::new(&db)),
+        auth: SQLxAuthStore::new(&db),
     };
 
     ConfirmEmail::new(stores).handle(params.token).await
@@ -63,8 +62,8 @@ pub(crate) async fn send_email_confirmation(
     let user = auth.try_user()?;
 
     let stores = SendEmailConfirmationStores {
-        mailer: Arc::new(FakeMailer::new()),
-        auth: Arc::new(SQLxAuthStore::new(&db)),
+        mailer: FakeMailer::new(),
+        auth: SQLxAuthStore::new(&db),
     };
 
     SendEmailConfirmation::new(state.config, stores)

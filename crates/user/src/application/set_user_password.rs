@@ -7,19 +7,27 @@ use crate::domain::user::PasswordUpdateRequest;
 use crate::prelude::*;
 
 /// Stores used by this use-case.
-#[derive(Clone)]
-pub struct SetUserPasswordStores {
+pub struct SetUserPasswordStores<A>
+where
+    A: UserStore,
+{
     /// User store.
-    pub user: Arc<dyn UserStore>,
+    pub user: A,
 }
 
 /// Password update use-case structure.
-pub struct SetUserPassword {
+pub struct SetUserPassword<A>
+where
+    A: UserStore,
+{
     /// List of stores used.
-    stores: SetUserPasswordStores,
+    stores: SetUserPasswordStores<A>,
 }
 
-impl SetUserPassword {
+impl<A> SetUserPassword<A>
+where
+    A: UserStore,
+{
     /// Creates a new `SetUserPassword` use-case instance.
     ///
     /// # Arguments
@@ -27,12 +35,15 @@ impl SetUserPassword {
     ///
     /// # Returns
     /// A `SetUserPassword` instance.
-    pub fn new(stores: SetUserPasswordStores) -> Self {
+    pub fn new(stores: SetUserPasswordStores<A>) -> Self {
         Self { stores }
     }
 }
 
-impl UseCase for SetUserPassword {
+impl<A> UseCase for SetUserPassword<A>
+where
+    A: UserStore,
+{
     type Args = (Uuid, PasswordUpdateRequest);
     type Output = ();
     type Error = Error;
@@ -80,14 +91,12 @@ mod tests {
             })
         });
 
-        let stores = SetUserPasswordStores {
-            user: Arc::new(user_store),
-        };
+        let stores = SetUserPasswordStores { user: user_store };
 
         let user_id = random_id();
 
         // Invalid current password
-        let res = SetUserPassword::new(stores.clone())
+        let res = SetUserPassword::new(stores)
             .handle((
                 user_id,
                 PasswordUpdateRequest {
@@ -126,11 +135,9 @@ mod tests {
             .times(1)
             .returning(move |_, _| Box::pin(async move { Ok(()) }));
 
-        let stores = SetUserPasswordStores {
-            user: Arc::new(user_store),
-        };
+        let stores = SetUserPasswordStores { user: user_store };
 
-        let res = SetUserPassword::new(stores.clone())
+        let res = SetUserPassword::new(stores)
             .handle((user_id, PasswordUpdateRequest { current, new }))
             .await;
         assert!(res.is_ok());

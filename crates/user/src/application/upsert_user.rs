@@ -12,28 +12,42 @@ use crate::domain::user::{UpsertUserRequest, User, UserData};
 use crate::prelude::*;
 
 /// Stores used by this use-case.
-#[derive(Clone)]
-pub struct UpsertUserStores {
+pub struct UpsertUserStores<A, B, C>
+where
+    A: UserStore,
+    B: MailerProvider,
+    C: AuthStore,
+{
     /// User store.
-    pub user: Arc<dyn UserStore>,
+    pub user: A,
 
     /// Mailer provider.
-    pub mailer: Arc<dyn MailerProvider>,
+    pub mailer: B,
 
     /// Auth store.
-    pub auth: Arc<dyn AuthStore>,
+    pub auth: C,
 }
 
 /// User creation/update use-case structure.
-pub struct UpsertUser {
+pub struct UpsertUser<A, B, C>
+where
+    A: UserStore,
+    B: MailerProvider,
+    C: AuthStore,
+{
     /// Application configuration.
     config: Config,
 
     /// List of stores used.
-    stores: UpsertUserStores,
+    stores: UpsertUserStores<A, B, C>,
 }
 
-impl UpsertUser {
+impl<A, B, C> UpsertUser<A, B, C>
+where
+    A: UserStore,
+    B: MailerProvider,
+    C: AuthStore,
+{
     /// Creates a new `UpsertUser` use-case instance.
     ///
     /// # Arguments
@@ -41,12 +55,17 @@ impl UpsertUser {
     ///
     /// # Returns
     /// A `UpsertUser` instance.
-    pub fn new(config: Config, stores: UpsertUserStores) -> Self {
+    pub fn new(config: Config, stores: UpsertUserStores<A, B, C>) -> Self {
         Self { config, stores }
     }
 }
 
-impl UseCase for UpsertUser {
+impl<A, B, C> UseCase for UpsertUser<A, B, C>
+where
+    A: UserStore,
+    B: MailerProvider,
+    C: AuthStore,
+{
     type Args = UpsertUserRequest;
     type Output = User;
     type Error = Error;
@@ -133,12 +152,12 @@ mod tests {
         let config = Config::new()?;
 
         let stores = UpsertUserStores {
-            user: Arc::new(user_store),
-            mailer: Arc::new(mailer),
-            auth: Arc::new(auth_store),
+            user: user_store,
+            mailer,
+            auth: auth_store,
         };
 
-        let res = UpsertUser::new(config, stores.clone())
+        let res = UpsertUser::new(config, stores)
             .handle(UpsertUserRequest {
                 password: Some(Password::default()),
                 user: UpdateUserRequest {
@@ -171,14 +190,14 @@ mod tests {
         let config = Config::new()?;
 
         let stores = UpsertUserStores {
-            user: Arc::new(user_store),
-            mailer: Arc::new(mailer),
-            auth: Arc::new(auth_store),
+            user: user_store,
+            mailer,
+            auth: auth_store,
         };
 
         let user_id = random_id();
 
-        let res = UpsertUser::new(config, stores.clone())
+        let res = UpsertUser::new(config, stores)
             .handle(UpsertUserRequest {
                 user_id: Some(user_id),
                 password: Some(Password::default()),

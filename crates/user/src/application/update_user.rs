@@ -7,19 +7,27 @@ use crate::domain::user::{UpdateUserRequest, User};
 use crate::prelude::*;
 
 /// Stores used by this use-case.
-#[derive(Clone)]
-pub struct UpdateUserStores {
+pub struct UpdateUserStores<A>
+where
+    A: UserStore,
+{
     /// User store.
-    pub user: Arc<dyn UserStore>,
+    pub user: A,
 }
 
 /// User update use-case structure.
-pub struct UpdateUser {
+pub struct UpdateUser<A>
+where
+    A: UserStore,
+{
     /// List of stores used.
-    stores: UpdateUserStores,
+    stores: UpdateUserStores<A>,
 }
 
-impl UpdateUser {
+impl<A> UpdateUser<A>
+where
+    A: UserStore,
+{
     /// Creates a new `UpdateUser` use-case instance.
     ///
     /// # Arguments
@@ -27,12 +35,15 @@ impl UpdateUser {
     ///
     /// # Returns
     /// A `UpdateUser` instance.
-    pub fn new(stores: UpdateUserStores) -> Self {
+    pub fn new(stores: UpdateUserStores<A>) -> Self {
         Self { stores }
     }
 }
 
-impl UseCase for UpdateUser {
+impl<A> UseCase for UpdateUser<A>
+where
+    A: UserStore,
+{
     type Args = (Uuid, UpdateUserRequest);
     type Output = User;
     type Error = Error;
@@ -65,13 +76,11 @@ mod tests {
             .times(1)
             .returning(move |_, _| Box::pin(async move { Ok(User::default()) }));
 
-        let stores = UpdateUserStores {
-            user: Arc::new(user_store),
-        };
+        let stores = UpdateUserStores { user: user_store };
 
         let user_id = random_id();
 
-        let res = UpdateUser::new(stores.clone())
+        let res = UpdateUser::new(stores)
             .handle((
                 user_id,
                 UpdateUserRequest {

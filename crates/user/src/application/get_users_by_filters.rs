@@ -7,19 +7,27 @@ use crate::domain::user::{User, UserFilters};
 use crate::prelude::*;
 
 /// Stores used by this use-case.
-#[derive(Clone)]
-pub struct GetUsersByFiltersStores {
+pub struct GetUsersByFiltersStores<A>
+where
+    A: UserStore,
+{
     /// User store.
-    pub user: Arc<dyn UserStore>,
+    pub user: A,
 }
 
 /// User searching use-case structure.
-pub struct GetUsersByFilters {
+pub struct GetUsersByFilters<A>
+where
+    A: UserStore,
+{
     /// List of stores used.
-    stores: GetUsersByFiltersStores,
+    stores: GetUsersByFiltersStores<A>,
 }
 
-impl GetUsersByFilters {
+impl<A> GetUsersByFilters<A>
+where
+    A: UserStore,
+{
     /// Creates a new `GetUsersByFilters` use-case instance.
     ///
     /// # Arguments
@@ -27,12 +35,15 @@ impl GetUsersByFilters {
     ///
     /// # Returns
     /// A `GetUsersByFilters` instance.
-    pub fn new(stores: GetUsersByFiltersStores) -> Self {
+    pub fn new(stores: GetUsersByFiltersStores<A>) -> Self {
         Self { stores }
     }
 }
 
-impl UseCase for GetUsersByFilters {
+impl<A> UseCase for GetUsersByFilters<A>
+where
+    A: UserStore,
+{
     type Args = UserFilters;
     type Output = Vec<User>;
     type Error = Error;
@@ -69,9 +80,7 @@ mod tests {
                 Box::pin(async move { Ok(vec![]) })
             });
 
-        let stores = GetUsersByFiltersStores {
-            user: Arc::new(user_store),
-        };
+        let stores = GetUsersByFiltersStores { user: user_store };
 
         let res = GetUsersByFilters::new(stores).handle(filters).await;
         assert!(res.is_ok());

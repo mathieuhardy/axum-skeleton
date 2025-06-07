@@ -1,7 +1,6 @@
 //! Use-case for user email confirmation sending.
 
 use chrono::Duration;
-use std::sync::Arc;
 
 use common_core::UseCase;
 use configuration::Config;
@@ -12,35 +11,50 @@ use crate::domain::port::AuthStore;
 use crate::prelude::*;
 
 /// Stores used by this use-case.
-#[derive(Clone)]
-pub struct SendEmailConfirmationStores {
+pub struct SendEmailConfirmationStores<A, B>
+where
+    A: MailerProvider,
+    B: AuthStore,
+{
     /// Mailer provider.
-    pub mailer: Arc<dyn MailerProvider>,
+    pub mailer: A,
 
     /// Auth store.
-    pub auth: Arc<dyn AuthStore>,
+    pub auth: B,
 }
 
 /// User confirmation use-case structure.
-pub struct SendEmailConfirmation {
+pub struct SendEmailConfirmation<A, B>
+where
+    A: MailerProvider,
+    B: AuthStore,
+{
     /// Application configuration.
     config: Config,
 
     /// List of stores used.
-    stores: SendEmailConfirmationStores,
+    stores: SendEmailConfirmationStores<A, B>,
 }
 
-impl SendEmailConfirmation {
+impl<A, B> SendEmailConfirmation<A, B>
+where
+    A: MailerProvider,
+    B: AuthStore,
+{
     /// Creates a `SendEmailConfirmation` use-case instance.
     ///
     /// # Returns
     /// A `SendEmailConfirmation` instance.
-    pub fn new(config: Config, stores: SendEmailConfirmationStores) -> Self {
+    pub fn new(config: Config, stores: SendEmailConfirmationStores<A, B>) -> Self {
         Self { config, stores }
     }
 }
 
-impl UseCase for SendEmailConfirmation {
+impl<A, B> UseCase for SendEmailConfirmation<A, B>
+where
+    A: MailerProvider,
+    B: AuthStore,
+{
     type Args = AuthUser;
     type Output = ();
     type Error = Error;
@@ -112,8 +126,8 @@ mod tests {
         let config = Config::new()?;
 
         let stores = SendEmailConfirmationStores {
-            mailer: Arc::new(mailer),
-            auth: Arc::new(auth_store),
+            mailer,
+            auth: auth_store,
         };
 
         let user = AuthUser::default();
