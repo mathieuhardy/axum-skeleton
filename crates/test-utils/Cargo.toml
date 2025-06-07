@@ -19,18 +19,19 @@ uuid = { workspace = true, default-features = false, features = ["v4"] }
 
 auth = { workspace = true, default-features = false, optional = true }
 configuration = { workspace = true, default-features = false, optional = true }
+database = { workspace = true, default-features = false, optional = true }
 security = { workspace = true, default-features = false, optional = true }
 server = { workspace = true, default-features = false, optional = true }
 test-utils-derives = { workspace = true, default-features = false, optional = true }
 utils = { workspace = true, default-features = false, features = ["fs"], optional = true }
 
 [features]
-database = ["dep:dotenvy"]
+database = ["dep:database", "dep:dotenvy"]
 derives = ["dep:test-utils-derives"]
 rand = ["dep:security"]
 runner = ["dep:tokio"]
 server = [
-    "auth",
+    "dep:auth",
     "database",
     "dep:axum",
     "dep:configuration",

@@ -6,6 +6,7 @@ use sqlx::types::Json;
 use sqlx::{FromRow, Type};
 
 use auth::AuthUserConfirmation;
+use database::Db;
 use security::password::Password;
 
 use crate::domain::port::UserStore;
@@ -15,7 +16,7 @@ use crate::prelude::*;
 /// List of users roles in the DB enum.
 #[derive(Clone, Debug, Default, Deserialize, Serialize, Type)]
 #[sqlx(type_name = "user_role", rename_all = "lowercase")]
-pub enum DbUserRole {
+pub(crate) enum DbUserRole {
     /// See `UserRole::Admin`.
     Admin,
 
@@ -49,7 +50,7 @@ impl From<UserRole> for DbUserRole {
 
 /// Mirrors the `users`'s' table.
 #[derive(Clone, Default, FromRow, Deserialize, Serialize, derive_more::Debug)]
-pub struct DbUser {
+pub(crate) struct DbUser {
     /// See `User::id`.
     pub id: Uuid,
 
@@ -98,19 +99,19 @@ impl From<DbUser> for User {
 /// SQLx version of the UserStore trait.
 pub struct SQLxUserStore {
     /// Database connection pool.
-    db: PgPool,
+    db: Db,
 }
 
 impl SQLxUserStore {
     /// Creates a new SQLxUserStore instance.
     ///
     /// # Arguments
-    /// * `db` - The database connection pool.
+    /// * `db`: Database handle.
     ///
     /// # Returns
     /// A new instance of SQLxUserStore.
     #[must_use]
-    pub fn new(db: PgPool) -> Self {
+    pub fn new(db: Db) -> Self {
         Self { db }
     }
 }
@@ -121,7 +122,7 @@ impl UserStore for SQLxUserStore {
 
         Box::pin(async move {
             let res = sqlx::query_file_scalar!("sql/exists.sql", user_id)
-                .fetch_one(&db)
+                .fetch_one(&db.0)
                 .await
                 .is_ok();
 
@@ -134,7 +135,7 @@ impl UserStore for SQLxUserStore {
 
         Box::pin(async move {
             sqlx::query_file!("sql/delete_by_id.sql", user_id)
-                .execute(&db)
+                .execute(&db.0)
                 .await?;
 
             Ok(())
@@ -146,7 +147,7 @@ impl UserStore for SQLxUserStore {
 
         Box::pin(async move {
             let user = sqlx::query_file_as!(DbUser, "sql/get_by_id.sql", user_id)
-                .fetch_one(&db)
+                .fetch_one(&db.0)
                 .await?;
 
             Ok(user.into())
@@ -166,7 +167,7 @@ impl UserStore for SQLxUserStore {
                 filters.email,
                 role as Option<DbUserRole>,
             )
-            .fetch_all(&db)
+            .fetch_all(&db.0)
             .await?;
 
             Ok(users.into_iter().map(User::from).collect())
@@ -187,7 +188,7 @@ impl UserStore for SQLxUserStore {
                 role as DbUserRole,
                 data.password.as_str()
             )
-            .fetch_one(&db)
+            .fetch_one(&db.0)
             .await?;
 
             Ok(user.into())
@@ -209,7 +210,7 @@ impl UserStore for SQLxUserStore {
                 role as DbUserRole,
                 data.password.as_str()
             )
-            .fetch_one(&db)
+            .fetch_one(&db.0)
             .await?;
 
             Ok(user.into())
@@ -225,7 +226,7 @@ impl UserStore for SQLxUserStore {
 
         Box::pin(async move {
             sqlx::query_file!("sql/set_password.sql", user_id, password.as_str())
-                .execute(&db)
+                .execute(&db.0)
                 .await?;
 
             Ok(())

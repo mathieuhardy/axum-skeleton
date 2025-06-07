@@ -7,7 +7,7 @@ use crate::domain::port::AuthStore;
 use crate::prelude::*;
 
 /// Stores used by this use-case.
-pub struct LoginStores<A>
+pub(crate) struct LoginStores<A>
 where
     A: AuthStore,
 {
@@ -16,7 +16,7 @@ where
 }
 
 /// Login use-case structure.
-pub struct Login<A>
+pub(crate) struct Login<A>
 where
     A: AuthStore,
 {

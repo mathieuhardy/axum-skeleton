@@ -9,7 +9,6 @@ use axum::Router;
 use http_body_util::BodyExt;
 use mime::Mime;
 use serde::{Deserialize, Serialize};
-use sqlx::postgres::PgPool;
 use std::error::Error;
 use std::fmt::Display;
 use tower::util::ServiceExt;
@@ -17,6 +16,7 @@ use tracing::subscriber::DefaultGuard;
 
 use auth::AuthCredentials;
 use configuration::{Config, Environment};
+use database::Db;
 use security::password::Password;
 use server::app;
 
@@ -26,7 +26,7 @@ use crate::database::initialize_database;
 #[derive(Debug)]
 pub struct TestClient {
     /// Database connection if needed for tests.
-    pub db: PgPool,
+    pub db: Db,
 
     /// Router application to be tested.
     app: Router,

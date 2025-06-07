@@ -11,7 +11,7 @@ use crate::domain::port::AuthStore;
 use crate::prelude::*;
 
 /// Stores used by this use-case.
-pub struct SendEmailConfirmationStores<A, B>
+pub(crate) struct SendEmailConfirmationStores<A, B>
 where
     A: MailerProvider,
     B: AuthStore,
@@ -24,7 +24,7 @@ where
 }
 
 /// User confirmation use-case structure.
-pub struct SendEmailConfirmation<A, B>
+pub(crate) struct SendEmailConfirmation<A, B>
 where
     A: MailerProvider,
     B: AuthStore,

@@ -1,5 +1,7 @@
 # ✅ TODO
 
+- global: avoid code in files mod.rs
+
 - auth: add endpoints to manage the list of sessions (show, invalidate, etc)
 
 - passwordless:

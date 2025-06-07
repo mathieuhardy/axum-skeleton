@@ -16,7 +16,7 @@ pub struct AppState {
     pub config: configuration::Config,
 
     /// PostgreSQL database handle.
-    pub db: PgPool,
+    pub pool: PgPool,
 
     /// Redis database handle.
     pub redis: RedisPool,
@@ -27,12 +27,16 @@ impl AppState {
     ///
     /// # Arguments
     /// * `config` - Configuration structure.
-    /// * `db` - PostgreSQL database handle.
+    /// * `pool` - PostgreSQL database handle.
     /// * `redis` - Redis database handle.
     ///
     /// # Returns
     /// New instance of AppState.
-    pub fn new(config: Config, db: PgPool, redis: RedisPool) -> Self {
-        Self { config, db, redis }
+    pub fn new(config: Config, pool: PgPool, redis: RedisPool) -> Self {
+        Self {
+            config,
+            pool,
+            redis,
+        }
     }
 }

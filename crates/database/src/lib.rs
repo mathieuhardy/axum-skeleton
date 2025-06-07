@@ -10,12 +10,13 @@
 pub mod extractor;
 
 mod db;
-mod error;
+mod domain;
 mod prelude;
 
 // Exports
 pub use db::initialize;
-pub use error::Error;
+pub use domain::db::Db;
+pub use domain::error::Error;
 
 // Re-exports
 pub use common_state::RedisPool;

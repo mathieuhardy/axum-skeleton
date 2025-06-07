@@ -6,7 +6,7 @@ use crate::domain::auth::Auth;
 use crate::prelude::*;
 
 /// Logout use-case structure.
-pub struct Logout {}
+pub(crate) struct Logout {}
 
 impl Logout {
     /// Creates a `Logout` use-case instance.

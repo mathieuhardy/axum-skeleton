@@ -1,22 +1,20 @@
 //! Utilities functions for handling users in the database.
 
+use database::Db;
 use test_utils::rand::{random_email, random_string};
 
 use crate::domain::user::{User, UserRole};
 use crate::infrastructure::user::{DbUser, DbUserRole};
-use crate::prelude::*;
 
 /// Creates a new user in the database with the given role.
 ///
 /// # Arguments
 /// * `role` - The role of the user to create.
+/// * `db` - Database handle.
 ///
 /// # Returns
 /// A `Result` containing the created user or an error if the user could not be created.
-pub async fn create_user(
-    role: UserRole,
-    pool: &PgPool,
-) -> Result<User, Box<dyn std::error::Error>> {
+pub async fn create_user(role: UserRole, db: &Db) -> Result<User, Box<dyn std::error::Error>> {
     let first_name = random_string();
     let last_name = random_string();
     let email = random_email();
@@ -42,7 +40,7 @@ pub async fn create_user(
         email,
         role as DbUserRole,
     )
-    .fetch_one(pool)
+    .fetch_one(&db.0)
     .await?;
 
     Ok(user.into())
