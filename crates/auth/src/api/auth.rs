@@ -9,8 +9,9 @@ use validator::Validate;
 use common_core::UseCase;
 use common_state::AppState;
 use common_web::extractor::FormOrJson;
+use database::extractor::DbPool;
 
-use crate::application::{Login, Logout};
+use crate::application::{Login, LoginStores, Logout};
 use crate::domain::auth::{Auth, AuthCredentials};
 use crate::infrastructure::SQLxAuthStore;
 use crate::prelude::*;
@@ -29,17 +30,22 @@ pub(crate) fn router() -> Router<AppState> {
 #[instrument]
 #[axum::debug_handler(state = AppState)]
 pub(crate) async fn login(
-    auth: Auth<SQLxAuthStore>,
+    auth: Auth,
+    DbPool(db): DbPool,
     FormOrJson(credentials): FormOrJson<AuthCredentials>,
 ) -> ApiResult<impl IntoResponse> {
     credentials.validate()?;
 
-    Login::new().handle((auth, credentials)).await
+    let stores = LoginStores {
+        auth: SQLxAuthStore::new(&db),
+    };
+
+    Login::new(stores).handle((auth, credentials)).await
 }
 
 /// Logout handler.
 #[instrument]
 #[axum::debug_handler(state = AppState)]
-pub(crate) async fn logout(auth: Auth<SQLxAuthStore>) -> ApiResult<impl IntoResponse> {
+pub(crate) async fn logout(auth: Auth) -> ApiResult<impl IntoResponse> {
     Logout::new().handle(auth).await
 }

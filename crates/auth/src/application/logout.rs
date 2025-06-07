@@ -1,36 +1,25 @@
 //! Use-case for logout a user.
 
-use std::marker::PhantomData;
-
 use common_core::UseCase;
 
 use crate::domain::auth::Auth;
-use crate::domain::port::AuthStore;
 use crate::prelude::*;
 
 /// Logout use-case structure.
-pub(crate) struct Logout<Store> {
-    /// Phantom data used to use the `Store` parameter in the struct.
-    _marker: PhantomData<Store>,
-}
+pub struct Logout {}
 
-impl<Store> Logout<Store> {
+impl Logout {
     /// Creates a `Logout` use-case instance.
     ///
     /// # Returns
     /// A `Logout` instance.
     pub fn new() -> Self {
-        Self {
-            _marker: PhantomData,
-        }
+        Self {}
     }
 }
 
-impl<Store> UseCase for Logout<Store>
-where
-    Store: AuthStore,
-{
-    type Args = Auth<Store>;
+impl UseCase for Logout {
+    type Args = Auth;
     type Output = ();
     type Error = Error;
 

@@ -10,6 +10,7 @@ use uuid::Uuid;
 
 use common_core::UseCase;
 use common_state::AppState;
+use database::extractor::DbPool;
 use mailer::FakeMailer;
 
 use crate::application::{
@@ -40,11 +41,12 @@ struct ConfirmEmailParams {
 #[instrument]
 #[axum::debug_handler(state = AppState)]
 pub(crate) async fn confirm_email(
-    auth: Auth<SQLxAuthStore>,
+    auth: Auth,
     Query(params): Query<ConfirmEmailParams>,
+    DbPool(db): DbPool,
 ) -> ApiResult<impl IntoResponse> {
     let stores = ConfirmEmailStores {
-        auth: Arc::new(auth.store),
+        auth: Arc::new(SQLxAuthStore::new(&db)),
     };
 
     ConfirmEmail::new(stores).handle(params.token).await
@@ -54,14 +56,15 @@ pub(crate) async fn confirm_email(
 #[instrument]
 #[axum::debug_handler(state = AppState)]
 pub(crate) async fn send_email_confirmation(
-    auth: Auth<SQLxAuthStore>,
+    auth: Auth,
     State(state): State<AppState>,
+    DbPool(db): DbPool,
 ) -> ApiResult<impl IntoResponse> {
     let user = auth.try_user()?;
 
     let stores = SendEmailConfirmationStores {
         mailer: Arc::new(FakeMailer::new()),
-        auth: Arc::new(auth.store),
+        auth: Arc::new(SQLxAuthStore::new(&db)),
     };
 
     SendEmailConfirmation::new(state.config, stores)

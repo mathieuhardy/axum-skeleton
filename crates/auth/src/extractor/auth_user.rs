@@ -16,9 +16,8 @@ use crate::domain::error::Error;
 use crate::domain::port::AuthStore;
 use crate::infrastructure::SQLxAuthStore;
 
-// TODO: use generic
 #[async_trait]
-impl<S> FromRequestParts<S> for Auth<SQLxAuthStore>
+impl<S> FromRequestParts<S> for Auth
 where
     S: Send + Sync,
     AppState: FromRef<S>,
@@ -54,10 +53,6 @@ where
             None
         };
 
-        Ok(Auth {
-            user,
-            session,
-            store,
-        })
+        Ok(Auth { user, session })
     }
 }
