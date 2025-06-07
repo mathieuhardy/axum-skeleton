@@ -1,6 +1,6 @@
 //! All utilities needed to implement tests in this crate.
 
-use sqlx::postgres::PgPool;
+use database::Db;
 
 use crate::domain::auth_user::AuthUser;
 use crate::infrastructure::{DbAuthUser, DbAuthUserRole};
@@ -9,14 +9,11 @@ use crate::infrastructure::{DbAuthUser, DbAuthUserRole};
 ///
 /// # Arguments
 /// * `user` - User structure to be used for creation.
-/// * `pool` - Database handle.
+/// * `db` - Database handle.
 ///
 /// # Returns
 /// A result containing the created user as `AuthUser`.
-pub async fn create_user(
-    user: &AuthUser,
-    pool: &PgPool,
-) -> Result<AuthUser, Box<dyn std::error::Error>> {
+pub async fn create_user(user: &AuthUser, db: &Db) -> Result<AuthUser, Box<dyn std::error::Error>> {
     let role: DbAuthUserRole = user.role.clone().into();
     let password = user.password.hashed()?;
 
@@ -35,7 +32,7 @@ pub async fn create_user(
         role as DbAuthUserRole,
         password.as_str(),
     )
-    .fetch_one(pool)
+    .fetch_one(&db.0)
     .await?;
 
     Ok(user.into())

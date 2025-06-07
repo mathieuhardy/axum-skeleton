@@ -9,6 +9,7 @@ use tower_sessions::Session;
 use tracing::{event, Level};
 
 use common_state::AppState;
+use database::Db;
 
 use crate::domain::auth::Auth;
 use crate::domain::auth_user::AuthUser;
@@ -33,8 +34,8 @@ where
         let user: Option<AuthUser> = session.get(Self::KEY).await?;
 
         // Get handle to the user store
-        let AppState { db, .. } = AppState::from_ref(state);
-        let store = SQLxAuthStore::new(&db);
+        let AppState { pool, .. } = AppState::from_ref(state);
+        let store = SQLxAuthStore::new(&Db(pool));
 
         // Fetch user from store (in case it has changed since session creation)
         let user = if let Some(session_user) = user {

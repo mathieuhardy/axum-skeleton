@@ -12,7 +12,7 @@ use crate::domain::user::{CreateUserRequest, User, UserData};
 use crate::prelude::*;
 
 /// Stores used by this use-case.
-pub struct CreateUserStores<A, B, C>
+pub(crate) struct CreateUserStores<A, B, C>
 where
     A: UserStore,
     B: MailerProvider,
@@ -29,7 +29,7 @@ where
 }
 
 /// User creation use-case structure.
-pub struct CreateUser<A, B, C>
+pub(crate) struct CreateUser<A, B, C>
 where
     A: UserStore,
     B: MailerProvider,

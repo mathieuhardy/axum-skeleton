@@ -6,7 +6,7 @@ use crate::domain::port::UserStore;
 use crate::prelude::*;
 
 /// Stores used by this use-case.
-pub struct DeleteUserByIdStores<A>
+pub(crate) struct DeleteUserByIdStores<A>
 where
     A: UserStore,
 {
@@ -15,7 +15,7 @@ where
 }
 
 /// User deletion use-case structure.
-pub struct DeleteUserById<A>
+pub(crate) struct DeleteUserById<A>
 where
     A: UserStore,
 {

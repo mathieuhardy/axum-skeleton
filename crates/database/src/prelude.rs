@@ -2,4 +2,4 @@
 
 pub(crate) use tracing::{event, Level};
 
-pub(crate) use crate::error::*;
+pub(crate) use crate::domain::error::*;

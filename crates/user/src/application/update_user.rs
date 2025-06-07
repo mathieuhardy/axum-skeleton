@@ -7,7 +7,7 @@ use crate::domain::user::{UpdateUserRequest, User};
 use crate::prelude::*;
 
 /// Stores used by this use-case.
-pub struct UpdateUserStores<A>
+pub(crate) struct UpdateUserStores<A>
 where
     A: UserStore,
 {
@@ -16,7 +16,7 @@ where
 }
 
 /// User update use-case structure.
-pub struct UpdateUser<A>
+pub(crate) struct UpdateUser<A>
 where
     A: UserStore,
 {

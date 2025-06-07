@@ -11,7 +11,7 @@ use auth::{Auth, SQLxAuthStore};
 use common_core::UseCase;
 use common_state::AppState;
 use common_web::extractor::FormOrJson;
-use database::extractor::DbPool;
+use database::Db;
 use mailer::FakeMailer;
 
 use crate::application::*;
@@ -40,10 +40,10 @@ pub fn router() -> Router<AppState> {
 /// Handler used to delete a user giving its ID.
 #[instrument]
 #[axum::debug_handler(state = AppState)]
-pub async fn delete_user_by_id(
-    Path(user_id): Path<Uuid>,
-    DbPool(db): DbPool,
+pub(crate) async fn delete_user_by_id(
     auth: Auth,
+    Path(user_id): Path<Uuid>,
+    db: Db,
 ) -> ApiResult<impl IntoResponse> {
     if !auth.try_user()?.is_admin() {
         return Err(Error::Forbidden);
@@ -61,7 +61,7 @@ pub async fn delete_user_by_id(
 /// Handler used to get information about the currently logged user.
 #[instrument]
 #[axum::debug_handler(state = AppState)]
-pub async fn get_current_user(auth: Auth, DbPool(db): DbPool) -> ApiResult<impl IntoResponse> {
+pub(crate) async fn get_current_user(auth: Auth, db: Db) -> ApiResult<impl IntoResponse> {
     let stores = GetUserByIdStores {
         user: SQLxUserStore::new(db),
     };
@@ -74,10 +74,10 @@ pub async fn get_current_user(auth: Auth, DbPool(db): DbPool) -> ApiResult<impl 
 /// Handler used to get a specify user by providing its ID.
 #[instrument]
 #[axum::debug_handler(state = AppState)]
-pub async fn get_user_by_id(
-    Path(user_id): Path<Uuid>,
+pub(crate) async fn get_user_by_id(
     auth: Auth,
-    DbPool(db): DbPool,
+    Path(user_id): Path<Uuid>,
+    db: Db,
 ) -> ApiResult<impl IntoResponse> {
     if !auth.try_user()?.is_admin() {
         return Err(Error::Forbidden);
@@ -95,10 +95,10 @@ pub async fn get_user_by_id(
 /// Handler used to get a list of users that match some filters.
 #[instrument]
 #[axum::debug_handler(state = AppState)]
-pub async fn get_users_by_filters(
+pub(crate) async fn get_users_by_filters(
     auth: Auth,
     Query(filters): Query<UserFilters>,
-    DbPool(db): DbPool,
+    db: Db,
 ) -> ApiResult<impl IntoResponse> {
     if !auth.try_user()?.is_admin() {
         return Err(Error::Forbidden);
@@ -116,9 +116,9 @@ pub async fn get_users_by_filters(
 /// Handler used to create a new user.
 #[instrument]
 #[axum::debug_handler(state = AppState)]
-pub async fn create_user(
+pub(crate) async fn create_user(
     auth: Auth,
-    DbPool(db): DbPool,
+    db: Db,
     State(state): State<AppState>,
     FormOrJson(request): FormOrJson<CreateUserRequest>,
 ) -> ApiResult<impl IntoResponse> {
@@ -144,9 +144,9 @@ pub async fn create_user(
 /// Handler used to upsert a user.
 #[instrument]
 #[axum::debug_handler(state = AppState)]
-pub async fn upsert_user(
+pub(crate) async fn upsert_user(
     auth: Auth,
-    DbPool(db): DbPool,
+    db: Db,
     State(state): State<AppState>,
     FormOrJson(request): FormOrJson<UpsertUserRequest>,
 ) -> ApiResult<impl IntoResponse> {
@@ -193,10 +193,10 @@ pub async fn upsert_user(
 /// Handler used to update a user.
 #[instrument]
 #[axum::debug_handler(state = AppState)]
-pub async fn update_user(
-    Path(user_id): Path<Uuid>,
+pub(crate) async fn update_user(
     auth: Auth,
-    DbPool(db): DbPool,
+    Path(user_id): Path<Uuid>,
+    db: Db,
     FormOrJson(request): FormOrJson<UpdateUserRequest>,
 ) -> ApiResult<impl IntoResponse> {
     let user = auth.try_user()?;
@@ -220,10 +220,10 @@ pub async fn update_user(
 /// Handler used to update an existing user's password by providing its ID.
 #[instrument]
 #[axum::debug_handler(state = AppState)]
-pub async fn set_user_password(
-    Path(user_id): Path<Uuid>,
+pub(crate) async fn set_user_password(
     auth: Auth,
-    DbPool(db): DbPool,
+    Path(user_id): Path<Uuid>,
+    db: Db,
     FormOrJson(request): FormOrJson<PasswordUpdateRequest>,
 ) -> ApiResult<impl IntoResponse> {
     if !auth.try_user()?.is(&user_id) {

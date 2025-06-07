@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 use common_core::UseCase;
 use common_state::AppState;
-use database::extractor::DbPool;
+use database::Db;
 use mailer::FakeMailer;
 
 use crate::application::{
@@ -42,7 +42,7 @@ struct ConfirmEmailParams {
 pub(crate) async fn confirm_email(
     auth: Auth,
     Query(params): Query<ConfirmEmailParams>,
-    DbPool(db): DbPool,
+    db: Db,
 ) -> ApiResult<impl IntoResponse> {
     let stores = ConfirmEmailStores {
         auth: SQLxAuthStore::new(&db),
@@ -57,7 +57,7 @@ pub(crate) async fn confirm_email(
 pub(crate) async fn send_email_confirmation(
     auth: Auth,
     State(state): State<AppState>,
-    DbPool(db): DbPool,
+    db: Db,
 ) -> ApiResult<impl IntoResponse> {
     let user = auth.try_user()?;
 

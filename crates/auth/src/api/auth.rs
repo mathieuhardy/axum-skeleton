@@ -9,7 +9,7 @@ use validator::Validate;
 use common_core::UseCase;
 use common_state::AppState;
 use common_web::extractor::FormOrJson;
-use database::extractor::DbPool;
+use database::Db;
 
 use crate::application::{Login, LoginStores, Logout};
 use crate::domain::auth::{Auth, AuthCredentials};
@@ -31,7 +31,7 @@ pub(crate) fn router() -> Router<AppState> {
 #[axum::debug_handler(state = AppState)]
 pub(crate) async fn login(
     auth: Auth,
-    DbPool(db): DbPool,
+    db: Db,
     FormOrJson(credentials): FormOrJson<AuthCredentials>,
 ) -> ApiResult<impl IntoResponse> {
     credentials.validate()?;

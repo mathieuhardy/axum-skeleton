@@ -7,7 +7,7 @@ use crate::domain::user::PasswordUpdateRequest;
 use crate::prelude::*;
 
 /// Stores used by this use-case.
-pub struct SetUserPasswordStores<A>
+pub(crate) struct SetUserPasswordStores<A>
 where
     A: UserStore,
 {
@@ -16,7 +16,7 @@ where
 }
 
 /// Password update use-case structure.
-pub struct SetUserPassword<A>
+pub(crate) struct SetUserPassword<A>
 where
     A: UserStore,
 {

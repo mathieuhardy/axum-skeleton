@@ -7,7 +7,7 @@ use crate::domain::user::User;
 use crate::prelude::*;
 
 /// Stores used by this use-case.
-pub struct GetUserByIdStores<A>
+pub(crate) struct GetUserByIdStores<A>
 where
     A: UserStore,
 {
@@ -16,7 +16,7 @@ where
 }
 
 /// User fetching use-case structure.
-pub struct GetUserById<A>
+pub(crate) struct GetUserById<A>
 where
     A: UserStore,
 {
