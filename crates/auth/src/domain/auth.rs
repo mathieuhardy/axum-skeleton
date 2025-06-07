@@ -15,6 +15,7 @@ use security::password::Password;
 use crate::domain::auth_user::AuthUser;
 use crate::domain::error::Error;
 use crate::domain::port::AuthStore;
+use crate::prelude::*;
 
 /// Structure used to store the credentials that must be provided by a user to check it's
 /// existence. This should match a form displayed to the user where he can enter his email and
@@ -67,7 +68,7 @@ where
     ///
     /// # Returns
     /// Result containing the user information if found, or an error.
-    pub fn try_user(&self) -> Result<AuthUser, Error> {
+    pub fn try_user(&self) -> ApiResult<AuthUser> {
         self.user.as_ref().ok_or(Error::UserNotFound).cloned()
     }
 
@@ -78,7 +79,7 @@ where
     ///
     /// # Returns
     /// Result containing the user information if found, or an error.
-    pub async fn authenticate(&mut self, credentials: AuthCredentials) -> Result<AuthUser, Error> {
+    pub async fn authenticate(&mut self, credentials: AuthCredentials) -> ApiResult<AuthUser> {
         // Try to find the user in database, return Unauthorized if not found.
         let user = self
             .store
@@ -106,7 +107,7 @@ where
     ///
     /// # Returns
     /// Result indicating success or failure.
-    pub async fn login(&mut self, user_id: &Uuid) -> Result<(), Error> {
+    pub async fn login(&mut self, user_id: &Uuid) -> ApiResult<()> {
         let user = self
             .store
             .get_user_by_id(user_id)
@@ -133,7 +134,7 @@ where
     ///
     /// # Returns
     /// Result indicating success or failure.
-    pub async fn logout(&mut self) -> Result<(), Error> {
+    pub async fn logout(&mut self) -> ApiResult<()> {
         let user = self.user.take();
 
         self.session.flush().await?;

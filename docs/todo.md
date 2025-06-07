@@ -60,6 +60,7 @@
 
 - global: use transaction
 - global: add missing tracing events for all errors
+- hooks: fix issue
 
 - Redis
 - OpenApi

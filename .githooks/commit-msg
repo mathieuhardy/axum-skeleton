@@ -4,12 +4,13 @@
 #
 # Checks:
 #   - Checks the commit message against the conventional commits message specification.
-# 
+#
 # Inputs:
 #   - $1: The name of the file that contains the commit message to check.
 
-MSG=$(cat ${1}) 
-PATTERN="^(fixup! )?(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)!?(\([a-z ]+\))?(: )([^\n]+)(\n{1}?((\n{1}[^\n]+)+)?)?(\n{1}(\n{1}[^\n]+)+)?"
+MSG=$(cat ${1})
+# PATTERN="^(fixup! )?(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)!?(\([a-z ]+\))?(: )([^\n]+)(\n{1}?((\n{1}[^\n]+)+)?)?(\n{1}(\n{1}[^\n]+)+)?"
+PATTERN="^(fixup! )?(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)!?(\([a-z ]+\))?(: )(.+)(\n{1}?((\n{1}[^\n]+)+)?)?(\n{1}(\n{1}[^\n]+)+)?"
 
 if ! [[ "${MSG}" =~ ${PATTERN} ]]
 then

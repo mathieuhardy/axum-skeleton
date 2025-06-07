@@ -29,8 +29,10 @@ pub(crate) fn router() -> Router<AppState> {
         .route("/send_confirmation", post(send_email_confirmation))
 }
 
+/// Parameters for the email confirmation endpoint.
 #[derive(Debug, Deserialize)]
 struct ConfirmEmailParams {
+    /// Token (ID) of the confirmation in database.
     token: Uuid,
 }
 

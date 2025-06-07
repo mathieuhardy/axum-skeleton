@@ -23,5 +23,5 @@ pub trait MailerProvider: Send + Sync {
         email: &str,
         token: &Uuid,
         redirect_url: &str,
-    ) -> BoxFuture<'static, Result<(), Error>>;
+    ) -> BoxFuture<'static, ApiResult<()>>;
 }

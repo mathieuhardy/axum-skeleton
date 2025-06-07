@@ -93,7 +93,7 @@ impl SQLxAuthStore {
 }
 
 impl AuthStore for SQLxAuthStore {
-    fn find_user_by_email(&self, email: &str) -> BoxFuture<'static, Result<AuthUser, Error>> {
+    fn find_user_by_email(&self, email: &str) -> BoxFuture<'static, ApiResult<AuthUser>> {
         let db = self.db.clone();
         let email = email.to_string();
 
@@ -106,7 +106,7 @@ impl AuthStore for SQLxAuthStore {
         })
     }
 
-    fn get_user_by_id(&self, user_id: &Uuid) -> BoxFuture<'static, Result<AuthUser, Error>> {
+    fn get_user_by_id(&self, user_id: &Uuid) -> BoxFuture<'static, ApiResult<AuthUser>> {
         let db = self.db.clone();
         let user_id = *user_id;
 
@@ -122,7 +122,7 @@ impl AuthStore for SQLxAuthStore {
     fn get_user_confirmation_by_id(
         &self,
         id: &Uuid,
-    ) -> BoxFuture<'static, Result<AuthUserConfirmation, Error>> {
+    ) -> BoxFuture<'static, ApiResult<AuthUserConfirmation>> {
         let db = self.db.clone();
         let id = *id;
 
@@ -139,7 +139,7 @@ impl AuthStore for SQLxAuthStore {
         })
     }
 
-    fn delete_user_confirmation_by_id(&self, id: &Uuid) -> BoxFuture<'static, Result<(), Error>> {
+    fn delete_user_confirmation_by_id(&self, id: &Uuid) -> BoxFuture<'static, ApiResult<()>> {
         let db = self.db.clone();
         let id = *id;
 
@@ -155,7 +155,7 @@ impl AuthStore for SQLxAuthStore {
     fn delete_user_confirmation_by_user_id(
         &self,
         user_id: &Uuid,
-    ) -> BoxFuture<'static, Result<(), Error>> {
+    ) -> BoxFuture<'static, ApiResult<()>> {
         let db = self.db.clone();
         let user_id = *user_id;
 
@@ -172,7 +172,7 @@ impl AuthStore for SQLxAuthStore {
         &self,
         user_id: &Uuid,
         confirmation_timeout_hours: &Duration,
-    ) -> BoxFuture<'static, Result<AuthUserConfirmation, Error>> {
+    ) -> BoxFuture<'static, ApiResult<AuthUserConfirmation>> {
         let db = self.db.clone();
         let user_id = *user_id;
         let confirmation_timeout_hours = *confirmation_timeout_hours;

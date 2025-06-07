@@ -16,8 +16,7 @@ use mailer::FakeMailer;
 
 use crate::application::*;
 use crate::domain::user::{
-    CreateUserRequest, PasswordUpdateRequest, UpdateUserRequest, UpsertUserRequest, User,
-    UserFilters,
+    CreateUserRequest, PasswordUpdateRequest, UpdateUserRequest, UpsertUserRequest, UserFilters,
 };
 use crate::infrastructure::user::SQLxUserStore;
 use crate::prelude::*;
@@ -65,7 +64,7 @@ pub async fn delete_user_by_id(
 pub async fn get_current_user(
     auth: Auth<SQLxAuthStore>,
     DbPool(db): DbPool,
-) -> ApiResult<Json<User>> {
+) -> ApiResult<impl IntoResponse> {
     let stores = GetUserByIdStores {
         user: Arc::new(SQLxUserStore::new(db)),
     };
