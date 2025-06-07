@@ -22,7 +22,7 @@ pub struct SendEmailConfirmationStores {
 }
 
 /// User confirmation use-case structure.
-pub(crate) struct SendEmailConfirmation {
+pub struct SendEmailConfirmation {
     /// Application configuration.
     config: Config,
 

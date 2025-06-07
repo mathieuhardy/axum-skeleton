@@ -16,7 +16,7 @@ pub struct ConfirmEmailStores {
 }
 
 /// User confirmation use-case structure.
-pub(crate) struct ConfirmEmail {
+pub struct ConfirmEmail {
     /// List of stores used.
     stores: ConfirmEmailStores,
 }

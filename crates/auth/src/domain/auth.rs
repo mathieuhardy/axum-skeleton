@@ -7,14 +7,12 @@ use axum::response::Response;
 use serde::{Deserialize, Serialize};
 use tower_sessions::Session;
 use tracing::{event, Level};
-use uuid::Uuid;
 use validator::Validate;
 
 use security::password::Password;
 
 use crate::domain::auth_user::AuthUser;
 use crate::domain::error::Error;
-use crate::domain::port::AuthStore;
 use crate::prelude::*;
 
 /// Structure used to store the credentials that must be provided by a user to check it's
@@ -35,24 +33,15 @@ pub struct AuthCredentials {
 /// Structure used to store all needed information for authentication.
 /// This structure aims to be declared as argument of the HTTP endpoints.
 #[derive(Debug)]
-pub struct Auth<Store>
-where
-    Store: AuthStore,
-{
+pub struct Auth {
     /// User information (optional as some endpoint will be called without a user logged in).
     pub user: Option<AuthUser>,
 
     /// Session store.
     pub session: Session,
-
-    /// User store.
-    pub store: Store,
 }
 
-impl<Store> Auth<Store>
-where
-    Store: AuthStore,
-{
+impl Auth {
     /// Key used to store the user information in the session.
     pub const KEY: &'static str = "auth_user";
 
@@ -72,24 +61,21 @@ where
         self.user.as_ref().ok_or(Error::UserNotFound).cloned()
     }
 
-    /// Try to authenticate a user, fetching it from the store and checking its credentials.
+    /// Try to authenticate a user by checking its credentials.
     ///
     /// # Arguments
+    /// * `user`: User obtained from the database.
     /// * `credentials`: User credentials to check.
     ///
     /// # Returns
     /// Result containing the user information if found, or an error.
-    pub async fn authenticate(&mut self, credentials: AuthCredentials) -> ApiResult<AuthUser> {
-        // Try to find the user in database, return Unauthorized if not found.
-        let user = self
-            .store
-            .find_user_by_email(&credentials.email)
-            .await
-            .map_err(|_| Error::UserNotFound)?;
-
-        // Verify password
+    pub async fn authenticate(
+        &mut self,
+        user: &AuthUser,
+        credentials: &AuthCredentials,
+    ) -> ApiResult<AuthUser> {
         match credentials.password.matches(&user.password).await {
-            Ok(true) => Ok(user),
+            Ok(true) => Ok(user.clone()),
 
             Ok(false) => {
                 event!(Level::ERROR, "Invalid credentials");
@@ -103,18 +89,12 @@ where
     /// Creates a session for the user.
     ///
     /// # Arguments
-    /// * `user_id`: User ID to create the session for.
+    /// * `user`: User obtained from the database.
     ///
     /// # Returns
     /// Result indicating success or failure.
-    pub async fn login(&mut self, user_id: &Uuid) -> ApiResult<()> {
-        let user = self
-            .store
-            .get_user_by_id(user_id)
-            .await
-            .map_err(|_| Error::UserNotFound)?;
-
-        let auth_user = Some(user);
+    pub async fn login(&mut self, user: &AuthUser) -> ApiResult<()> {
+        let auth_user = Some(user.clone());
 
         if self.user.is_none() {
             // Session-fixation
@@ -154,14 +134,11 @@ where
 ///
 /// # Returns
 /// Result containing the next response or a 401 Unauthorized response.
-pub async fn require_authentication<Store>(
-    auth: Auth<Store>,
+pub async fn require_authentication(
+    auth: Auth,
     request: Request<Body>,
     next: Next,
-) -> Result<Response, StatusCode>
-where
-    Store: AuthStore + Send + Sync,
-{
+) -> Result<Response, StatusCode> {
     if auth.user().is_some() {
         Ok(next.run(request).await)
     } else {

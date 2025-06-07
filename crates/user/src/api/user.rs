@@ -43,7 +43,7 @@ pub fn router() -> Router<AppState> {
 pub async fn delete_user_by_id(
     Path(user_id): Path<Uuid>,
     DbPool(db): DbPool,
-    auth: Auth<SQLxAuthStore>,
+    auth: Auth,
 ) -> ApiResult<impl IntoResponse> {
     if !auth.try_user()?.is_admin() {
         return Err(Error::Forbidden);
@@ -61,10 +61,7 @@ pub async fn delete_user_by_id(
 /// Handler used to get information about the currently logged user.
 #[instrument]
 #[axum::debug_handler(state = AppState)]
-pub async fn get_current_user(
-    auth: Auth<SQLxAuthStore>,
-    DbPool(db): DbPool,
-) -> ApiResult<impl IntoResponse> {
+pub async fn get_current_user(auth: Auth, DbPool(db): DbPool) -> ApiResult<impl IntoResponse> {
     let stores = GetUserByIdStores {
         user: Arc::new(SQLxUserStore::new(db)),
     };
@@ -79,7 +76,7 @@ pub async fn get_current_user(
 #[axum::debug_handler(state = AppState)]
 pub async fn get_user_by_id(
     Path(user_id): Path<Uuid>,
-    auth: Auth<SQLxAuthStore>,
+    auth: Auth,
     DbPool(db): DbPool,
 ) -> ApiResult<impl IntoResponse> {
     if !auth.try_user()?.is_admin() {
@@ -99,7 +96,7 @@ pub async fn get_user_by_id(
 #[instrument]
 #[axum::debug_handler(state = AppState)]
 pub async fn get_users_by_filters(
-    auth: Auth<SQLxAuthStore>,
+    auth: Auth,
     Query(filters): Query<UserFilters>,
     DbPool(db): DbPool,
 ) -> ApiResult<impl IntoResponse> {
@@ -120,7 +117,7 @@ pub async fn get_users_by_filters(
 #[instrument]
 #[axum::debug_handler(state = AppState)]
 pub async fn create_user(
-    auth: Auth<SQLxAuthStore>,
+    auth: Auth,
     DbPool(db): DbPool,
     State(state): State<AppState>,
     FormOrJson(request): FormOrJson<CreateUserRequest>,
@@ -132,9 +129,9 @@ pub async fn create_user(
     request.validate()?;
 
     let stores = CreateUserStores {
-        user: Arc::new(SQLxUserStore::new(db)),
+        user: Arc::new(SQLxUserStore::new(db.clone())),
         mailer: Arc::new(FakeMailer::new()),
-        auth: Arc::new(auth.store),
+        auth: Arc::new(SQLxAuthStore::new(&db)),
     };
 
     let user = CreateUser::new(state.config, stores)
@@ -148,7 +145,7 @@ pub async fn create_user(
 #[instrument]
 #[axum::debug_handler(state = AppState)]
 pub async fn upsert_user(
-    auth: Auth<SQLxAuthStore>,
+    auth: Auth,
     DbPool(db): DbPool,
     State(state): State<AppState>,
     FormOrJson(request): FormOrJson<UpsertUserRequest>,
@@ -180,9 +177,9 @@ pub async fn upsert_user(
     };
 
     let stores = UpsertUserStores {
-        user: Arc::new(SQLxUserStore::new(db)),
+        user: Arc::new(SQLxUserStore::new(db.clone())),
         mailer: Arc::new(FakeMailer::new()),
-        auth: Arc::new(auth.store),
+        auth: Arc::new(SQLxAuthStore::new(&db)),
     };
 
     let user = UpsertUser::new(state.config, stores)
@@ -198,7 +195,7 @@ pub async fn upsert_user(
 #[axum::debug_handler(state = AppState)]
 pub async fn update_user(
     Path(user_id): Path<Uuid>,
-    auth: Auth<SQLxAuthStore>,
+    auth: Auth,
     DbPool(db): DbPool,
     FormOrJson(request): FormOrJson<UpdateUserRequest>,
 ) -> ApiResult<impl IntoResponse> {
@@ -225,7 +222,7 @@ pub async fn update_user(
 #[axum::debug_handler(state = AppState)]
 pub async fn set_user_password(
     Path(user_id): Path<Uuid>,
-    auth: Auth<SQLxAuthStore>,
+    auth: Auth,
     DbPool(db): DbPool,
     FormOrJson(request): FormOrJson<PasswordUpdateRequest>,
 ) -> ApiResult<impl IntoResponse> {
