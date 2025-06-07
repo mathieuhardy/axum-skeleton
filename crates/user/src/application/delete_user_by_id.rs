@@ -6,19 +6,27 @@ use crate::domain::port::UserStore;
 use crate::prelude::*;
 
 /// Stores used by this use-case.
-#[derive(Clone)]
-pub struct DeleteUserByIdStores {
+pub struct DeleteUserByIdStores<A>
+where
+    A: UserStore,
+{
     /// User store.
-    pub user: Arc<dyn UserStore>,
+    pub user: A,
 }
 
 /// User deletion use-case structure.
-pub struct DeleteUserById {
+pub struct DeleteUserById<A>
+where
+    A: UserStore,
+{
     /// List of stores used.
-    stores: DeleteUserByIdStores,
+    stores: DeleteUserByIdStores<A>,
 }
 
-impl DeleteUserById {
+impl<A> DeleteUserById<A>
+where
+    A: UserStore,
+{
     /// Creates a new `DeleteUserById` use-case instance.
     ///
     /// # Arguments
@@ -26,12 +34,15 @@ impl DeleteUserById {
     ///
     /// # Returns
     /// A `DeleteUserById` instance.
-    pub fn new(stores: DeleteUserByIdStores) -> Self {
+    pub fn new(stores: DeleteUserByIdStores<A>) -> Self {
         Self { stores }
     }
 }
 
-impl UseCase for DeleteUserById {
+impl<A> UseCase for DeleteUserById<A>
+where
+    A: UserStore,
+{
     type Args = Uuid;
     type Output = ();
     type Error = Error;
@@ -70,9 +81,7 @@ mod tests {
             Box::pin(async move { Ok(false) })
         });
 
-        let stores = DeleteUserByIdStores {
-            user: Arc::new(user_store),
-        };
+        let stores = DeleteUserByIdStores { user: user_store };
 
         let res = DeleteUserById::new(stores).handle(user_id).await;
         assert!(matches!(res, Err(Error::NotFound)));
@@ -97,9 +106,7 @@ mod tests {
                 Box::pin(async move { Ok(()) })
             });
 
-        let stores = DeleteUserByIdStores {
-            user: Arc::new(user_store),
-        };
+        let stores = DeleteUserByIdStores { user: user_store };
 
         let res = DeleteUserById::new(stores).handle(user_id).await;
         assert!(res.is_ok());

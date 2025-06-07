@@ -12,28 +12,42 @@ use crate::domain::user::{CreateUserRequest, User, UserData};
 use crate::prelude::*;
 
 /// Stores used by this use-case.
-#[derive(Clone)]
-pub struct CreateUserStores {
+pub struct CreateUserStores<A, B, C>
+where
+    A: UserStore,
+    B: MailerProvider,
+    C: AuthStore,
+{
     /// User store.
-    pub user: Arc<dyn UserStore>,
+    pub user: A,
 
     /// Mailer provider.
-    pub mailer: Arc<dyn MailerProvider>,
+    pub mailer: B,
 
     /// Auth store.
-    pub auth: Arc<dyn AuthStore>,
+    pub auth: C,
 }
 
 /// User creation use-case structure.
-pub struct CreateUser {
+pub struct CreateUser<A, B, C>
+where
+    A: UserStore,
+    B: MailerProvider,
+    C: AuthStore,
+{
     /// Application configuration.
     config: Config,
 
     /// List of stores used.
-    stores: CreateUserStores,
+    stores: CreateUserStores<A, B, C>,
 }
 
-impl CreateUser {
+impl<A, B, C> CreateUser<A, B, C>
+where
+    A: UserStore,
+    B: MailerProvider,
+    C: AuthStore,
+{
     /// Creates a new `CreateUser` use-case instance.
     ///
     /// # Arguments
@@ -41,12 +55,17 @@ impl CreateUser {
     ///
     /// # Returns
     /// A `CreateUser` instance.
-    pub fn new(config: Config, stores: CreateUserStores) -> Self {
+    pub fn new(config: Config, stores: CreateUserStores<A, B, C>) -> Self {
         Self { config, stores }
     }
 }
 
-impl UseCase for CreateUser {
+impl<A, B, C> UseCase for CreateUser<A, B, C>
+where
+    A: UserStore,
+    B: MailerProvider,
+    C: AuthStore,
+{
     type Args = CreateUserRequest;
     type Output = User;
     type Error = Error;
@@ -132,12 +151,12 @@ mod tests {
         let config = Config::new()?;
 
         let stores = CreateUserStores {
-            user: Arc::new(user_store),
-            mailer: Arc::new(mailer),
-            auth: Arc::new(auth_store),
+            user: user_store,
+            mailer,
+            auth: auth_store,
         };
 
-        let res = CreateUser::new(config, stores.clone())
+        let res = CreateUser::new(config, stores)
             .handle(CreateUserRequest {
                 first_name: random_string(),
                 last_name: random_string(),

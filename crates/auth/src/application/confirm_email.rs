@@ -1,6 +1,5 @@
 //! Use-case for user email confirmation.
 
-use std::sync::Arc;
 use uuid::Uuid;
 
 use common_core::UseCase;
@@ -9,29 +8,40 @@ use crate::domain::port::AuthStore;
 use crate::prelude::*;
 
 /// Stores used by this use-case.
-#[derive(Clone)]
-pub struct ConfirmEmailStores {
+pub struct ConfirmEmailStores<A>
+where
+    A: AuthStore,
+{
     /// Auth store.
-    pub auth: Arc<dyn AuthStore>,
+    pub auth: A,
 }
 
 /// User confirmation use-case structure.
-pub struct ConfirmEmail {
+pub struct ConfirmEmail<A>
+where
+    A: AuthStore,
+{
     /// List of stores used.
-    stores: ConfirmEmailStores,
+    stores: ConfirmEmailStores<A>,
 }
 
-impl ConfirmEmail {
+impl<A> ConfirmEmail<A>
+where
+    A: AuthStore,
+{
     /// Creates a `ConfirmEmail` use-case instance.
     ///
     /// # Returns
     /// A `ConfirmEmail` instance.
-    pub fn new(stores: ConfirmEmailStores) -> Self {
+    pub fn new(stores: ConfirmEmailStores<A>) -> Self {
         Self { stores }
     }
 }
 
-impl UseCase for ConfirmEmail {
+impl<A> UseCase for ConfirmEmail<A>
+where
+    A: AuthStore,
+{
     type Args = Uuid;
     type Output = ();
     type Error = Error;
@@ -91,9 +101,7 @@ mod tests {
 
         let confirmation_id = Uuid::new_v4();
 
-        let stores = ConfirmEmailStores {
-            auth: Arc::new(auth_store),
-        };
+        let stores = ConfirmEmailStores { auth: auth_store };
 
         let res = ConfirmEmail::new(stores).handle(confirmation_id).await;
         assert!(res.is_ok());
@@ -112,9 +120,7 @@ mod tests {
 
         let confirmation_id = Uuid::new_v4();
 
-        let stores = ConfirmEmailStores {
-            auth: Arc::new(auth_store),
-        };
+        let stores = ConfirmEmailStores { auth: auth_store };
 
         let res = ConfirmEmail::new(stores).handle(confirmation_id).await;
         assert!(matches!(res, Err(Error::ConfirmationLinkExpired)));

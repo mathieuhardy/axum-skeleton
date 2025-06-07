@@ -50,7 +50,7 @@ pub async fn delete_user_by_id(
     }
 
     let stores = DeleteUserByIdStores {
-        user: Arc::new(SQLxUserStore::new(db)),
+        user: SQLxUserStore::new(db),
     };
 
     DeleteUserById::new(stores).handle(user_id).await?;
@@ -63,7 +63,7 @@ pub async fn delete_user_by_id(
 #[axum::debug_handler(state = AppState)]
 pub async fn get_current_user(auth: Auth, DbPool(db): DbPool) -> ApiResult<impl IntoResponse> {
     let stores = GetUserByIdStores {
-        user: Arc::new(SQLxUserStore::new(db)),
+        user: SQLxUserStore::new(db),
     };
 
     let user = GetUserById::new(stores).handle(auth.try_user()?.id).await?;
@@ -84,7 +84,7 @@ pub async fn get_user_by_id(
     }
 
     let stores = GetUserByIdStores {
-        user: Arc::new(SQLxUserStore::new(db)),
+        user: SQLxUserStore::new(db),
     };
 
     let user = GetUserById::new(stores).handle(user_id).await?;
@@ -105,7 +105,7 @@ pub async fn get_users_by_filters(
     }
 
     let stores = GetUsersByFiltersStores {
-        user: Arc::new(SQLxUserStore::new(db)),
+        user: SQLxUserStore::new(db),
     };
 
     let users = GetUsersByFilters::new(stores).handle(filters).await?;
@@ -129,9 +129,9 @@ pub async fn create_user(
     request.validate()?;
 
     let stores = CreateUserStores {
-        user: Arc::new(SQLxUserStore::new(db.clone())),
-        mailer: Arc::new(FakeMailer::new()),
-        auth: Arc::new(SQLxAuthStore::new(&db)),
+        user: SQLxUserStore::new(db.clone()),
+        mailer: FakeMailer::new(),
+        auth: SQLxAuthStore::new(&db),
     };
 
     let user = CreateUser::new(state.config, stores)
@@ -177,9 +177,9 @@ pub async fn upsert_user(
     };
 
     let stores = UpsertUserStores {
-        user: Arc::new(SQLxUserStore::new(db.clone())),
-        mailer: Arc::new(FakeMailer::new()),
-        auth: Arc::new(SQLxAuthStore::new(&db)),
+        user: SQLxUserStore::new(db.clone()),
+        mailer: FakeMailer::new(),
+        auth: SQLxAuthStore::new(&db),
     };
 
     let user = UpsertUser::new(state.config, stores)
@@ -208,7 +208,7 @@ pub async fn update_user(
     request.validate()?;
 
     let stores = UpdateUserStores {
-        user: Arc::new(SQLxUserStore::new(db)),
+        user: SQLxUserStore::new(db),
     };
 
     let user = UpdateUser::new(stores).handle((user_id, request)).await?;
@@ -233,7 +233,7 @@ pub async fn set_user_password(
     request.validate()?;
 
     let stores = SetUserPasswordStores {
-        user: Arc::new(SQLxUserStore::new(db)),
+        user: SQLxUserStore::new(db),
     };
 
     SetUserPassword::new(stores)
