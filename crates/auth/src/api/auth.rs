@@ -36,6 +36,8 @@ pub(crate) async fn login(
 ) -> ApiResult<impl IntoResponse> {
     credentials.validate()?;
 
+    let db = db.into_shared();
+
     let stores = LoginStores {
         auth: SQLxAuthStore::new(&db),
     };

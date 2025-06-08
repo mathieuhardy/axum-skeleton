@@ -4,10 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+async-stream = { workspace = true, default-features = false }
 async-trait = { workspace = true, default-features = false }
 axum = { workspace = true, default-features = false }
 bb8 = { workspace = true, default-features = false }
 bb8-redis = { workspace = true, default-features = false }
+futures-core = { workspace = true, default-features = false }
+futures-util = { workspace = true, default-features = false }
 sqlx = { workspace = true, default-features = false, features = [
     "chrono",
     "macros",
@@ -18,6 +21,7 @@ sqlx = { workspace = true, default-features = false, features = [
     "uuid"
 ] }
 thiserror = { workspace = true, default-features = false }
+tokio = { workspace = true, default-features = false }
 tracing = { workspace = true, default-features = false, features = ["attributes", "log", "std"] }
 
 common-state = { workspace = true, default-features = false }

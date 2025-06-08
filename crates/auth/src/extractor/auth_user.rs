@@ -35,7 +35,8 @@ where
 
         // Get handle to the user store
         let AppState { pool, .. } = AppState::from_ref(state);
-        let store = SQLxAuthStore::new(&Db(pool));
+        let db = Db::new(pool);
+        let store = SQLxAuthStore::new(&db.into_shared());
 
         // Fetch user from store (in case it has changed since session creation)
         let user = if let Some(session_user) = user {

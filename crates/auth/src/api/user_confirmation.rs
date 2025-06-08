@@ -44,6 +44,8 @@ pub(crate) async fn confirm_email(
     Query(params): Query<ConfirmEmailParams>,
     db: Db,
 ) -> ApiResult<impl IntoResponse> {
+    let db = db.into_shared();
+
     let stores = ConfirmEmailStores {
         auth: SQLxAuthStore::new(&db),
     };
@@ -61,12 +63,14 @@ pub(crate) async fn send_email_confirmation(
 ) -> ApiResult<impl IntoResponse> {
     let user = auth.try_user()?;
 
+    let db = db.into_shared();
+
     let stores = SendEmailConfirmationStores {
         mailer: FakeMailer::new(),
         auth: SQLxAuthStore::new(&db),
     };
 
-    SendEmailConfirmation::new(state.config, stores)
+    SendEmailConfirmation::new(state.config, stores, db)
         .handle(user)
         .await
 }
